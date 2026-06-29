@@ -1,0 +1,432 @@
+/* Google Fonts — debe preceder a @import "tailwindcss" */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* ── Paleta de color – extraída del paisaje de Arcusa ── */
+  --color-piedra-clara:  #CDBBA0;
+  --color-piedra-media:  #9C8567;
+  --color-piedra-oscura: #6B5842;
+
+  --color-verde-pino:  #3E5C3A;
+  --color-verde-medio: #4F6E45;
+  --color-salvia:      #7C8A5C;
+
+  --color-azul-pirineo: #5B7FA6;
+  --color-azul-medio:   #7F9BBE;
+  --color-cielo-palido: #C3D7E6;
+
+  --color-pergamino:    #F4EFE6;
+  --color-carbon:       #2E2A24;
+  --color-carbon-suave: #4A4540;
+
+  /* Ocre cálido — piedra iluminada, sol sobre el torreón */
+  --color-ocre:       #C4773D;
+  --color-ocre-suave: #E8A96A;
+
+  /* Tipografías */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans:  'Inter', system-ui, sans-serif;
+}
+
+/* ── Base ─────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--color-pergamino);
+  color: var(--color-carbon);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-serif); }
+
+:focus-visible {
+  outline: 2px solid var(--color-azul-pirineo);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ── Keyframes ────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-7px); }
+}
+
+@keyframes pulseRing {
+  0%   { transform: scale(1);    opacity: 0.6; }
+  100% { transform: scale(1.8);  opacity: 0; }
+}
+
+@keyframes drawLine {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes gradDrift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* ── Fondos de sección con vida ──────────────────
+   Blobs radiales apilados + gradiente animado.
+   El tercer layer crece al 400% para que gradDrift
+   lo deslice sin que se note el salto.
+────────────────────────────────────────────────── */
+
+.bg-section-dark {
+  background:
+    radial-gradient(ellipse 65% 80% at 78% 15%, rgba(91,127,166,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 55% at 18% 85%, rgba(62,92,58,0.18)   0%, transparent 50%),
+    linear-gradient(135deg, #111820 0%, #0C1A0E 34%, #1A1020 67%, #111820 100%);
+  background-size: 100%, 100%, 400% 400%;
+  animation: gradDrift 22s ease infinite;
+}
+
+.bg-section-green {
+  background:
+    radial-gradient(ellipse 60% 70% at 92% 8%,  rgba(255,255,255,0.09) 0%, transparent 48%),
+    radial-gradient(ellipse 40% 55% at 5%  94%, rgba(18,42,14,0.55)    0%, transparent 50%),
+    linear-gradient(135deg, #263E22 0%, #3E5C3A 35%, #2A4226 65%, #4F6E45 100%);
+  background-size: 100%, 100%, 400% 400%;
+  animation: gradDrift 17s ease infinite;
+}
+
+.bg-section-blue {
+  background:
+    radial-gradient(ellipse 65% 80% at 6%  50%, rgba(127,155,190,0.38) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 94% 50%, rgba(46,78,62,0.16)    0%, transparent 50%),
+    linear-gradient(135deg, #1C2E4A 0%, #5B7FA6 45%, #2A4060 75%, #7F9BBE 100%);
+  background-size: 100%, 100%, 400% 400%;
+  animation: gradDrift 14s ease infinite;
+}
+
+.bg-section-warm {
+  background:
+    radial-gradient(ellipse 70% 60% at -4% -8%,   rgba(196,119,61,0.13) 0%, transparent 50%),
+    radial-gradient(ellipse 55% 50% at 104% 108%, rgba(91,127,166,0.08) 0%, transparent 50%),
+    var(--color-pergamino);
+}
+
+.bg-page-header-warm {
+  background:
+    radial-gradient(ellipse 90% 80% at -4% -15%,  rgba(196,119,61,0.16) 0%, transparent 45%),
+    radial-gradient(ellipse 65% 55% at 108% 115%, rgba(91,127,166,0.1)  0%, transparent 50%),
+    linear-gradient(160deg, #E5D9C8 0%, var(--color-pergamino) 100%);
+}
+
+.bg-page-header-cool {
+  background:
+    radial-gradient(ellipse 85% 70% at 108% -10%, rgba(91,127,166,0.24)  0%, transparent 50%),
+    radial-gradient(ellipse 55% 55% at -5%  108%, rgba(195,215,230,0.32) 0%, transparent 50%),
+    linear-gradient(160deg, #D3E6F4 0%, var(--color-pergamino) 100%);
+}
+
+.bg-section-white-warm {
+  background:
+    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(195,215,230,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 60% at 0%   50%, rgba(196,119,61,0.06)  0%, transparent 50%),
+    white;
+}
+
+/* ── Scroll reveal ───────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity  0.72s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+.reveal-d1 { transition-delay: 0.08s; }
+.reveal-d2 { transition-delay: 0.16s; }
+.reveal-d3 { transition-delay: 0.24s; }
+.reveal-d4 { transition-delay: 0.32s; }
+
+/* ── Gradientes de texto ─────────────────────── */
+.text-gradient-tierra {
+  background: linear-gradient(135deg, var(--color-ocre) 0%, var(--color-piedra-oscura) 60%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-pirineo {
+  background: linear-gradient(135deg, var(--color-azul-pirineo) 0%, var(--color-verde-medio) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Botones ─────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--color-verde-pino), var(--color-verde-medio));
+  box-shadow: 0 4px 14px rgba(62, 92, 58, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(62, 92, 58, 0.4);
+  filter: brightness(1.06);
+}
+.btn-primary:hover::after { opacity: 1; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  color: white;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.55);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1.5px solid var(--color-azul-pirineo);
+  color: var(--color-azul-pirineo);
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.btn-outline:hover {
+  background: var(--color-azul-pirineo);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* ── Card 3D tilt (CSS base, JS enhances) ───── */
+.card-3d {
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.card-3d:hover {
+  box-shadow:
+    0 24px 48px rgba(46, 42, 36, 0.16),
+    0 6px 16px rgba(91, 127, 166, 0.1);
+}
+
+/* ── Shimmer en skeleton / fondos animados ──── */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    var(--color-cielo-palido) 0%,
+    rgba(255,255,255,0.8) 40%,
+    var(--color-cielo-palido) 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 2.4s linear infinite;
+}
+
+/* ── Línea decorativa animada ────────────────── */
+.animated-line {
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-ocre), var(--color-verde-pino));
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.animated-line.visible { transform: scaleX(1); }
+
+/* ── Pulse ring para marcadores del mapa ────── */
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* ── Prose ───────────────────────────────────── */
+.prose-arcusa {
+  color: var(--color-carbon-suave);
+  line-height: 1.8;
+  font-size: 1.0625rem;
+}
+.prose-arcusa p + p { margin-top: 1.35em; }
+
+.prose-arcusa strong { color: var(--color-carbon); font-weight: 600; }
+
+/* Párrafo de entrada (lead) — un poco mayor y más oscuro */
+.prose-arcusa > p:first-of-type {
+  font-size: 1.18rem;
+  line-height: 1.7;
+  color: var(--color-carbon);
+}
+
+/* Capitular en la primera letra del lead */
+.prose-arcusa > p:first-of-type::first-letter {
+  font-family: var(--font-serif);
+  float: left;
+  font-size: 3.4rem;
+  line-height: 0.82;
+  font-weight: 700;
+  padding: 0.06em 0.12em 0 0;
+  color: var(--color-ocre);
+}
+
+/* ── Títulos dentro del contenido ─────────────── */
+.prose-arcusa h1,
+.prose-arcusa h2,
+.prose-arcusa h3 {
+  font-family: var(--font-serif);
+  color: var(--color-carbon);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.prose-arcusa h1 {
+  font-size: 1.9rem;
+  font-weight: 600;
+  margin: 0 0 0.85em;
+}
+/* Acento decorativo bajo el primer título del relato */
+.prose-arcusa h1::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 3px;
+  margin-top: 0.6rem;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--color-ocre), var(--color-piedra-media));
+}
+.prose-arcusa h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.9em 0 0.55em;
+}
+.prose-arcusa h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.6em 0 0.45em;
+}
+
+/* ── Enlaces ──────────────────────────────────── */
+.prose-arcusa a {
+  color: var(--color-azul-pirineo);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: color 0.2s ease;
+}
+.prose-arcusa a:hover { color: var(--color-verde-medio); }
+
+/* ── Listas ───────────────────────────────────── */
+.prose-arcusa ul,
+.prose-arcusa ol { margin: 1.25em 0; padding-left: 1.4em; }
+.prose-arcusa li { margin: 0.45em 0; padding-left: 0.25em; }
+.prose-arcusa ul li::marker { color: var(--color-ocre); }
+.prose-arcusa ol li::marker { color: var(--color-piedra-media); font-weight: 600; }
+
+/* ── Cita / curiosidad (blockquote) ───────────── */
+.prose-arcusa blockquote {
+  position: relative;
+  margin: 2.2em 0;
+  padding: 1.5rem 1.6rem 1.5rem 1.7rem;
+  background:
+    radial-gradient(ellipse 75% 100% at 0% 0%, rgba(196,119,61,0.10) 0%, transparent 60%),
+    rgba(244,239,230,0.65);
+  border: 1px solid rgba(196,119,61,0.22);
+  border-left: 3px solid var(--color-ocre);
+  border-radius: 0 1rem 1rem 0;
+  font-size: 1.0125rem;
+  line-height: 1.7;
+  color: var(--color-carbon-suave);
+}
+.prose-arcusa blockquote p { margin: 0; }
+.prose-arcusa blockquote p + p { margin-top: 0.75em; }
+/* La primera línea en negrita actúa como rótulo del recuadro */
+.prose-arcusa blockquote strong {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.075rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-ocre);
+  margin-bottom: 0.35em;
+}
+
+/* ── Regla horizontal ─────────────────────────── */
+.prose-arcusa hr {
+  margin: 2.4em auto;
+  width: 40%;
+  border: 0;
+  border-top: 1px solid rgba(156,133,103,0.4);
+}
+
+/* ── Tag / badge ─────────────────────────────── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Reducir movimiento ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .parallax-layer { transform: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}

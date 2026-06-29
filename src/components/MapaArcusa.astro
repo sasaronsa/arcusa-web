@@ -1,0 +1,574 @@
+---
+import Icon from './Icon.astro';
+// SVG base del pueblo (editable en src/assets/arcusa-mapa.svg).
+// Se inyecta inline para poder escalarlo y estilarlo. En el futuro,
+// añade aquí calles/casas como <path>/<polygon> dentro de ese archivo.
+import mapaBase from '../assets/arcusa-mapa.svg?raw';
+
+interface Punto {
+  slug: string;
+  nombre: string;
+  tipo: string;
+  x?: number;
+  y?: number;
+  lat?: number;
+  lng?: number;
+  resumen: string;
+  imagenes: string[];
+  anio?: string;
+  autor?: string;
+}
+
+interface Props {
+  puntos: Punto[];
+}
+
+const { puntos } = Astro.props;
+
+// Posición de cada punto sobre el mapa, en % del lienzo:
+// x = 0 (izquierda) … 100 (derecha) · y = 0 (arriba) … 100 (abajo).
+// Si falta, cae al centro para poder recolocarlo.
+function clampPos(p: Punto) {
+  return {
+    x: Math.max(0, Math.min(100, p.x ?? 50)),
+    y: Math.max(0, Math.min(100, p.y ?? 50)),
+  };
+}
+
+const colores: Record<string, string> = {
+  casa:     '#3E5C3A',
+  edificio: '#5B7FA6',
+  cuadro:   '#9C8567',
+  servicio: '#4F6E45',
+  calle:    '#7C8A5C',
+};
+
+const etiquetas: Record<string, string> = {
+  casa:     'Casa',
+  edificio: 'Edificio',
+  cuadro:   'Museo',
+  servicio: 'Servicio',
+  calle:    'Calle',
+};
+
+const iconoTipo: Record<string, string> = {
+  casa: 'home', edificio: 'church', cuadro: 'palette', servicio: 'utensils', calle: 'compass',
+};
+
+const puntosConPos = puntos.map(p => ({
+  ...p,
+  pos: clampPos(p),
+  color: colores[p.tipo] ?? '#6B5842',
+}));
+---
+
+<div id="mapa-root">
+  <!-- Filtros -->
+  <div class="flex flex-wrap gap-2 mb-5">
+    {([
+      { tipo: 'todos',    label: 'Todos',     icon: 'compass'  },
+      { tipo: 'casa',     label: 'Casas',     icon: 'home'     },
+      { tipo: 'edificio', label: 'Edificios', icon: 'church'   },
+      { tipo: 'cuadro',   label: 'Museo',     icon: 'palette'  },
+      { tipo: 'servicio', label: 'Servicios', icon: 'utensils' },
+    ] as const).map(({ tipo, label, icon }) => (
+      <button
+        data-filtro={tipo}
+        class="filtro-btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer"
+        style={tipo === 'todos'
+          ? 'background: var(--color-verde-pino); color: white;'
+          : 'background: rgba(62,92,58,0.08); color: var(--color-verde-pino); border: 1px solid rgba(62,92,58,0.2);'}
+      >
+        <Icon name={icon} size={11} />
+        {label}
+      </button>
+    ))}
+  </div>
+
+  <!-- Visor del mapa (tamaño responsive en el <style>) -->
+  <div
+    id="mapa-canvas"
+    class="relative w-full select-none overflow-hidden"
+    style="border-radius: 1.25rem;
+           background: #F0E9DF;
+           border: 1px solid rgba(156,133,103,0.25);
+           box-shadow: inset 0 2px 12px rgba(107,88,66,0.08);
+           cursor: grab; touch-action: none;"
+  >
+    <!-- Capa transformable (pan/zoom): dibujo base + marcadores.
+         panzoom mueve todo junto; el script da escala inversa a los
+         marcadores/burbujas para que no cambien de tamaño. -->
+    <div id="mapa-viewport" class="absolute top-0 left-0"
+         style="transform-origin: 0 0; width: 100%; aspect-ratio: 1 / 1;">
+      <div class="absolute inset-0 w-full h-full pointer-events-none" set:html={mapaBase} />
+
+      <div id="mapa-markers" class="absolute inset-0">
+        {puntosConPos.map(p => (
+          <button
+            class="punto-marker"
+            data-slug={p.slug}
+            data-tipo={p.tipo}
+            data-nombre={p.nombre}
+            data-resumen={p.resumen}
+            data-img={p.imagenes?.[0] ?? ''}
+            data-anio={p.anio ?? ''}
+            data-autor={p.autor ?? ''}
+            data-x={p.pos.x}
+            data-y={p.pos.y}
+            aria-label={p.nombre}
+            style={`left: ${p.pos.x}%; top: ${p.pos.y}%;`}
+          >
+            <span class="punto-circulo" style={`background: ${p.color};`}>
+              <Icon name={iconoTipo[p.tipo] ?? 'compass'} size={15} />
+            </span>
+            <span class="punto-label">
+              {p.nombre.replace('Casa ', '').replace('Cuadro del Museo: ', '').slice(0, 18)}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Indicador Norte (fijo) -->
+    <div class="absolute top-4 right-4 flex flex-col items-center gap-0.5 pointer-events-none z-20"
+         style="color: rgba(107,88,66,0.55);">
+      <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2 L8 14M8 2 L5 6M8 2 L11 6" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-size: 9px; font-weight: 600; letter-spacing: 0.1em;">N</span>
+    </div>
+
+    <!-- Controles de zoom (fijos) -->
+    <div class="absolute bottom-4 right-4 flex flex-col gap-1.5 z-20">
+      <button id="zoom-in" class="zoom-btn" aria-label="Acercar" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button id="zoom-out" class="zoom-btn" aria-label="Alejar" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+      </button>
+      <button id="zoom-reset" class="zoom-btn" aria-label="Centrar el mapa" type="button">
+        <Icon name="compass" size={15} />
+      </button>
+    </div>
+
+    <!-- Pista de uso -->
+    <div class="absolute bottom-4 left-4 flex items-center gap-1.5 pointer-events-none z-20 px-2.5 py-1 rounded-full"
+         style="background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); color: var(--color-piedra-oscura);">
+      <Icon name="compass" size={11} />
+      <span style="font-size: 10px; font-weight: 600;">Arrastra · rueda/+/− zoom · acércate para separar los puntos</span>
+    </div>
+  </div>
+
+  <!-- Modal de ficha -->
+  <div id="ficha-modal" class="ficha-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="ficha-backdrop" class="ficha-backdrop"></div>
+    <div class="ficha-card" role="document">
+      <!-- Imagen / cabecera -->
+      <div id="ficha-media" class="ficha-media">
+        <img id="ficha-img" class="ficha-img" alt="" />
+        <div id="ficha-media-fallback" class="ficha-media-fallback">
+          <span id="ficha-fallback-icon"></span>
+        </div>
+        <span id="ficha-tipo" class="ficha-badge"></span>
+        <button id="ficha-cerrar" class="ficha-close" aria-label="Cerrar" type="button">
+          <Icon name="x" size={16} />
+        </button>
+      </div>
+      <!-- Cuerpo -->
+      <div class="ficha-body">
+        <div class="ficha-meta">
+          <span id="ficha-anio" class="ficha-anio"></span>
+          <span id="ficha-autor" class="ficha-autor"></span>
+        </div>
+        <h3 id="ficha-nombre" class="ficha-title"></h3>
+        <p id="ficha-resumen" class="ficha-text"></p>
+        <a id="ficha-enlace" href="#" class="ficha-cta">
+          Leer historia completa
+          <Icon name="arrow-right" size={14} />
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leyenda -->
+  <div class="mt-4 flex flex-wrap gap-4">
+    {Object.entries(colores).filter(([t]) => t !== 'calle').map(([tipo, color]) => (
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-full" style={`background: ${color};`}></div>
+        <span class="text-xs" style="color: var(--color-piedra-media);">{etiquetas[tipo]}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  /* ── Tamaño del visor ── */
+  #mapa-canvas {
+    width: 100%;
+    aspect-ratio: 5 / 6;                       /* móvil */
+  }
+  @media (min-width: 640px)  { #mapa-canvas { aspect-ratio: 16 / 10; } }
+  @media (min-width: 1024px) { #mapa-canvas { aspect-ratio: 21 / 9;  } }
+  #mapa-canvas.is-grabbing { cursor: grabbing; }
+
+  /* ── Marcadores (dentro del viewport; el JS les da escala inversa
+        con transform: translate(-50%,-50%) scale(1/zoom) → tamaño fijo) ── */
+  .punto-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);   /* el JS añade la escala */
+    background: none; border: none; padding: 0;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .punto-marker[hidden] { display: none; }
+  .punto-circulo {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2.5px solid white;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.22);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .punto-label {
+    margin-top: 4px;
+    white-space: nowrap;
+    font-size: 10px; font-weight: 600;
+    color: #4A4540;
+    text-shadow: 0 1px 3px rgba(240,233,223,0.95), 0 0 6px rgba(240,233,223,0.95);
+    pointer-events: none;
+  }
+  .punto-marker:hover  .punto-circulo,
+  .punto-marker:focus-visible .punto-circulo { transform: scale(1.22); box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+  .punto-marker.activo .punto-circulo {
+    transform: scale(1.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    outline: 3px solid white; outline-offset: 2px;
+  }
+
+  /* ── Burbujas de cluster (escala inversa también por JS) ── */
+  .cluster-bubble {
+    position: absolute;
+    transform: translate(-50%, -50%);   /* el JS añade la escala */
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 2.5px solid white;
+    background: var(--color-verde-pino);
+    color: white;
+    font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.28);
+    cursor: pointer;
+  }
+  .cluster-bubble::after {
+    content: '';
+    position: absolute; inset: -5px;
+    border-radius: 50%;
+    border: 2px solid var(--color-verde-pino);
+    opacity: 0.3;
+  }
+
+  /* ── Botones de zoom ── */
+  .zoom-btn {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 9px;
+    background: white; color: var(--color-carbon);
+    border: 1px solid rgba(156,133,103,0.3);
+    box-shadow: 0 2px 8px rgba(46,42,36,0.12);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .zoom-btn:hover  { background: var(--color-pergamino); }
+  .zoom-btn:active { transform: scale(0.92); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .punto-marker, .cluster-bubble { animation: none; }
+  }
+
+  /* ── Modal ficha ── */
+  .ficha-modal {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .ficha-modal.open { opacity: 1; visibility: visible; }
+  .ficha-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(46,42,36,0.55);
+    backdrop-filter: blur(3px);
+  }
+  .ficha-card {
+    position: relative;
+    width: 100%; max-width: 420px;
+    max-height: 88vh; overflow-y: auto;
+    background: white;
+    border-radius: 1.25rem;
+    box-shadow: 0 24px 60px rgba(46,42,36,0.35);
+    transform: translateY(16px) scale(0.96);
+    opacity: 0;
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease;
+  }
+  .ficha-modal.open .ficha-card { transform: translateY(0) scale(1); opacity: 1; }
+
+  .ficha-media {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(135deg, var(--color-cielo-palido), var(--color-piedra-clara));
+    overflow: hidden;
+  }
+  .ficha-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .ficha-media.has-img .ficha-img { display: block; }
+  .ficha-media.has-img .ficha-media-fallback { display: none; }
+  .ficha-media-fallback {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.85);
+  }
+  .ficha-badge {
+    position: absolute; top: 12px; left: 12px;
+    padding: 0.25rem 0.7rem; border-radius: 9999px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: white;
+    background: rgba(46,42,36,0.55); backdrop-filter: blur(6px);
+  }
+  .ficha-close {
+    position: absolute; top: 12px; right: 12px;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.92); color: var(--color-carbon);
+    border: none; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transition: transform 0.12s ease;
+  }
+  .ficha-close:hover { transform: scale(1.1); }
+
+  .ficha-body { padding: 1.25rem 1.4rem 1.5rem; }
+  .ficha-meta { display: flex; gap: 0.75rem; margin-bottom: 0.35rem; }
+  .ficha-anio, .ficha-autor {
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--color-piedra-media);
+  }
+  .ficha-anio:empty, .ficha-autor:empty { display: none; }
+  .ficha-title {
+    font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700;
+    line-height: 1.15; color: var(--color-carbon); margin-bottom: 0.6rem;
+  }
+  .ficha-text {
+    font-size: 0.95rem; line-height: 1.65; color: var(--color-carbon-suave);
+  }
+  .ficha-cta {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 1.1rem; padding: 0.6rem 1.1rem;
+    border-radius: 9999px;
+    background: var(--color-verde-pino); color: white;
+    font-size: 0.82rem; font-weight: 600;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .ficha-cta:hover { transform: translateY(-1px); filter: brightness(1.07); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ficha-card, .ficha-modal { transition: none; }
+  }
+</style>
+
+<script>
+  import panzoom from 'panzoom';
+
+  /* Proporción natural del SVG base. Si cambias el dibujo por otro de
+     distinta forma, ajusta estos números y el aspect-ratio de #mapa-viewport. */
+  const NAT_W = 1024, NAT_H = 1024;
+  const CLUSTER_PX = 60;   // distancia (px) bajo la cual dos puntos se agrupan
+
+  const tipoLabel: Record<string, string> = {
+    casa: 'Casa tradicional', edificio: 'Edificio emblemático',
+    cuadro: 'Museo al aire libre', servicio: 'Servicio', calle: 'Calle',
+  };
+
+  const outer       = document.getElementById('mapa-canvas') as HTMLElement;
+  const viewport    = document.getElementById('mapa-viewport') as HTMLElement;
+  const markersLayer = document.getElementById('mapa-markers') as HTMLElement;
+
+  const modal        = document.getElementById('ficha-modal')!;
+  const modalMedia   = document.getElementById('ficha-media')!;
+  const modalImg     = document.getElementById('ficha-img') as HTMLImageElement;
+  const fichaNombre  = document.getElementById('ficha-nombre')!;
+  const fichaResumen = document.getElementById('ficha-resumen')!;
+  const fichaEnlace  = document.getElementById('ficha-enlace') as HTMLAnchorElement;
+  const fichaTipo    = document.getElementById('ficha-tipo')!;
+  const fichaAnio    = document.getElementById('ficha-anio')!;
+  const fichaAutor   = document.getElementById('ficha-autor')!;
+  const tipoBg: Record<string, string> = {
+    casa: '#3E5C3A', edificio: '#5B7FA6', cuadro: '#9C8567', servicio: '#4F6E45', calle: '#7C8A5C',
+  };
+  let activo: HTMLElement | null = null;
+
+  function abrirFicha(el: HTMLElement) {
+    if (activo) activo.classList.remove('activo');
+    el.classList.add('activo');
+    activo = el;
+    const tipo = el.dataset.tipo ?? '';
+    fichaTipo.textContent = tipoLabel[tipo] ?? tipo;
+    fichaTipo.style.background = (tipoBg[tipo] ?? '#6B5842');
+    fichaNombre.textContent = el.dataset.nombre ?? '';
+    fichaResumen.textContent = el.dataset.resumen ?? '';
+    fichaAnio.textContent = el.dataset.anio ?? '';
+    fichaAutor.textContent = el.dataset.autor ?? '';
+    fichaEnlace.href = `/historia/${el.dataset.slug}`;
+    const img = el.dataset.img ?? '';
+    if (img) { modalImg.src = img; modalImg.alt = el.dataset.nombre ?? ''; modalMedia.classList.add('has-img'); }
+    else { modalMedia.classList.remove('has-img'); modalImg.removeAttribute('src'); }
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+  function cerrarFicha() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    activo?.classList.remove('activo');
+    activo = null;
+  }
+  document.getElementById('ficha-cerrar')!.addEventListener('click', cerrarFicha);
+  document.getElementById('ficha-backdrop')!.addEventListener('click', cerrarFicha);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarFicha(); });
+
+  if (outer && viewport && markersLayer) {
+    type M = { el: HTMLElement; x: number; y: number; tipo: string; done: boolean };
+    const markers: M[] = [...markersLayer.querySelectorAll<HTMLElement>('.punto-marker')].map(el => ({
+      el, x: +(el.dataset.x ?? '50'), y: +(el.dataset.y ?? '50'), tipo: el.dataset.tipo ?? '', done: false,
+    }));
+
+    let cw = 0, ch = 0;
+    let filtro = 'todos';
+    let scale = 1;
+    let bubbles: HTMLElement[] = [];
+
+    // ── Dimensiona el lienzo para CUBRIR el visor (sin huecos) ──
+    function fitSize() {
+      const ow = outer.clientWidth, oh = outer.clientHeight;
+      const r = NAT_W / NAT_H;
+      if (ow / oh > r) { cw = ow; ch = ow / r; }   // cubre el ancho
+      else             { ch = oh; cw = oh * r; }   // cubre el alto
+      viewport.style.width  = cw + 'px';
+      viewport.style.height = ch + 'px';
+      return { ow, oh };
+    }
+
+    function clearBubbles() { bubbles.forEach(b => b.remove()); bubbles = []; }
+
+    // distancia en px de pantalla entre dos puntos (coords en % de mapa)
+    function screenDist(a: M, b: M) {
+      const dx = (a.x - b.x) / 100 * cw * scale;
+      const dy = (a.y - b.y) / 100 * ch * scale;
+      return Math.hypot(dx, dy);
+    }
+
+    function makeBubble(mx: number, my: number, count: number) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cluster-bubble';
+      b.style.left = mx + '%';
+      b.style.top  = my + '%';
+      b.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
+      b.textContent = String(count);
+      b.setAttribute('aria-label', `${count} puntos agrupados — acercar`);
+      b.addEventListener('click', () => {
+        const t = pz.getTransform();
+        pz.smoothZoom(t.x + t.scale * cw * (mx / 100), t.y + t.scale * ch * (my / 100), 2);
+      });
+      markersLayer.appendChild(b);
+      bubbles.push(b);
+    }
+
+    // ── Render: muestra/oculta marcadores y agrupa los cercanos ──
+    let rafId = 0;
+    function render() {
+      scale = pz.getTransform().scale;
+      const inv = 1 / scale;
+      const vis = markers.filter(m => filtro === 'todos' || m.tipo === filtro);
+      markers.forEach(m => { m.el.hidden = true; m.done = false; });
+      clearBubbles();
+
+      for (const m of vis) {
+        if (m.done) continue;
+        const group = [m]; m.done = true;
+        for (const n of vis) {
+          if (n.done) continue;
+          if (screenDist(m, n) < CLUSTER_PX) { group.push(n); n.done = true; }
+        }
+        if (group.length === 1) {
+          m.el.hidden = false;
+          m.el.style.transform = `translate(-50%, -50%) scale(${inv})`;
+        } else {
+          const mx = group.reduce((s, g) => s + g.x, 0) / group.length;
+          const my = group.reduce((s, g) => s + g.y, 0) / group.length;
+          makeBubble(mx, my, group.length);
+        }
+      }
+    }
+    function scheduleRender() {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => { rafId = 0; render(); });
+    }
+
+    function resetView() {
+      const { ow, oh } = fitSize();
+      pz.zoomAbs(0, 0, 1);
+      pz.moveTo((ow - cw) / 2, (oh - ch) / 2);
+      render();
+    }
+
+    const pz = panzoom(viewport, {
+      maxZoom: 6,
+      minZoom: 1,              // alejado máximo = mapa llenando el visor
+      bounds: true,
+      boundsPadding: 1,        // no dejar huecos al llegar al borde
+      zoomDoubleClickSpeed: 1,
+      smoothScroll: false,
+      // no iniciar arrastre al pulsar un marcador/burbuja (deja pasar el clic)
+      beforeMouseDown: (e: any) => !!(e.target as HTMLElement)?.closest('.punto-marker, .cluster-bubble'),
+    });
+
+    resetView();
+    requestAnimationFrame(() => requestAnimationFrame(render));
+
+    pz.on('transform', scheduleRender);
+    pz.on('panstart', () => outer.classList.add('is-grabbing'));
+    pz.on('panend',   () => outer.classList.remove('is-grabbing'));
+
+    // ── Clic en marcador → ficha ──
+    markers.forEach(({ el }) => el.addEventListener('click', () => abrirFicha(el)));
+
+    // ── Filtros ──
+    document.querySelectorAll<HTMLButtonElement>('.filtro-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filtro = btn.dataset.filtro ?? 'todos';
+        document.querySelectorAll<HTMLButtonElement>('.filtro-btn').forEach(b => {
+          const sel = b.dataset.filtro === filtro;
+          b.style.cssText = sel
+            ? 'background: var(--color-verde-pino); color: white;'
+            : 'background: rgba(62,92,58,0.08); color: var(--color-verde-pino); border: 1px solid rgba(62,92,58,0.2);';
+        });
+        if (activo && filtro !== 'todos' && activo.dataset.tipo !== filtro) cerrarFicha();
+        render();
+      });
+    });
+
+    // ── Botones de zoom ──
+    const zc = () => ({ x: outer.clientWidth / 2, y: outer.clientHeight / 2 });
+    document.getElementById('zoom-in') ?.addEventListener('click', () => { const c = zc(); pz.smoothZoom(c.x, c.y, 1.5); });
+    document.getElementById('zoom-out')?.addEventListener('click', () => { const c = zc(); pz.smoothZoom(c.x, c.y, 1 / 1.5); });
+    document.getElementById('zoom-reset')?.addEventListener('click', () => resetView());
+
+    // ── Resize ──
+    let rT: number;
+    window.addEventListener('resize', () => {
+      clearTimeout(rT);
+      rT = window.setTimeout(resetView, 150);
+    });
+  }
+</script>

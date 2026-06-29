@@ -1,0 +1,84 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const eventos = await getCollection('eventos');
+  return eventos.map(e => ({ params: { slug: e.id }, props: { entry: e } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const fechaObj = new Date(entry.data.fecha + 'T00:00:00');
+const fechaFormateada = fechaObj.toLocaleDateString('es-ES', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+});
+
+const categoriaLabel: Record<string, string> = {
+  fiesta: '🎉 Fiesta',
+  cultura: '🎨 Cultura',
+  mercado: '🛒 Mercado',
+  actividad: '🥾 Actividad',
+  museo: '🖼 Museo',
+};
+---
+
+<Layout
+  title={`${entry.data.titulo} – Eventos en Arcusa`}
+  description={entry.data.descripcion}
+>
+  <Navigation />
+
+  <div class="bg-page-header-warm pt-28 pb-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+      <a
+        href="/eventos"
+        class="inline-flex items-center gap-1 text-xs font-medium mb-6 hover:underline"
+        style="color: var(--color-piedra-media);"
+      >
+        ← Volver a Eventos
+      </a>
+      <span
+        class="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4"
+        style="background: var(--color-verde-pino); color: white;"
+      >
+        {categoriaLabel[entry.data.categoria] ?? entry.data.categoria}
+      </span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-semibold mb-4" style="color: var(--color-carbon);">
+        {entry.data.titulo}
+      </h1>
+      <div class="flex flex-wrap gap-4 text-sm" style="color: var(--color-carbon-suave);">
+        <span>📅 {fechaFormateada}{entry.data.hora ? ` · ${entry.data.hora}` : ''}</span>
+        <span>📍 {entry.data.lugar}</span>
+      </div>
+    </div>
+  </div>
+
+  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="prose-arcusa">
+      <Content />
+    </div>
+
+    <div class="mt-12 flex flex-wrap gap-3">
+      <a
+        href="/eventos"
+        class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all hover:scale-105"
+        style="background: var(--color-cielo-palido); color: var(--color-azul-pirineo);"
+      >
+        ← Todos los eventos
+      </a>
+      <a
+        href="/explora"
+        class="px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all hover:scale-105"
+        style="background: var(--color-verde-pino);"
+      >
+        Ver mapa del pueblo
+      </a>
+    </div>
+  </article>
+
+  <Footer />
+</Layout>

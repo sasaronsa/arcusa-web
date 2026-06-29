@@ -1,0 +1,131 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: string;
+}
+
+const {
+  title = 'Arcusa – Pueblo del Sobrarbe, Huesca',
+  description = 'Arcusa, el Pueblo Museo del Viello Sobrarbe (Aínsa-Sobrarbe, Huesca): dolmen prehistórico, torre pentagonal del siglo XI, casas señoriales, museo de pintura al aire libre y la puerta a la Sierra de Guara.',
+  image = '/images/og-arcusa.jpg',
+  type = 'website',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="Arcusa, Sobrarbe" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(image, Astro.site)} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <script type="application/ld+json">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "TouristAttraction",
+        "name": "Arcusa",
+        "description": description,
+        "url": Astro.site,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Arcusa",
+          "addressRegion": "Huesca",
+          "addressCountry": "ES"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 42.256,
+          "longitude": 0.158
+        }
+      })}
+    </script>
+  </head>
+  <body class="min-h-screen">
+    <slot />
+  </body>
+</html>
+
+<script>
+  /* ── Scroll reveal (IntersectionObserver) ────────── */
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  /* ── Animated counters ────────────────────────────── */
+  const counterObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLElement;
+        const target = parseInt(el.dataset.count ?? '0', 10);
+        const prefix = el.dataset.prefix ?? '';
+        const suffix = el.dataset.suffix ?? '';
+        const duration = 1200;
+        const start = performance.now();
+
+        const tick = (now: number) => {
+          const p = Math.min((now - start) / duration, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + Math.floor(ease * target) + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        counterObserver.unobserve(el);
+      });
+    },
+    { threshold: 0.5 }
+  );
+
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  /* ── 3D tilt on data-tilt cards ──────────────────── */
+  document.querySelectorAll<HTMLElement>('[data-tilt]').forEach(card => {
+    const MAX = 8;
+    card.addEventListener('mousemove', (e: MouseEvent) => {
+      const r = card.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+      const y = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+      card.style.transform = `perspective(700px) rotateY(${x * MAX}deg) rotateX(${-y * MAX}deg) translateZ(6px)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(700px) rotateY(0deg) rotateX(0deg) translateZ(0)';
+    });
+  });
+</script>

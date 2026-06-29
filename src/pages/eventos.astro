@@ -1,0 +1,135 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import CardEvento from '../components/CardEvento.astro';
+import Icon from '../components/Icon.astro';
+import { getCollection } from 'astro:content';
+
+const hoy = new Date();
+const todos = await getCollection('eventos');
+
+const proximos = todos
+  .filter(e => new Date(e.data.fecha) >= hoy)
+  .sort((a, b) => new Date(a.data.fecha).getTime() - new Date(b.data.fecha).getTime());
+
+const pasados = todos
+  .filter(e => new Date(e.data.fecha) < hoy)
+  .sort((a, b) => new Date(b.data.fecha).getTime() - new Date(a.data.fecha).getTime());
+---
+
+<Layout
+  title="Eventos y fiestas en Arcusa – Agenda"
+  description="Agenda de eventos en Arcusa: fiestas patronales, visitas guiadas al museo, actividades culturales y todo lo que ocurre en este pueblo del Sobrarbe."
+>
+  <Navigation />
+
+  <!-- Cabecera -->
+  <div class="bg-page-header-warm pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <SectionHeader
+        eyebrow="Agenda"
+        title="Eventos y fiestas"
+        subtitle="Las fiestas de San Esteban, las visitas al museo de pintura, las actividades de verano… aquí tienes todo lo que ocurre en Arcusa."
+      />
+    </div>
+  </div>
+
+  <!-- Próximos eventos -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    {proximos.length > 0 ? (
+      <>
+        <SectionHeader eyebrow="Próximamente" title="En agenda" />
+        <div class="flex flex-col gap-4">
+          {proximos.map(evento => (
+            <CardEvento
+              titulo={evento.data.titulo}
+              fecha={evento.data.fecha}
+              hora={evento.data.hora}
+              lugar={evento.data.lugar}
+              descripcion={evento.data.descripcion}
+              imagen={evento.data.imagen}
+              categoria={evento.data.categoria}
+              slug={evento.id}
+            />
+          ))}
+        </div>
+      </>
+    ) : (
+      <div
+        class="rounded-2xl p-10 text-center"
+        style="background: white; border: 1px solid rgba(156,133,103,0.15);"
+      >
+        <div
+          class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+          style="background: var(--color-pergamino); color: var(--color-piedra-media);"
+        >
+          <Icon name="calendar" size={28} />
+        </div>
+        <p class="font-serif text-xl mb-2" style="color: var(--color-carbon);">
+          Sin eventos próximos
+        </p>
+        <p class="text-sm" style="color: var(--color-piedra-media);">
+          Las fiestas patronales son cada 13 de julio. Vuelve pronto para ver la agenda actualizada.
+        </p>
+      </div>
+    )}
+  </section>
+
+  <!-- Cómo añadir un evento -->
+  <section
+    class="py-12"
+    style="background: var(--color-cielo-palido);"
+  >
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="font-serif text-xl font-semibold mb-3" style="color: var(--color-carbon);">
+        ¿Tienes un evento que anunciar?
+      </h2>
+      <p class="text-sm leading-relaxed mb-4" style="color: var(--color-carbon-suave);">
+        Añadir un evento es tan sencillo como crear un archivo de texto. Si sabes usar GitHub,
+        puedes hacerlo directamente. Si no, escríbenos y lo publicamos nosotros. Consulta el
+        README del proyecto para ver cómo.
+      </p>
+      <div
+        class="inline-block text-left rounded-xl p-4 text-xs font-mono"
+        style="background: var(--color-carbon); color: var(--color-cielo-palido);"
+      >
+        <span style="color: var(--color-salvia);"># src/content/eventos/mi-evento.md</span><br />
+        <span style="color: var(--color-piedra-clara);">---</span><br />
+        titulo: Mi evento en Arcusa<br />
+        fecha: "2025-08-15"<br />
+        lugar: Plaza Mayor<br />
+        descripcion: Descripción del evento<br />
+        categoria: actividad<br />
+        <span style="color: var(--color-piedra-clara);">---</span><br />
+        <br />
+        Texto completo del evento...
+      </div>
+    </div>
+  </section>
+
+  <!-- Eventos pasados -->
+  {pasados.length > 0 && (
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      <SectionHeader eyebrow="Archivo" title="Eventos pasados" />
+      <div class="flex flex-col gap-4">
+        {pasados.map(evento => (
+          <CardEvento
+            titulo={evento.data.titulo}
+            fecha={evento.data.fecha}
+            hora={evento.data.hora}
+            lugar={evento.data.lugar}
+            descripcion={evento.data.descripcion}
+            imagen={evento.data.imagen}
+            categoria={evento.data.categoria}
+            slug={evento.id}
+            pasado={true}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <Footer />
+</Layout>

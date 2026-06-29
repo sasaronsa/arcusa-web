@@ -1,0 +1,110 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  nombre: string;
+  categoria: 'ver' | 'comer' | 'dormir' | 'actividad';
+  descripcion: string;
+  imagen?: string;
+  distancia?: string;
+  contacto?: string;
+  enlace?: string;
+}
+
+const { nombre, categoria, descripcion, imagen, distancia, contacto, enlace } = Astro.props;
+
+const config: Record<string, { label: string; icon: string; color: string; bg: string }> = {
+  ver:       { label: 'Qué ver',      icon: 'eye',        color: '#5B7FA6', bg: '#EAF2FA' },
+  comer:     { label: 'Dónde comer',  icon: 'utensils',   color: '#3E5C3A', bg: '#E8F0E8' },
+  dormir:    { label: 'Dónde dormir', icon: 'bed',        color: '#6B5842', bg: '#F0EAE2' },
+  actividad: { label: 'Actividad',    icon: 'footprints', color: '#4F6E45', bg: '#EBF1E8' },
+};
+const cfg = config[categoria] ?? config.ver;
+---
+
+<article
+  class="card-3d rounded-2xl overflow-hidden flex flex-col reveal"
+  style="background: white; border: 1px solid rgba(156,133,103,0.12); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease;"
+>
+  <!-- Área imagen / ilustración -->
+  <div
+    class="relative overflow-hidden"
+    style="aspect-ratio: 16/9;"
+  >
+    {imagen ? (
+      <img
+        src={imagen}
+        alt={nombre}
+        class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <div
+        class="w-full h-full flex flex-col items-center justify-center gap-3"
+        style={`background: linear-gradient(135deg, ${cfg.bg} 0%, white 100%);`}
+      >
+        <div
+          class="w-14 h-14 rounded-2xl flex items-center justify-center"
+          style={`background: ${cfg.color}22; color: ${cfg.color};`}
+        >
+          <Icon name={cfg.icon} size={26} />
+        </div>
+        <span class="text-xs font-medium" style="color: var(--color-piedra-media);">Sin fotografía aún</span>
+      </div>
+    )}
+    <!-- Overlay en imagen real -->
+    {imagen && (
+      <div
+        class="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
+        style="background: linear-gradient(to top, rgba(46,42,36,0.5) 0%, transparent 60%);"
+      />
+    )}
+    <!-- Badge categoría -->
+    <span
+      class="absolute top-3 left-3 flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full text-white"
+      style={`background: ${cfg.color}; backdrop-filter: blur(4px);`}
+    >
+      <Icon name={cfg.icon} size={11} />
+      {cfg.label}
+    </span>
+  </div>
+
+  <!-- Contenido -->
+  <div class="p-5 flex flex-col flex-1 gap-3">
+    <div>
+      <h3 class="font-serif text-lg font-semibold leading-snug" style="color: var(--color-carbon);">
+        {nombre}
+      </h3>
+      {distancia && (
+        <p class="flex items-center gap-1 text-xs mt-1" style="color: var(--color-piedra-media);">
+          <Icon name="map-pin" size={11} />
+          {distancia}
+        </p>
+      )}
+    </div>
+    <p class="text-sm leading-relaxed flex-1" style="color: var(--color-carbon-suave);">
+      {descripcion}
+    </p>
+    <div class="flex items-center gap-3 mt-auto pt-2" style="border-top: 1px solid rgba(156,133,103,0.1);">
+      {contacto && (
+        <span class="flex items-center gap-1 text-xs" style="color: var(--color-piedra-media);">
+          <Icon name="phone" size={11} />
+          {contacto}
+        </span>
+      )}
+      {enlace && (
+        <a
+          href={enlace}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ml-auto flex items-center gap-1 text-xs font-semibold transition-colors hover:opacity-80"
+          style="color: var(--color-azul-pirineo);"
+        >
+          Más info
+          <Icon name="external-link" size={11} />
+        </a>
+      )}
+    </div>
+  </div>
+</article>

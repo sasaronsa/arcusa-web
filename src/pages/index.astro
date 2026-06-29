@@ -1,0 +1,361 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import HeroParallax from '../components/HeroParallax.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import CardLugar from '../components/CardLugar.astro';
+import CardEvento from '../components/CardEvento.astro';
+import Icon from '../components/Icon.astro';
+import { getCollection } from 'astro:content';
+
+const proximosEventos = (await getCollection('eventos'))
+  .filter(e => new Date(e.data.fecha) >= new Date())
+  .sort((a, b) => new Date(a.data.fecha).getTime() - new Date(b.data.fecha).getTime())
+  .slice(0, 3);
+
+const lugaresDestacados = (await getCollection('lugares'))
+  .filter(l => ['ver', 'actividad'].includes(l.data.categoria))
+  .slice(0, 4);
+---
+
+<Layout
+  title="Arcusa – El Pueblo Museo del Viello Sobrarbe"
+  description="Arcusa, en el Biello Sobrarbe, es un pueblo del Pirineo aragonés donde la historia medieval, la arquitectura tradicional y el museo de pintura al aire libre conviven entre montañas.">
+  <Navigation />
+  <HeroParallax />
+
+  <!-- Presentación ──────────────────────────────── -->
+  <section id="presentacion" class="bg-section-warm max-w-[100%] px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+
+      <!-- Texto -->
+      <div>
+        <SectionHeader
+          eyebrow="Biello Sobrarbe · Pirineo Aragonés"
+          title="Mil años de historia entre montañas"
+        />
+        <div class="prose-arcusa">
+          <p>
+            En el corazón del Biello Sobrarbe, rodeado por el silencio de las montañas y los paisajes que anuncian la Sierra de Guara, Arcusa conserva una historia que comenzó hace casi mil años y que todavía puede recorrerse a pie, calle a calle.
+          </p>
+          <p>
+            Hay pueblos que se visitan por un monumento concreto. Arcusa se descubre por todo lo que es capaz de contar.
+          </p>
+          <p>
+            Aquí, una pequeña torre levantada en plena Edad Media recuerda el nacimiento del Reino de Aragón.
+            Las antiguas casas señoriales hablan de las familias que dieron forma al pueblo. Las calles conservan
+            la arquitectura tradicional del Sobrarbe y, sobre sus fachadas, un museo de pintura al aire libre mantiene
+            viva la memoria de quienes siempre han llamado hogar a este rincón de la montaña.
+          </p>
+          <p>
+            Después de décadas marcadas por la despoblación, Arcusa ha sabido reinventarse sin perder su esencia.
+            Hoy tradición, patrimonio y cultura conviven en un entorno donde cada paseo es un viaje por casi mil años
+            de historia.
+          </p>
+        </div>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/explora" class="btn-primary">
+            <Icon name="compass" size={15} />
+            Explorar el mapa
+          </a>
+          <a href="/historia" class="btn-outline">
+            <Icon name="scroll" size={15} />
+            Historia del pueblo
+          </a>
+        </div>
+      </div>
+
+      <!-- Datos rápidos con contador animado -->
+      <div class="grid grid-cols-2 gap-4">
+        {[
+          {
+            icon: 'mountain',
+            iconColor: '#5B7FA6',
+            iconBg:    '#EAF2FA',
+            static: '~869',
+            suffix: ' m',
+            label: 'Altitud sobre el nivel del mar',
+          },
+          {
+            icon: 'users',
+            iconColor: '#3E5C3A',
+            iconBg:    '#E8F0E8',
+            count: 37,
+            prefix: '~',
+            label: 'Vecinos que mantienen vivo el pueblo durante todo el año',
+          },
+          {
+            icon: 'castle',
+            iconColor: '#9C8567',
+            iconBg:    '#F2EDE6',
+            static: 'h. 1050',
+            label: 'Casi mil años vigilando el Sobrarbe',
+          },
+          {
+            icon: 'palette',
+            iconColor: '#C4773D',
+            iconBg:    '#FAF0E6',
+            count: 36,
+            suffix: '+',
+            label: 'Murales que convierten las calles en un museo al aire libre',
+          },
+        ].map((dato, i) => (
+          <div
+            class="reveal rounded-2xl p-5 flex flex-col gap-3 group transition-all duration-300 hover:-translate-y-1"
+            style="background: white; border: 1px solid rgba(156,133,103,0.12); box-shadow: 0 2px 8px rgba(46,42,36,0.04);"
+            class:list={[`reveal-d${i + 1}`]}
+          >
+            <!-- Icono con fondo de color -->
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+              style={`background: ${dato.iconBg}; color: ${dato.iconColor};`}
+            >
+              <Icon name={dato.icon} size={18} />
+            </div>
+
+            <!-- Valor -->
+            <div>
+              {dato.count ? (
+                <span
+                  class="font-serif font-bold"
+                  style="font-size: 1.9rem; line-height: 1; color: var(--color-carbon);"
+                  data-count={dato.count}
+                  data-prefix={dato.prefix ?? ''}
+                >
+                  {dato.prefix ?? ''}{dato.count}
+                </span>
+              ) : (
+                <span
+                  class="font-serif font-bold"
+                  style="font-size: 1.9rem; line-height: 1; color: var(--color-carbon);"
+                >
+                  {dato.static}
+                </span>
+              )}
+              {dato.suffix && (
+                <span class="font-serif font-bold ml-0.5"
+                      style="font-size: 1rem; color: var(--color-carbon);">
+                  {dato.suffix}
+                </span>
+              )}
+            </div>
+
+            <span class="text-xs leading-snug" style="color: var(--color-piedra-media);">
+              {dato.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- Accesos rápidos 3D ────────────────────────── -->
+  <section class="bg-section-dark py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            href: '/explora',
+            titulo: 'Mapa del pueblo',
+            desc: 'Descubre cada rincón, cada casa y cada mural',
+            icon: 'compass',
+            iconColor: '#7F9BBE',
+            grad: 'from-[#1A2B3C] to-[#2A3B4C]',
+          },
+          {
+            href: '/historia',
+            titulo: 'Historia y casas',
+            desc: 'Mil años de historias, familias y patrimonio',
+            icon: 'scroll',
+            iconColor: '#C4773D',
+            grad: 'from-[#2C1F14] to-[#3C2A1C]',
+          },
+          {
+            href: '/que-ver',
+            titulo: 'Qué ver y hacer',
+            desc: 'Naturaleza, senderos y lugares únicos a pocos minutos',
+            icon: 'footprints',
+            iconColor: '#7C8A5C',
+            grad: 'from-[#1C2818] to-[#263420]',
+          },
+          {
+            href: '/eventos',
+            titulo: 'Eventos',
+            desc: 'Tradiciones, fiestas y actividades durante todo el año',
+            icon: 'sparkles',
+            iconColor: '#C4773D',
+            grad: 'from-[#2C2010] to-[#3A2A18]',
+          },
+        ].map(item => (
+          <a
+            href={item.href}
+            data-tilt
+            class="relative rounded-2xl p-6 flex flex-col gap-5 overflow-hidden group"
+            style={`
+              background: rgba(255,255,255,0.04);
+              border: 1px solid rgba(255,255,255,0.08);
+              cursor: pointer;
+              transition: box-shadow 0.35s ease, border-color 0.2s ease;
+            `}
+          >
+            <!-- Icono con resplandor de fondo -->
+            <div
+              class="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+              style={`background: ${item.iconColor}1A; color: ${item.iconColor};`}
+            >
+              <Icon name={item.icon} size={22} />
+            </div>
+
+            <div>
+              <p class="font-serif font-semibold text-white text-lg leading-snug mb-1">
+                {item.titulo}
+              </p>
+              <p class="text-sm leading-relaxed" style="color: rgba(205,187,160,0.65);">{item.desc}</p>
+            </div>
+
+            <!-- Flecha en esquina -->
+            <div
+              class="absolute bottom-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              style={`background: ${item.iconColor}22; color: ${item.iconColor};`}
+            >
+              <Icon name="arrow-right" size={14} />
+            </div>
+
+            <!-- Resplandor hover en la esquina superior derecha -->
+            <div
+              class="absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+              style={`background: radial-gradient(circle, ${item.iconColor}20 0%, transparent 70%);`}
+            />
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Próximos eventos ──────────────────────────── -->
+  {proximosEventos.length > 0 && (
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <SectionHeader
+        eyebrow="Agenda"
+        title="Próximos eventos"
+        subtitle="Encuentros, fiestas y actividades que mantienen viva la vida del pueblo."
+      />
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {proximosEventos.map((evento, i) => (
+          <div class={`reveal reveal-d${i + 1}`}>
+            <CardEvento
+              titulo={evento.data.titulo}
+              fecha={evento.data.fecha}
+              hora={evento.data.hora}
+              lugar={evento.data.lugar}
+              descripcion={evento.data.descripcion}
+              imagen={evento.data.imagen}
+              categoria={evento.data.categoria}
+              slug={evento.id}
+            />
+          </div>
+        ))}
+      </div>
+      <div class="mt-8 text-center">
+        <a href="/eventos" class="btn-outline">
+          <Icon name="calendar" size={15} />
+          Ver todos los eventos
+        </a>
+      </div>
+    </section>
+  )}
+
+  <!-- Museo highlight ───────────────────────────── -->
+  <section class="bg-section-green relative py-24 overflow-hidden">
+
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+
+        <!-- Texto -->
+        <div class="lg:col-span-3 text-white reveal">
+          <div class="flex items-center gap-3 mb-5">
+            <span class="block w-6 h-px" style="background: rgba(255,255,255,0.3);" />
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] opacity-60">Arte y territorio</p>
+          </div>
+          <h2 class="font-serif font-bold mb-5" style="font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.1;">
+            Cuando un pueblo decidió<br />pintar su memoria
+          </h2>
+          <p class="leading-relaxed mb-8" style="color: rgba(255,255,255,0.78); font-size: 1.0625rem; max-width: 38ch;">
+            En 2020 nació una idea que transformó Arcusa. Lo que comenzó con un cuadro sobre la fachada de una casa
+            se ha convertido en un museo al aire libre que recorre todo el pueblo. Cada obra guarda una parte de la
+            memoria colectiva: vecinos, oficios, escenas del campo, tradiciones y momentos que forman parte de su historia.
+            <br /><br />
+            No es un museo encerrado entre cuatro paredes. Es el propio pueblo quien cuenta su historia mientras paseas
+            por sus calles.
+          </p>
+          <a href="/explora" class="btn-ghost">
+            Ver los cuadros en el mapa
+            <Icon name="arrow-right" size={14} />
+          </a>
+        </div>
+
+        <!-- Stats verticales -->
+        <div class="lg:col-span-2 grid grid-cols-1 gap-4 reveal reveal-d2">
+          {[
+            { valor: '36+', label: 'obras por el pueblo', icon: 'brush' },
+            { valor: '2020', label: 'año de inicio', icon: 'calendar' },
+            { valor: 'Libre', label: 'entrada siempre', icon: 'check-circle' },
+          ].map(stat => (
+            <div
+              class="flex items-center gap-4 px-5 py-4 rounded-2xl"
+              style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(8px);"
+            >
+              <div
+                class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style="background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9);"
+              >
+                <Icon name={stat.icon} size={18} />
+              </div>
+              <div>
+                <p class="font-serif text-2xl font-bold text-white leading-none">{stat.valor}</p>
+                <p class="text-xs mt-0.5" style="color: rgba(255,255,255,0.55);">{stat.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lugares destacados ────────────────────────── -->
+  <section class="bg-section-warm py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <SectionHeader
+      eyebrow="Alrededores"
+      title="Mucho por descubrir alrededor de Arcusa"
+      subtitle="Arcusa es el punto de partida perfecto para descubrir algunos de los paisajes más espectaculares del Pirineo aragonés. A menos de una hora encontrarás la Sierra de Guara, Aínsa, Ordesa y decenas de pueblos que conservan intacta la esencia del Sobrarbe."
+    />
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {lugaresDestacados.map((lugar, i) => (
+        <div class={`reveal reveal-d${i + 1}`}>
+          <CardLugar
+            nombre={lugar.data.nombre}
+            categoria={lugar.data.categoria}
+            descripcion={lugar.data.descripcion}
+            imagen={lugar.data.imagen}
+            distancia={lugar.data.distancia}
+            contacto={lugar.data.contacto}
+            enlace={lugar.data.enlace}
+          />
+        </div>
+      ))}
+    </div>
+    <div class="mt-8 text-center">
+      <a href="/que-ver" class="btn-outline">
+        <Icon name="eye" size={15} />
+        Ver guía completa
+      </a>
+    </div>
+  </div>
+  </section>
+
+  <Footer />
+</Layout>

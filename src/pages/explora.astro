@@ -1,0 +1,77 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import MapaArcusa from '../components/MapaArcusa.astro';
+import { getCollection } from 'astro:content';
+
+const puntos = (await getCollection('puntos')).map(p => ({
+  slug: p.id,
+  nombre: p.data.nombre,
+  tipo: p.data.tipo,
+  x: p.data.x,
+  y: p.data.y,
+  resumen: p.data.resumen,
+  imagenes: p.data.imagenes,
+  anio: p.data.anio,
+  autor: p.data.autor,
+}));
+---
+
+<Layout
+  title="Explora Arcusa – Mapa interactivo del pueblo"
+  description="Mapa interactivo de Arcusa: casas con historia, edificios emblemáticos, cuadros del museo al aire libre y servicios del pueblo. Haz clic en cada punto para descubrir su historia."
+>
+  <Navigation />
+
+  <!-- Cabecera de página -->
+  <div class="bg-page-header-cool pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <SectionHeader
+        eyebrow="Mapa interactivo"
+        title="Explora Arcusa"
+        subtitle="Haz clic en los puntos del mapa para descubrir las casas, edificios, cuadros y servicios del pueblo. Filtra por tipo para encontrar lo que buscas."
+      />
+    </div>
+  </div>
+
+  <!-- Mapa -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <MapaArcusa puntos={puntos} />
+  </section>
+
+  <!-- Leyenda y guía de uso -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="rounded-2xl p-6 md:p-8" style="background: white; border: 1px solid rgba(156,133,103,0.15);">
+      <h2 class="font-serif text-xl font-semibold mb-4" style="color: var(--color-carbon);">
+        Cómo usar el mapa
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { color: 'var(--color-verde-pino)', label: 'Casas tradicionales', desc: 'Viviendas con nombre propio e historia familiar' },
+          { color: 'var(--color-azul-pirineo)', label: 'Patrimonio', desc: 'Torre, iglesia, dolmen, cruz y lavadero' },
+          { color: 'var(--color-piedra-media)', label: 'Museo al aire libre', desc: 'Pinturas de Luis Moreno en las fachadas' },
+          { color: 'var(--color-verde-medio)', label: 'Servicios', desc: 'Alojamiento, restauración y otros' },
+        ].map(item => (
+          <div class="flex items-start gap-3">
+            <div
+              class="w-4 h-4 rounded-full flex-shrink-0 mt-0.5"
+              style={`background: ${item.color};`}
+            ></div>
+            <div>
+              <p class="text-sm font-semibold" style="color: var(--color-carbon);">{item.label}</p>
+              <p class="text-xs mt-0.5" style="color: var(--color-piedra-media);">{item.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p class="mt-5 text-xs" style="color: var(--color-piedra-media);">
+        <strong>Nota:</strong> aleja el mapa para ver los puntos agrupados y acércate para separarlos.
+        La ubicación de algunos puntos es aproximada; si eres vecino y quieres añadir o corregir algo, escríbenos.
+      </p>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

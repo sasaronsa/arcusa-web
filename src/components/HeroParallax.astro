@@ -1,0 +1,167 @@
+---
+import Icon from './Icon.astro';
+
+const layers = [
+  {
+    src: '/images/hero/Header4.png',
+    alt: 'Cielo y montañas del Pirineo',
+    factor: 0.08,
+    className: 'hero-layer-sky',
+    style: 'bottom: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center;',
+  },
+  {
+    src: '/images/hero/Header3.png',
+    alt: 'Acantilado rocoso de la Sierra de Guara',
+    factor: 0.13,
+    className: 'hero-layer-cliff',
+    style: 'bottom: 0; right: 0; width: auto; height: 80%; object-fit: contain; object-position: bottom right;',
+  },
+  {
+    src: '/images/hero/Header2.png',
+    alt: 'Ladera verde del Sobrarbe',
+    factor: 0.22,
+    className: 'hero-layer-slope',
+    style: 'bottom: 0; left: 0; width: auto; height: 70%; object-fit: contain; object-position: bottom left;',
+  },
+  {
+    src: '/images/hero/Header1.png',
+    alt: 'Torreón medieval de Arcusa',
+    factor: 0.38,
+    className: 'hero-layer-tower',
+    style: 'bottom: -15%; left: 47%; transform: translateX(-50%); width: auto; height: 100%; object-fit: contain; object-position: bottom center;',
+  },
+];
+---
+
+<section
+  id="hero"
+  class="relative overflow-hidden"
+  style="height: 100svh; min-height: 560px; background: linear-gradient(180deg, #AECDE0 0%, #7F9BBE 55%, #5B7FA6 100%);"
+  aria-label="Bienvenida a Arcusa"
+>
+  <!-- Capas parallax -->
+  {layers.map((layer, i) => (
+    <div
+      class="parallax-wrapper absolute inset-0 pointer-events-none"
+      data-factor={layer.factor}
+      style="will-change: transform;"
+    >
+      <img
+        src={layer.src}
+        alt={layer.alt}
+        class={`parallax-layer absolute ${layer.className}`}
+        style={layer.style}
+        loading={i === 0 ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchpriority={i === 0 ? 'high' : 'auto'}
+      />
+    </div>
+  ))}
+
+  <!-- Overlay gradiente inferior para transición al contenido -->
+  <div
+    class="absolute inset-x-0 bottom-0 h-56 pointer-events-none"
+    style="background: linear-gradient(to bottom, transparent 0%, rgba(244,239,230,0.6) 70%, var(--color-pergamino) 100%);"
+  />
+
+  <!-- Contenido textual sobre las capas -->
+  <div
+    id="hero-text"
+    class="relative z-10 flex flex-col items-center justify-center h-full text-center px-4"
+    style="padding-bottom: 6rem;"
+  >
+    <!-- Etiqueta geográfica -->
+    <div
+      class="flex items-center gap-2 mb-5 px-4 py-1.5 rounded-full text-white/70"
+      style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15);"
+    >
+      <Icon name="map-pin" size={12} class="text-white/60" />
+      <span class="text-xs font-semibold uppercase tracking-[0.25em]">Sobrarbe · Huesca · Aragón</span>
+    </div>
+
+    <h1
+      class="font-serif font-bold text-white"
+      style="font-size: clamp(4rem, 11vw, 8rem); line-height: 0.9; text-shadow: 0 2px 24px rgba(0,0,0,0.22); letter-spacing: -0.02em;"
+    >
+      Arcusa
+    </h1>
+
+    <p
+      class="mt-5 text-white/85 max-w-lg leading-relaxed"
+      style="font-size: clamp(1rem, 2.5vw, 1.2rem); text-shadow: 0 1px 10px rgba(0,0,0,0.25);"
+    >
+      El Pueblo Museo del Viello Sobrarbe.<br />
+      Dolmen, torre de frontera y arte en la piedra, a las puertas de Guara.
+    </p>
+
+    <div class="mt-9 flex flex-wrap gap-3 justify-center">
+      <a href="/explora" class="btn-primary">
+        Explorar el pueblo
+        <Icon name="arrow-right" size={14} />
+      </a>
+      <a href="#presentacion" class="btn-ghost">
+        Descubrir más
+      </a>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div
+    class="absolute bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+    aria-hidden="true"
+    style="color: rgba(255,255,255,0.4);"
+  >
+    <span class="text-xs tracking-[0.25em] uppercase font-medium" style="font-size: 10px;">Scroll</span>
+    <div class="w-5 h-8 rounded-full border flex items-start justify-center pt-1.5"
+         style="border-color: rgba(255,255,255,0.3);">
+      <div class="w-1 h-2 rounded-full bg-white/60 scroll-dot" style="animation: floatY 1.8s ease-in-out infinite;" />
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (max-width: 767px) {
+    .hero-layer-tower {
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      transform: none !important;
+      object-fit: contain !important;
+      object-position: bottom center !important;
+    }
+    .hero-layer-slope { height: 45% !important; }
+    .hero-layer-cliff { height: 45% !important; }
+  }
+</style>
+
+<script>
+  const parallaxWrappers = document.querySelectorAll<HTMLElement>('.parallax-wrapper');
+  const heroText = document.getElementById('hero-text')!;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.innerWidth < 768;
+
+  if (isMobile || prefersReducedMotion) {
+    parallaxWrappers.forEach(w => { w.style.transform = 'translate3d(0, 0, 0)'; });
+  } else {
+    let ticking = false;
+
+    const updateParallax = () => {
+      const scrollY = window.scrollY;
+      parallaxWrappers.forEach(wrapper => {
+        const factor = parseFloat(wrapper.dataset.factor ?? '0');
+        if (factor < 0.1) { wrapper.style.transform = 'translate3d(0, 0, 0)'; return; }
+        wrapper.style.transform = `translate3d(0, ${scrollY * factor}px, 0)`;
+      });
+      const heroHeight = document.getElementById('hero')!.offsetHeight;
+      const progress = Math.min(scrollY / (heroHeight * 0.45), 1);
+      heroText.style.opacity = String(1 - progress * 1.8);
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) { requestAnimationFrame(updateParallax); ticking = true; }
+    }, { passive: true });
+  }
+</script>

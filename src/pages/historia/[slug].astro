@@ -1,0 +1,136 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection, render } from 'astro:content';
+import Icon from '../../components/Icon.astro';
+
+export async function getStaticPaths() {
+  const puntos = await getCollection('puntos');
+  return puntos.map(p => ({ params: { slug: p.id }, props: { entry: p } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const tipoLabel: Record<string, string> = {
+  casa: 'Casa tradicional',
+  edificio: 'Edificio emblemático',
+  cuadro: 'Museo al aire libre',
+  servicio: 'Servicio',
+  calle: 'Calle',
+};
+---
+
+<Layout
+  title={`${entry.data.nombre} – Historia de Arcusa`}
+  description={entry.data.resumen}
+>
+  <Navigation />
+
+  <div class="bg-page-header-warm pt-28 pb-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+      <a
+        href="/historia"
+        class="inline-flex items-center gap-1.5 text-xs font-medium mb-6 hover:opacity-70 transition-opacity"
+        style="color: var(--color-piedra-media);"
+      >
+        <Icon name="chevron-right" size={12} style="transform: rotate(180deg);" />
+        Volver a Historia
+      </a>
+      <div class="flex items-center gap-3 mb-4">
+        <span
+          class="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full"
+          style="background: var(--color-cielo-palido); color: var(--color-azul-pirineo);"
+        >
+          {tipoLabel[entry.data.tipo] ?? entry.data.tipo}
+        </span>
+        {entry.data.anio && (
+          <span class="text-xs" style="color: var(--color-piedra-media);">{entry.data.anio}</span>
+        )}
+        {entry.data.autor && (
+          <span class="text-xs" style="color: var(--color-piedra-media);">Autor: {entry.data.autor}</span>
+        )}
+      </div>
+      <h1 class="font-serif text-3xl sm:text-4xl font-semibold" style="color: var(--color-carbon);">
+        {entry.data.nombre}
+      </h1>
+    </div>
+  </div>
+
+  <!-- Imagen / galería -->
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 my-8">
+    {entry.data.imagenes.length > 0 ? (
+      <>
+        <div class="rounded-2xl overflow-hidden aspect-video">
+          <img
+            src={entry.data.imagenes[0]}
+            alt={entry.data.nombre}
+            class="w-full h-full object-cover"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </div>
+        {entry.data.imagenes.length > 1 && (
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+            {entry.data.imagenes.slice(1).map((img) => (
+              <div class="rounded-xl overflow-hidden aspect-video">
+                <img
+                  src={img}
+                  alt={entry.data.nombre}
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </>
+    ) : (
+      <div
+        class="rounded-2xl overflow-hidden aspect-video flex items-center justify-center"
+        style="background: linear-gradient(135deg, var(--color-cielo-palido), var(--color-piedra-clara));"
+      >
+        <div class="text-center" style="color: var(--color-azul-medio);">
+          <svg class="w-12 h-12 opacity-30 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-sm opacity-50">Foto pendiente de aportar</p>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <!-- Contenido -->
+  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="prose-arcusa">
+      <Content />
+    </div>
+
+    <!-- Ver en el mapa -->
+    <div class="mt-12 p-5 rounded-2xl flex items-center gap-4"
+         style="background: var(--color-cielo-palido); border: 1px solid rgba(91,127,166,0.2);">
+      <div
+        class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+        style="background: rgba(91,127,166,0.15); color: var(--color-azul-pirineo);"
+      >
+        <Icon name="compass" size={22} />
+      </div>
+      <div>
+        <p class="text-sm font-semibold" style="color: var(--color-carbon);">Ver en el mapa del pueblo</p>
+        <a
+          href="/explora"
+          class="inline-flex items-center gap-1 text-xs font-semibold mt-0.5 underline underline-offset-2"
+          style="color: var(--color-azul-pirineo);"
+        >
+          Explorar Arcusa
+          <Icon name="arrow-right" size={11} />
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <Footer />
+</Layout>
