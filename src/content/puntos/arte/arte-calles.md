@@ -5,6 +5,7 @@ x: 50
 y: 58
 resumen: Arcusa es mucho más que un museo al aire libre. Es un pueblo donde el arte forma parte de la vida cotidiana.
 imagenes: []
+enMapa: false
 ---
 
 # Un pueblo donde el arte salió a la calle

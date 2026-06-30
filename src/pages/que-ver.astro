@@ -608,7 +608,7 @@ const rincones = [
         ))}
       </div>
       {alojamientosZona.length > 0 && (
-        <div class="mt-8 text-center">
+        <div class="mt-8 flex justify-center">
           <button type="button" class="btn-outline" data-open-modal="modal-dormir">
             <Icon name="bed" size={15} />
             Ver alojamientos de la zona
@@ -855,9 +855,10 @@ const rincones = [
     padding: clamp(1rem, 6vh, 4rem) 1rem;
     overflow-y: auto;            /* el scroll vive aquí, no en la tarjeta */
     opacity: 0; visibility: hidden;
+    pointer-events: none;
     transition: opacity 0.2s ease, visibility 0.2s ease;
   }
-  .lugares-modal.open { opacity: 1; visibility: visible; }
+  .lugares-modal.open { opacity: 1; visibility: visible; pointer-events: auto;}
   .lugares-backdrop {
     position: absolute; inset: 0;
     background: rgba(46,42,36,0.55);

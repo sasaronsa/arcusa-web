@@ -125,24 +125,55 @@ const layers = [
 </section>
 
 <style>
-  @media (max-width: 767px) {
+  @media (max-width: 700px) {
     .hero-layer-tower {
-      bottom: 0 !important;
+      bottom: -8% !important;
       left: 50% !important;
       right: auto !important;
-      width: auto !important;
-      height: 52% !important;
-      transform: translateX(-50%) !important;
+
+      width: 120vw !important;
+      height: auto !important;
+      max-width: none !important;
+
+      transform: translateX(-50%) scale(2.2) !important;
+      transform-origin: bottom center !important;
+
       object-fit: contain !important;
       object-position: bottom center !important;
     }
-    .hero-layer-slope { height: 36% !important; }
-    .hero-layer-cliff { height: 36% !important; }
+    .hero-layer-slope {
+      bottom: -4% !important;
+      left: -8vw !important;
+      right: auto !important;
+
+      width: 60vw !important;
+      max-width: 60vw !important;
+      height: auto !important;
+
+      transform: none !important;
+
+      object-fit: contain !important;
+      object-position: bottom left !important;
+    }
+
+    .hero-layer-cliff {
+      bottom: -3% !important;
+      right: -22% !important;
+      left: auto !important;
+      width: 135vw !important;
+      height: auto !important;
+      max-width: none !important;
+      transform: scale(1.35) !important;
+      transform-origin: bottom right !important;
+      object-fit: contain !important;
+      object-position: bottom right !important;
+    }
     /* En móvil el texto va arriba: velo más cargado en la zona superior */
     .hero-scrim {
       background: linear-gradient(to bottom, rgba(14,22,31,0.5) 0%, rgba(14,22,31,0.15) 38%, transparent 60%) !important;
     }
   }
+  
 </style>
 
 <script>
@@ -151,7 +182,7 @@ const layers = [
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.innerWidth < 768;
 
-  if (isMobile || prefersReducedMotion) {
+  if (prefersReducedMotion) {
     parallaxWrappers.forEach(w => { w.style.transform = 'translate3d(0, 0, 0)'; });
   } else {
     let ticking = false;
@@ -161,7 +192,8 @@ const layers = [
       parallaxWrappers.forEach(wrapper => {
         const factor = parseFloat(wrapper.dataset.factor ?? '0');
         if (factor < 0.1) { wrapper.style.transform = 'translate3d(0, 0, 0)'; return; }
-        wrapper.style.transform = `translate3d(0, ${scrollY * factor}px, 0)`;
+        const mobileBoost = window.innerWidth < 768 ? 0.45 : 1;
+        wrapper.style.transform = `translate3d(0, ${scrollY * factor * mobileBoost}px, 0)`;
       });
       const heroHeight = document.getElementById('hero')!.offsetHeight;
       const progress = Math.min(scrollY / (heroHeight * 0.45), 1);

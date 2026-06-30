@@ -7,6 +7,7 @@ resumen: Donde antes hubo una cárcel, hoy el arte invita a sonreír.
 imagenes: []
 autor: Luis Moreno
 anio: "2020–2024"
+enMapa: false
 ---
 
 # Cuando el pasado aprende a sonreír

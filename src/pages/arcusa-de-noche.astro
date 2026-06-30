@@ -41,11 +41,12 @@ const apps = [
   { nombre: 'SkyView',           desc: 'Realidad aumentada sencilla, ideal para empezar.', url: 'https://www.terminaleleven.com/skyview/' },
 ];
 
-// Coordenadas del mapa del cielo.
-// TODO: sustituir por las coordenadas reales del mirador del Mesón de Arcusa (~2 km del pueblo).
-// Placeholder = centro del pueblo (según el footer): lat 42.25, lon 0.15.
-const MIRADOR_LAT = 42.25;
-const MIRADOR_LON = 0.15;
+// Coordenadas del mapa del cielo: mirador junto a la carretera de Colungo,
+// a ~2 km de Arcusa (Parking acceso Noreste Sierra de Guara).
+const MIRADOR_LAT = 42.2997;
+const MIRADOR_LON = 0.0719;
+// Enlace a Google Maps para el botón "Cómo llegar".
+const MIRADOR_MAPS = 'https://maps.app.goo.gl/kiV3qVsNnUUt4ywh8';
 const virtualSkyParams = new URLSearchParams({
   latitude: String(MIRADOR_LAT),
   longitude: String(MIRADOR_LON),
@@ -153,9 +154,9 @@ const virtualSkyUrl = `https://slowe.github.io/VirtualSky/embed?${virtualSkyPara
           <!-- Datos prácticos -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             {[
-              { icon: 'car', titulo: 'Cómo llegar', texto: 'A unos 2 km de Arcusa. /* TODO: indicar acceso a pie y en coche desde el pueblo */' },
-              { icon: 'navigation', titulo: 'Aparcamiento', texto: '/* TODO: indicar dónde aparcar y a qué distancia queda del mirador */' },
-              { icon: 'telescope', titulo: 'Qué hay allí', texto: '/* TODO: describir el mirador (paneles, orientación, bancos, etc.) */' },
+              { icon: 'car', titulo: 'Cómo llegar', texto: 'Junto a la carretera de Colungo, a unos 2 km de Arcusa. En coche son apenas unos minutos.' },
+              { icon: 'navigation', titulo: 'Aparcamiento', texto: 'El mirador está a pie de carretera y hay sitio de sobra para dejar el coche sin complicaciones.' },
+              { icon: 'telescope', titulo: 'Qué hay allí', texto: 'Paneles de orientación para reconocer el cielo y tumbonas, bancos y mesas para tumbarte a mirar las estrellas con calma. Acceso fácil, junto a la carretera.' },
             ].map((d) => (
               <div data-tilt class="mirador-card rounded-2xl p-5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background: rgba(159,192,224,0.12); color:#9FC0E0;">
@@ -165,6 +166,14 @@ const virtualSkyUrl = `https://slowe.github.io/VirtualSky/embed?${virtualSkyPara
                 <p class="text-sm leading-relaxed" style="color: rgba(234,239,247,0.6);">{d.texto}</p>
               </div>
             ))}
+          </div>
+
+          <!-- Enlace para llegar -->
+          <div class="mb-10">
+            <a href={MIRADOR_MAPS} target="_blank" rel="noopener" class="btn-primary">
+              <Icon name="navigation" size={15} />
+              Abrir en Google Maps
+            </a>
           </div>
 
           <!-- Mapa del cielo en vivo -->
