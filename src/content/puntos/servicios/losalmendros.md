@@ -6,6 +6,7 @@ descripcion: Una amplia casa rural con jardín y piscina privada, ideal para fam
 resumen: Casa rural para grupos con piscina, jardín y todas las comodidades para disfrutar del Sobrarbe con tranquilidad.
 contacto: ""
 enlace: "https://www.airbnb.es/rooms/23976312?check_in=2026-07-08&check_out=2026-07-12&guests=1&adults=1&s=67&unique_share_id=3c1c9da3-eb54-4dfb-8b1b-90bf159a3cdf"
+distancia: "En el pueblo"
 x: 53
 y: 70
 lat: 42.2559
