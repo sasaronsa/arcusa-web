@@ -244,6 +244,7 @@ h1, h2, h3, h4 { font-family: var(--font-serif); }
   background: var(--color-azul-pirineo);
   color: white;
   transform: translateY(-2px);
+  cursor: pointer;
 }
 
 /* ── Card 3D tilt (CSS base, JS enhances) ───── */

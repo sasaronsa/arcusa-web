@@ -7,7 +7,7 @@ import MapaArcusa from '../components/MapaArcusa.astro';
 import { getCollection } from 'astro:content';
 
 const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== false).map(p => ({
-  slug: p.id,
+  slug: p.id.split('/').pop()!,
   nombre: p.data.nombre,
   tipo: p.data.tipo,
   x: p.data.x,
@@ -67,7 +67,7 @@ const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== fal
         ))}
       </div>
       <p class="mt-5 text-xs" style="color: var(--color-piedra-media);">
-        <strong>Nota:</strong> aleja el mapa para ver los puntos agrupados y acércate para separarlos.
+        <strong>Nota:</strong> arrastra el mapa y usa la rueda o los botones +/− para acercarte.
         La ubicación de algunos puntos es aproximada; si eres vecino y quieres añadir o corregir algo, escríbenos.
       </p>
     </div>

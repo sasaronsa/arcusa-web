@@ -1,8 +1,8 @@
 ---
 nombre: Iglesia de San Esteban
 tipo: edificio
-x: 55
-y: 50
+x: 48
+y: 47
 resumen: Templo del siglo XVI en piedra, con cuatro capillas laterales asimétricas y una pila bautismal traída del despoblado de Morcat.
 imagenes: []
 anio: "s. XVI"

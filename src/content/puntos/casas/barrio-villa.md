@@ -1,8 +1,8 @@
 ---
 nombre: Barrio de la Villa
 tipo: casa
-x: 58
-y: 45
+x: 54
+y: 4
 resumen: Uno de los dos barrios históricos que dieron forma al pueblo.
 imagenes: []
 ---

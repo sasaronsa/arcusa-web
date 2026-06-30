@@ -1,8 +1,8 @@
 ---
 nombre: Casa Solano
 tipo: casa
-x: 46
-y: 34
+x: 37
+y: 20
 resumen: Una casa donde los pequeños detalles hablan de siglos de historia.
 imagenes: []
 anio: "s. XVI–XVII"

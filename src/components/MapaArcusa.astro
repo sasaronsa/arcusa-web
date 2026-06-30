@@ -122,7 +122,7 @@ const puntosConPos = puntos.map(p => ({
               <Icon name={iconoTipo[p.tipo] ?? 'compass'} size={15} />
             </span>
             <span class="punto-label">
-              {p.nombre.replace('Casa ', '').replace('Cuadro del Museo: ', '').slice(0, 18)}
+              {p.nombre.replace('Cuadro del Museo: ', '')}
             </span>
           </button>
         ))}
@@ -158,7 +158,7 @@ const puntosConPos = puntos.map(p => ({
     <div class="absolute bottom-4 left-4 flex items-center gap-1.5 pointer-events-none z-20 px-2.5 py-1 rounded-full"
          style="background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); color: var(--color-piedra-oscura);">
       <Icon name="compass" size={11} />
-      <span style="font-size: 10px; font-weight: 600;">Arrastra · rueda/+/− zoom · acércate para separar los puntos</span>
+      <span style="font-size: 10px; font-weight: 600;">Arrastra · rueda o +/− para hacer zoom</span>
     </div>
   </div>
 
@@ -235,40 +235,28 @@ const puntosConPos = puntos.map(p => ({
   }
   .punto-label {
     margin-top: 4px;
-    white-space: nowrap;
+    max-width: 96px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    text-align: center;
+    line-height: 1.15;
     font-size: 10px; font-weight: 600;
     color: #4A4540;
     text-shadow: 0 1px 3px rgba(240,233,223,0.95), 0 0 6px rgba(240,233,223,0.95);
     pointer-events: none;
   }
+  /* Al interactuar, el punto apilado sube al frente para poder tocarlo */
+  .punto-marker:hover,
+  .punto-marker:focus-visible,
+  .punto-marker.activo { z-index: 10; }
   .punto-marker:hover  .punto-circulo,
   .punto-marker:focus-visible .punto-circulo { transform: scale(1.22); box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
   .punto-marker.activo .punto-circulo {
     transform: scale(1.3);
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     outline: 3px solid white; outline-offset: 2px;
-  }
-
-  /* ── Burbujas de cluster (escala inversa también por JS) ── */
-  .cluster-bubble {
-    position: absolute;
-    transform: translate(-50%, -50%);   /* el JS añade la escala */
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    border: 2.5px solid white;
-    background: var(--color-verde-pino);
-    color: white;
-    font-size: 15px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 3px 14px rgba(0,0,0,0.28);
-    cursor: pointer;
-  }
-  .cluster-bubble::after {
-    content: '';
-    position: absolute; inset: -5px;
-    border-radius: 50%;
-    border: 2px solid var(--color-verde-pino);
-    opacity: 0.3;
   }
 
   /* ── Botones de zoom ── */
@@ -383,7 +371,6 @@ const puntosConPos = puntos.map(p => ({
   /* Proporción natural del SVG base. Si cambias el dibujo por otro de
      distinta forma, ajusta estos números y el aspect-ratio de #mapa-viewport. */
   const NAT_W = 1024, NAT_H = 1024;
-  const CLUSTER_PX = 60;   // distancia (px) bajo la cual dos puntos se agrupan
 
   const tipoLabel: Record<string, string> = {
     casa: 'Casa tradicional', edificio: 'Edificio emblemático',
@@ -437,15 +424,14 @@ const puntosConPos = puntos.map(p => ({
   document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarFicha(); });
 
   if (outer && viewport && markersLayer) {
-    type M = { el: HTMLElement; x: number; y: number; tipo: string; done: boolean };
+    type M = { el: HTMLElement; tipo: string };
     const markers: M[] = [...markersLayer.querySelectorAll<HTMLElement>('.punto-marker')].map(el => ({
-      el, x: +(el.dataset.x ?? '50'), y: +(el.dataset.y ?? '50'), tipo: el.dataset.tipo ?? '', done: false,
+      el, tipo: el.dataset.tipo ?? '',
     }));
 
     let cw = 0, ch = 0;
     let filtro = 'todos';
     let scale = 1;
-    let bubbles: HTMLElement[] = [];
 
     // ── Dimensiona el lienzo para CUBRIR el visor (sin huecos) ──
     function fitSize() {
@@ -458,57 +444,18 @@ const puntosConPos = puntos.map(p => ({
       return { ow, oh };
     }
 
-    function clearBubbles() { bubbles.forEach(b => b.remove()); bubbles = []; }
-
-    // distancia en px de pantalla entre dos puntos (coords en % de mapa)
-    function screenDist(a: M, b: M) {
-      const dx = (a.x - b.x) / 100 * cw * scale;
-      const dy = (a.y - b.y) / 100 * ch * scale;
-      return Math.hypot(dx, dy);
-    }
-
-    function makeBubble(mx: number, my: number, count: number) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'cluster-bubble';
-      b.style.left = mx + '%';
-      b.style.top  = my + '%';
-      b.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
-      b.textContent = String(count);
-      b.setAttribute('aria-label', `${count} puntos agrupados — acercar`);
-      b.addEventListener('click', () => {
-        const t = pz.getTransform();
-        pz.smoothZoom(t.x + t.scale * cw * (mx / 100), t.y + t.scale * ch * (my / 100), 2);
-      });
-      markersLayer.appendChild(b);
-      bubbles.push(b);
-    }
-
-    // ── Render: muestra/oculta marcadores y agrupa los cercanos ──
+    // ── Render: muestra/oculta marcadores según el filtro.
+    //    Sin agrupar: los puntos cercanos se quedan apilados (uno encima de
+    //    otro), nunca desaparecen. ──
     let rafId = 0;
     function render() {
       scale = pz.getTransform().scale;
       const inv = 1 / scale;
-      const vis = markers.filter(m => filtro === 'todos' || m.tipo === filtro);
-      markers.forEach(m => { m.el.hidden = true; m.done = false; });
-      clearBubbles();
-
-      for (const m of vis) {
-        if (m.done) continue;
-        const group = [m]; m.done = true;
-        for (const n of vis) {
-          if (n.done) continue;
-          if (screenDist(m, n) < CLUSTER_PX) { group.push(n); n.done = true; }
-        }
-        if (group.length === 1) {
-          m.el.hidden = false;
-          m.el.style.transform = `translate(-50%, -50%) scale(${inv})`;
-        } else {
-          const mx = group.reduce((s, g) => s + g.x, 0) / group.length;
-          const my = group.reduce((s, g) => s + g.y, 0) / group.length;
-          makeBubble(mx, my, group.length);
-        }
-      }
+      markers.forEach(m => {
+        const visible = filtro === 'todos' || m.tipo === filtro;
+        m.el.hidden = !visible;
+        if (visible) m.el.style.transform = `translate(-50%, -50%) scale(${inv})`;
+      });
     }
     function scheduleRender() {
       if (rafId) return;
@@ -530,7 +477,7 @@ const puntosConPos = puntos.map(p => ({
       zoomDoubleClickSpeed: 1,
       smoothScroll: false,
       // no iniciar arrastre al pulsar un marcador/burbuja (deja pasar el clic)
-      beforeMouseDown: (e: any) => !!(e.target as HTMLElement)?.closest('.punto-marker, .cluster-bubble'),
+      beforeMouseDown: (e: any) => !!(e.target as HTMLElement)?.closest('.punto-marker'),
     });
 
     resetView();

@@ -2,8 +2,9 @@
 nombre: Rodellar
 categoria: actividad
 descripcion: Uno de los grandes destinos europeos para la escalada y el barranquismo.
-distancia: "~20 km"
-enlace: ""
+imagen: /images/que-ver/rodellar.webp
+distancia: "~65 km"
+enlace: "https://www.rodellaraventura.com/"
 lat: 42.2417
 lng: -0.0042
 ---

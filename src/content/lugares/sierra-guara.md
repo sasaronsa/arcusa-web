@@ -2,8 +2,9 @@
 nombre: Parque Natural de la Sierra y los Cañones de Guara
 categoria: actividad
 descripcion: Uno de los espacios naturales más espectaculares de Europa y el paraíso del barranquismo.
+imagen: /images/que-ver/guara.webp
 distancia: "Bordea el pueblo"
-enlace: ""
+enlace: "https://sierradeguara.org/"
 lat: 42.2200
 lng: 0.0000
 ---

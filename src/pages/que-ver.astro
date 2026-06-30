@@ -4,12 +4,19 @@ import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import MapaArcusa from '../components/MapaArcusa.astro';
+import CardLugar from '../components/CardLugar.astro';
 import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
 
+// Servicios del pueblo (puntos tipo "servicio"), agrupados por categoría
+// para los modales de Dormir y Comer.
+const servicios = (await getCollection('puntos')).filter(p => p.data.tipo === 'servicio');
+const alojamientosZona = servicios.filter(p => p.data.categoria === 'dormir');
+const restaurantesZona = servicios.filter(p => p.data.categoria === 'comer');
+
 // Mapa del pueblo (se mantiene el mapa interactivo actual)
 const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== false).map(p => ({
-  slug: p.id,
+  slug: p.id.split('/').pop()!,
   nombre: p.data.nombre,
   tipo: p.data.tipo,
   x: p.data.x,
@@ -34,10 +41,10 @@ const indice = [
 
 // ── Por qué alojarte en Arcusa ────────────────────
 const porQue = [
-  { icon: 'compass',   titulo: 'Todo a mano',        texto: 'Aínsa, Ordesa, Guara, Alquézar… los grandes imprescindibles del Sobrarbe quedan a un paso, sin madrugar tres horas de coche.' },
-  { icon: 'tree-pine', titulo: 'Calma de verdad',    texto: 'Al volver de la aventura te espera el silencio de un pueblo de montaña, no el bullicio de un sitio masificado.' },
-  { icon: 'star',      titulo: 'Cielos increíbles',  texto: 'El Sobrarbe es destino turístico Starlight. Aquí la noche todavía se ve: estrellas, Vía Láctea y silencio.' },
-  { icon: 'palette',   titulo: 'Auténtico',          texto: 'Piedra, historia y un museo al aire libre en las propias calles. Te alojas dentro del patrimonio, no al lado.' },
+  { icon: 'compass',   titulo: 'Todo a un paso',     texto: 'Aínsa, Ordesa, Guara, Alquézar. Sales por la mañana y a mediodía estás de vuelta a comer. Aquí no se pierde medio viaje conduciendo.' },
+  { icon: 'tree-pine', titulo: 'Silencio de verdad', texto: 'Cuando cae el día, el mayor ruido de Arcusa es el viento entre las montañas. Ni colas, ni bocinas, ni prisa.' },
+  { icon: 'star',      titulo: 'La noche se ve',     texto: 'El Sobrarbe es Destino Starlight. Levantas la vista y ahí está la Vía Láctea, como antes de que existieran las ciudades.' },
+  { icon: 'palette',   titulo: 'Patrimonio vivo',    texto: 'Calles de piedra y un museo pintado en las fachadas. En Arcusa no duermes al lado de la historia: duermes dentro.' },
 ];
 
 // ── Imprescindibles (4 grandes) ───────────────────
@@ -49,7 +56,7 @@ const imprescindibles = [
     icon: 'castle',
     img: '/images/que-ver/ainsa.webp',
     grad: 'linear-gradient(135deg, #C3D7E6 0%, #7F9BBE 100%)',
-    desc: 'La capital histórica del Sobrarbe. Su plaza mayor porticada, el castillo y las callejuelas de piedra forman uno de los conjuntos medievales más bonitos de Aragón. Súbete al atardecer: la luz sobre los tejados es para quedarse mudo.',
+    desc: 'Cruzas la puerta de la muralla y, de golpe, estás en el siglo XII. La plaza porticada, el castillo, las callejuelas. Sube al atardecer: cuando el sol cae tras los Pirineos, nadie habla.',
   },
   {
     nombre: 'Alquézar',
@@ -58,7 +65,7 @@ const imprescindibles = [
     icon: 'church',
     img: '/images/que-ver/alquezar.webp',
     grad: 'linear-gradient(135deg, #E8A96A 0%, #C4773D 100%)',
-    desc: 'Un laberinto de calles colgado sobre el cañón del Vero, coronado por su colegiata. Sus pasarelas suspendidas sobre el río son uno de los paseos más espectaculares (y fotografiados) de todo el Pirineo.',
+    desc: 'Un puñado de casas colgadas sobre el cañón del Vero, con la colegiata vigilando desde arriba. Y abajo, las pasarelas suspendidas sobre el río: el paseo que todo el mundo acaba haciendo. Da un poco de vértigo. Merece cada paso.',
   },
   {
     nombre: 'Parque Nacional de Ordesa',
@@ -67,7 +74,7 @@ const imprescindibles = [
     icon: 'mountain',
     img: '/images/que-ver/ordesa.webp',
     grad: 'linear-gradient(135deg, #7C8A5C 0%, #3E5C3A 100%)',
-    desc: 'Ordesa y Monte Perdido es uno de los grandes santuarios naturales de Europa: valles glaciares, cascadas encadenadas y paredes imposibles. Un sitio al que se va una vez y se vuelve toda la vida.',
+    desc: 'Hay sitios que impresionan en una foto. Ordesa impresiona mucho más cuando estás dentro. Valles tallados por el hielo, cascadas una detrás de otra y paredes que te obligan a mirar hacia arriba. Se va una vez y se vuelve toda la vida.',
   },
   {
     nombre: 'Sierra de Guara',
@@ -76,7 +83,7 @@ const imprescindibles = [
     icon: 'waves',
     img: '/images/que-ver/guara.webp',
     grad: 'linear-gradient(135deg, #CDBBA0 0%, #6B5842 100%)',
-    desc: 'El reino de los cañones. Parque Natural de la Sierra y los Cañones de Guara, capital mundial del barranquismo, con aguas turquesa, pozas y desfiladeros tallados durante milenios.',
+    desc: 'El reino de los cañones. Agua turquesa abriéndose paso entre paredes de roca que lleva milenios esculpiendo. Es la capital mundial del barranquismo, pero no hace falta tirarse: basta con asomarse.',
   },
 ];
 
@@ -87,15 +94,15 @@ const visitar = [
     eyebrow: 'Para perderse a pie',
     icon: 'home',
     items: [
-      { n: 'Aínsa',       d: 'La joya medieval del Sobrarbe y su plaza porticada.' },
-      { n: 'Alquézar',    d: 'Calles colgadas sobre el cañón del Vero.' },
-      { n: 'Boltaña',     d: 'Casco antiguo y castillo a orillas del río Ara.' },
-      { n: 'Abizanda',    d: 'Coronada por su torre del siglo XI sobre el embalse de Mediano.' },
-      { n: 'Lecina',      d: 'Aldea de piedra junto a la milenaria Carrasca de Lecina.' },
-      { n: 'Samitier',    d: 'Caserío con vistas inmensas y su ermita-castillo en la roca.' },
-      { n: 'Escanilla',   d: 'Tranquilo núcleo del Sobrarbe entre campos y montaña.' },
-      { n: 'Morcat',      d: 'Aldea casi despoblada, ligada al origen de Arcusa.' },
-      { n: 'Muro de Roda', d: 'Conjunto fortificado medieval y mirador excepcional.' },
+      { n: 'Aínsa',       d: 'La plaza medieval más bonita de Aragón. Sin discusión.' },
+      { n: 'Alquézar',    d: 'Calles que cuelgan sobre el cañón del Vero.' },
+      { n: 'Boltaña',     d: 'Casco antiguo y castillo junto al río Ara.' },
+      { n: 'Abizanda',    d: 'Su torre del siglo XI vigila el embalse de Mediano.' },
+      { n: 'Lecina',      d: 'Piedra y leña, a la sombra de una carrasca milenaria.' },
+      { n: 'Samitier',    d: 'Cuatro casas, una ermita en la roca y vistas que no acaban.' },
+      { n: 'Escanilla',   d: 'El Sobrarbe tranquilo, entre campos y montaña.' },
+      { n: 'Morcat',      d: 'Casi deshabitado. Aquí empezó la historia de Arcusa.' },
+      { n: 'Muro de Roda', d: 'Un pueblo fortificado entero, hoy en silencio.' },
     ],
   },
   {
@@ -103,12 +110,12 @@ const visitar = [
     eyebrow: 'Mil años de piedra',
     icon: 'landmark',
     items: [
-      { n: 'Torre de Arcusa',          d: 'La atalaya pentagonal del propio pueblo, del siglo XI.' },
-      { n: 'Dolmen de Pueyoril',       d: 'Memoria prehistórica en el entorno de Arcusa.' },
-      { n: 'Castillo de Samitier',     d: 'Castillo y ermita románica colgados sobre el embalse.' },
-      { n: 'Castillo de Abizanda',     d: 'Torre defensiva del siglo XI con vistas de 360º.' },
-      { n: 'Monasterio de San Victorián', d: 'Uno de los más antiguos de España, al pie de Peña Montañesa.' },
-      { n: 'Muro de Roda',             d: 'Recinto amurallado medieval con iglesia y torreones.' },
+      { n: 'Torre de Arcusa',          d: 'La atalaya pentagonal del pueblo, en pie desde el siglo XI.' },
+      { n: 'Dolmen de Pueyoril',       d: 'Cinco mil años de memoria, a un paseo de Arcusa.' },
+      { n: 'Castillo de Samitier',     d: 'Castillo y ermita románica asomados al embalse.' },
+      { n: 'Castillo de Abizanda',     d: 'Torre del siglo XI con el horizonte entero a sus pies.' },
+      { n: 'Monasterio de San Victorián', d: 'De los más antiguos de España, al pie de la Peña Montañesa.' },
+      { n: 'Muro de Roda',             d: 'Murallas, iglesia y torreones que resistieron mil años.' },
     ],
   },
   {
@@ -116,11 +123,11 @@ const visitar = [
     eyebrow: 'Paisaje en estado puro',
     icon: 'mountain',
     items: [
-      { n: 'P. N. de Ordesa y Monte Perdido', d: 'El gran parque nacional del Pirineo aragonés.' },
-      { n: 'Sierra de Guara',          d: 'Parque natural y paraíso de los cañones.' },
+      { n: 'P. N. de Ordesa y Monte Perdido', d: 'El gran parque nacional del Pirineo. Palabras mayores.' },
+      { n: 'Sierra de Guara',          d: 'Donde el agua decidió cortar la roca.' },
       { n: 'Cañón del Vero',           d: 'Arte rupestre Patrimonio Mundial y pasarelas sobre el agua.' },
-      { n: 'Congosto de Entremón',     d: 'Desfiladero espectacular sobre el embalse de Mediano.' },
-      { n: 'Peña Montañesa',           d: 'La gran mole que vigila todo el Sobrarbe.' },
+      { n: 'Congosto de Entremón',     d: 'Un tajo vertical sobre el embalse que casi nadie conoce.' },
+      { n: 'Peña Montañesa',           d: 'La mole que se ve desde cualquier rincón del Sobrarbe.' },
       { n: 'Miradores',                d: 'Balcones naturales con los Pirineos de fondo.' },
     ],
   },
@@ -132,33 +139,33 @@ const actividades = [
     titulo: 'Senderismo',
     icon: 'footprints',
     items: [
-      { n: 'GR-1, Sendero Histórico', d: 'La gran ruta que cruza el Prepirineo de punta a punta.' },
+      { n: 'GR-1, Sendero Histórico', d: 'La gran ruta que cruza el Prepirineo de lado a lado.' },
       { n: 'Ruta del Dolmen',         d: 'Un paseo corto desde Arcusa hasta la Prehistoria.' },
       { n: 'Subida a Samitier',       d: 'Castillo, ermita y un balcón sobre el embalse.' },
-      { n: 'Peña Montañesa',          d: 'Ascensión exigente a uno de los miradores del Pirineo.' },
+      { n: 'Peña Montañesa',          d: 'Dura de subir. Imposible de olvidar desde arriba.' },
     ],
   },
   {
     titulo: 'Aventura',
     icon: 'waves',
     items: [
-      { n: 'Barranquismo', d: 'Guara es la capital mundial del descenso de barrancos.' },
-      { n: 'Kayak',        d: 'Aguas tranquilas en los embalses del Sobrarbe.' },
+      { n: 'Barranquismo', d: 'En Guara, donde se inventó casi todo esto.' },
+      { n: 'Kayak',        d: 'Remar en silencio por los embalses del Sobrarbe.' },
       { n: 'Rafting',      d: 'Aguas bravas en el Ara y el Cinca.' },
-      { n: 'Escalada',     d: 'Paredes y escuelas para todos los niveles.' },
-      { n: 'Vías ferratas', d: 'Verticalidad y adrenalina con seguridad.' },
-      { n: 'BTT',          d: 'Senderos y pistas entre pueblos y montañas.' },
+      { n: 'Escalada',     d: 'Paredes para empezar y paredes para respetar.' },
+      { n: 'Vías ferratas', d: 'Verticalidad y vértigo, con la seguridad puesta.' },
+      { n: 'BTT',          d: 'Kilómetros de pistas entre pueblos y bosques.' },
     ],
   },
   {
     titulo: 'Naturaleza',
     icon: 'tree-pine',
     items: [
-      { n: 'Observación de aves', d: 'Uno de los mejores rincones de España para los pájaros.' },
-      { n: 'Quebrantahuesos',     d: 'Avista al rey del Pirineo desde sus comederos.' },
-      { n: 'Astrofotografía',     d: 'Cielos Starlight para retratar la Vía Láctea.' },
-      { n: 'La berrea',           d: 'El bramido de los ciervos en pleno otoño.' },
-      { n: 'Micología',           d: 'Bosques generosos en setas cuando llega el frío.' },
+      { n: 'Observación de aves', d: 'Uno de los mejores cielos de España para mirar arriba.' },
+      { n: 'Quebrantahuesos',     d: 'El rey del Pirineo, planeando sobre tu cabeza.' },
+      { n: 'Astrofotografía',     d: 'Cielos Starlight para llevarte la Vía Láctea a casa.' },
+      { n: 'La berrea',           d: 'El bramido de los ciervos rompiendo el otoño.' },
+      { n: 'Micología',           d: 'Cuando llega el frío, el bosque se llena de setas.' },
     ],
   },
 ];
@@ -166,13 +173,13 @@ const actividades = [
 // ── Experiencias ──────────────────────────────────
 const experiencias = [
   { icon: 'sunrise',  texto: 'Ver amanecer desde un mirador, con el valle todavía dormido bajo la niebla.' },
-  { icon: 'waves',    texto: 'Bañarte en pozas naturales de agua turquesa en pleno verano.' },
-  { icon: 'castle',   texto: 'Recorrer pueblos medievales sin prisa, perdiéndote por sus callejuelas.' },
-  { icon: 'palette',  texto: 'Descubrir el Museo al Aire Libre de Arcusa pintado en sus fachadas.' },
-  { icon: 'star',     texto: 'Dormir bajo uno de los mejores cielos estrellados del Pirineo.' },
-  { icon: 'mountain', texto: 'Fotografiar al quebrantahuesos planeando sobre los cañones.' },
-  { icon: 'tree-pine', texto: 'Escuchar la berrea de los ciervos en un atardecer de otoño.' },
-  { icon: 'footprints', texto: 'Cruzar las pasarelas del Vero suspendidas sobre el río.' },
+  { icon: 'waves',    texto: 'Meterte en una poza de agua turquesa cuando aprieta el calor de agosto.' },
+  { icon: 'castle',   texto: 'Perderte por un pueblo medieval sin mapa, sin prisa y sin rumbo.' },
+  { icon: 'palette',  texto: 'Ir cazando los murales de Arcusa, de fachada en fachada.' },
+  { icon: 'star',     texto: 'Quedarte callado mirando un cielo con más estrellas de las que recordabas.' },
+  { icon: 'mountain', texto: 'Ver planear un quebrantahuesos sobre los cañones de Guara.' },
+  { icon: 'tree-pine', texto: 'Escuchar la berrea de los ciervos en un atardecer de octubre.' },
+  { icon: 'footprints', texto: 'Cruzar las pasarelas del Vero, suspendido sobre el río.' },
 ];
 
 // ── Gastronomía ───────────────────────────────────
@@ -189,44 +196,45 @@ const productos = [
 
 // ── Dormir ────────────────────────────────────────
 const alojamiento = [
-  { icon: 'home',     titulo: 'Casas rurales',  texto: 'La forma más auténtica de dormir en el Sobrarbe. En la propia Arcusa encontrarás alojamiento de piedra con encanto.' },
-  { icon: 'building', titulo: 'Hoteles',        texto: 'En Aínsa, Boltaña y alrededores, desde acogedores hoteles con encanto a opciones para toda la familia.' },
-  { icon: 'tree-pine', titulo: 'Campings',      texto: 'Para quien prefiere despertar entre pinos, junto al río o bajo las estrellas.' },
-  { icon: 'bed',      titulo: 'Apartamentos',   texto: 'Independencia y comodidad para estancias largas o viajes en familia.' },
+  { icon: 'home',     titulo: 'Casas rurales',  texto: 'La forma más honesta de dormir en el Sobrarbe. En la propia Arcusa, piedra con siglos y chimenea encendida.' },
+  { icon: 'building', titulo: 'Hoteles',        texto: 'En Aínsa, Boltaña y alrededores, desde hoteles con encanto a opciones para toda la familia.' },
+  { icon: 'tree-pine', titulo: 'Campings',      texto: 'Para los que prefieren dormirse oyendo el río y despertarse entre pinos.' },
+  { icon: 'bed',      titulo: 'Apartamentos',   texto: 'Tu espacio y tu ritmo, ideales para estancias largas o viajes en familia.' },
 ];
 
 // ── Itinerarios ───────────────────────────────────
 const itinerarios = [
-  { tiempo: 'Medio día',   icon: 'clock',    titulo: 'Aínsa al atardecer',     plan: 'Pasea por el casco medieval de Aínsa, sube al castillo y quédate a ver caer el sol sobre los Pirineos. Vuelve a cenar a la calma de Arcusa.' },
-  { tiempo: 'Un día',      icon: 'sunrise',  titulo: 'Alquézar y el Vero',     plan: 'Madruga hacia Alquézar, recorre sus pasarelas sobre el cañón del Vero y come en el pueblo. Por la tarde, baño en una poza si aprieta el calor.' },
-  { tiempo: 'Fin de semana', icon: 'calendar', titulo: 'Ordesa + Sobrarbe',   plan: 'Un día entero en Ordesa para la gran naturaleza y otro repartido entre Aínsa, los pueblos cercanos y el patrimonio de Arcusa.' },
-  { tiempo: '3 días',      icon: 'star',     titulo: 'La inmersión total',     plan: 'Suma a lo anterior una jornada de aventura en Guara —barranco o ferrata— y tiempo para los rincones menos turísticos del Sobrarbe.' },
+  { tiempo: 'Medio día',   icon: 'clock',    titulo: 'Aínsa al atardecer',     plan: 'Piérdete por el casco medieval, sube al castillo y quédate a ver caer el sol sobre los Pirineos. Cena con calma de vuelta en Arcusa.' },
+  { tiempo: 'Un día',      icon: 'sunrise',  titulo: 'Alquézar y el Vero',     plan: 'Madruga hacia Alquézar, cruza las pasarelas del cañón y come en el pueblo. Por la tarde, un baño en una poza si el calor lo pide.' },
+  { tiempo: 'Fin de semana', icon: 'calendar', titulo: 'Ordesa + Sobrarbe',   plan: 'Un día entero en Ordesa para la naturaleza grande. Otro, sin reloj, entre Aínsa, los pueblos cercanos y la historia de Arcusa.' },
+  { tiempo: '3 días',      icon: 'star',     titulo: 'La inmersión total',     plan: 'Súmale una jornada de aventura en Guara —barranco o ferrata— y tiempo para los rincones que no salen en las guías.' },
 ];
 
 // ── Según la época ────────────────────────────────
 const estaciones = [
-  { estacion: 'Primavera', icon: 'tree-pine', texto: 'El deshielo dispara las cascadas y los barrancos. Verde por todas partes y pueblos sin agobios.' },
-  { estacion: 'Verano',    icon: 'waves',     texto: 'Temporada de pozas, barranquismo y noches templadas para mirar las estrellas.' },
-  { estacion: 'Otoño',     icon: 'star',      texto: 'El bosque se vuelve de oro, llega la berrea y salen las setas. Quizá la mejor época.' },
-  { estacion: 'Invierno',  icon: 'sparkles',  texto: 'Silencio, nieve en las cumbres y un Sobrarbe tranquilo para desconectar de verdad.' },
+  { estacion: 'Primavera', icon: 'tree-pine', texto: 'Con el deshielo, cascadas y barrancos van a tope. Todo verde y los pueblos aún para ti solo.' },
+  { estacion: 'Verano',    icon: 'waves',     texto: 'Tiempo de pozas, barrancos y noches templadas para tumbarse a mirar las estrellas.' },
+  { estacion: 'Otoño',     icon: 'star',      texto: 'El bosque se vuelve de oro, brama la berrea y salen las setas. Para muchos, la mejor época.' },
+  { estacion: 'Invierno',  icon: 'sparkles',  texto: 'Nieve en las cumbres, silencio abajo y un Sobrarbe en calma para desconectar de todo.' },
 ];
 
 // ── Familia ───────────────────────────────────────
 const familia = [
-  'Las pasarelas del Vero, una aventura segura que encanta a los niños.',
-  'Baños en pozas y orillas tranquilas durante el verano.',
-  'El museo al aire libre de Arcusa, un juego para buscar murales por las calles.',
-  'Observación de fauna y aves: quebrantahuesos, buitres y ciervos.',
-  'Pueblos medievales para explorar como pequeños castillos de verdad.',
+  'Las pasarelas del Vero: aventura de verdad, pero segura. A los niños les encanta.',
+  'Pozas y orillas tranquilas para chapotear todo el verano.',
+  'El museo al aire libre de Arcusa, que se convierte en un juego de buscar murales.',
+  'Buitres, quebrantahuesos y ciervos: fauna que se ve sin ser un experto.',
+  'Pueblos medievales para explorar como si fueran castillos de cuento.',
 ];
 
 // ── Rincones poco conocidos ───────────────────────
 const rincones = [
-  { n: 'Muro de Roda',          d: 'Un recinto fortificado medieval casi secreto, con vistas que pagan la subida.' },
-  { n: 'La Carrasca de Lecina', d: 'Una encina milenaria y monumental junto a una aldea de piedra.' },
-  { n: 'Congosto de Entremón',  d: 'Un desfiladero impresionante que muy pocos visitantes conocen.' },
-  { n: 'Samitier',              d: 'Castillo y ermita colgados en la roca, lejos de las multitudes.' },
-  { n: 'Aldeas despobladas',    d: 'Morcat y otros núcleos donde el tiempo parece haberse parado.' },
+  { n: 'Muro de Roda',          d: 'Una fortaleza olvidada entre montañas. Aquí solo se oye el viento, y la subida se paga con las vistas.' },
+  { n: 'La Carrasca de Lecina', d: 'Mil años llevando contemplando el Sobrarbe. Una encina tan grande que te hace sentir pequeño.' },
+  { n: 'Congosto de Entremón',  d: 'Un desfiladero donde el agua partió la montaña en dos. Y casi nadie lo conoce.' },
+  { n: 'Castillo de Samitier',  d: 'Un castillo y una ermita colgados sobre el vacío. Súbete y entenderás por qué los pusieron ahí.' },
+  { n: 'Peña Montañesa',        d: 'Hay montañas que se escalan. La Peña Montañesa se admira.' },
+  { n: 'Aldeas despobladas',    d: 'Morcat, Bagüeste y otros núcleos donde el tiempo se paró hace años.' },
 ];
 ---
 
@@ -270,18 +278,29 @@ const rincones = [
       </div>
       <h1
         class="font-serif font-bold text-white"
-        style="font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -0.02em; text-shadow: 0 2px 28px rgba(0,0,0,0.3);"
+        style="font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -0.02em; text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 2px 16px rgba(0,0,0,0.4);"
       >
-        Descubre el Sobrarbe<br />desde Arcusa
+        El Sobrarbe<br />empieza aquí
       </h1>
       <p
         class="mt-6 max-w-2xl leading-relaxed"
-        style="color: rgba(255,255,255,0.9); font-size: clamp(1rem, 2.2vw, 1.25rem); text-shadow: 0 1px 12px rgba(0,0,0,0.3);"
+        style="color: rgba(255,255,255,0.9); font-size: clamp(1rem, 2.2vw, 1.25rem); text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 2px 16px rgba(0,0,0,0.4);"
       >
-        Arcusa es un excelente punto de partida para descubrir algunos de los paisajes más
-        espectaculares del Pirineo aragonés. En menos de una hora puedes recorrer pueblos
-        medievales, cañones, ríos de aguas cristalinas, miradores, castillos y uno de los
-        parques nacionales más importantes de España.
+        Castillos colgados sobre el vacío, pueblos medievales donde el tiempo parece haberse
+        parado, cañones de agua turquesa y montañas que se te quedan grabadas mucho después
+        de volver a casa.
+      </p>
+      <p
+        class="mt-7 flex items-center gap-3.5 font-serif font-semibold text-white"
+        style="font-size: clamp(1.3rem, 3.2vw, 2rem); line-height: 1.15; text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 2px 16px rgba(0,0,0,0.4);"
+      >
+        <span
+          class="inline-flex items-center justify-center w-11 h-11 rounded-full flex-shrink-0"
+          style="background: rgba(232,169,106,0.16); color: var(--color-ocre-suave); border: 1px solid rgba(232,169,106,0.4);"
+        >
+          <Icon name="clock" size={21} />
+        </span>
+        <span>Y todo, a <span style="color: var(--color-ocre-suave); white-space: nowrap;">menos de una hora</span> de Arcusa.</span>
       </p>
       <div class="mt-9 flex flex-wrap gap-3">
         <a href="#imprescindibles" class="btn-primary">
@@ -325,14 +344,14 @@ const rincones = [
           />
           <div class="prose-arcusa">
             <p>
-              Lo difícil del Sobrarbe no es encontrar qué hacer: es elegir. Y para eso, lo
-              mejor es dormir en el centro de todo.
+              El Sobrarbe no se queda corto de planes. El problema es elegir. Y para eso, lo
+              mejor es dormir justo en el centro de todo.
             </p>
             <p>
-              Desde Arcusa visitas la comarca entera —Aínsa, Ordesa, Guara, Alquézar— y al
-              final del día vuelves a un pueblo de piedra tranquilo, lejos del turismo masivo,
-              con uno de los cielos más limpios del Pirineo sobre tu cabeza. Aventura por el
-              día, calma por la noche.
+              Desde Arcusa tienes la comarca entera al alcance —Aínsa, Ordesa, Guara, Alquézar—.
+              Pasas el día fuera y al volver te espera un pueblo de piedra en silencio, con uno
+              de los cielos más limpios del Pirineo sobre la cabeza. Aventura de día, calma de
+              noche.
             </p>
           </div>
         </div>
@@ -362,7 +381,7 @@ const rincones = [
     <SectionHeader
       eyebrow="Lo que no te puedes perder"
       title="Cuatro imprescindibles"
-      subtitle="Si solo te diera tiempo a ver cuatro cosas cerca de Arcusa, serían estas. Y las cuatro están a menos de una hora."
+      subtitle="Si solo tuvieras un fin de semana, irías a estos cuatro sitios. Y a ninguno tardas más de una hora en llegar."
     />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
       {imprescindibles.map((d, i) => (
@@ -406,7 +425,7 @@ const rincones = [
       <SectionHeader
         eyebrow="Para todos los planes"
         title="Qué visitar"
-        subtitle="Pueblos con siglos de historia, patrimonio de piedra y naturaleza de la grande. Elige por lo que te apetezca hoy."
+        subtitle="Pueblos con siglos a la espalda, piedra que ha visto de todo y naturaleza de la grande. Tú eliges por dónde empezar hoy."
       />
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {visitar.map((cat, ci) => (
@@ -445,7 +464,7 @@ const rincones = [
     <SectionHeader
       eyebrow="Para los que no paran quietos"
       title="Actividades"
-      subtitle="El Sobrarbe es uno de los grandes patios de juego al aire libre de Europa. Aquí va de qué te puedes llenar los días."
+      subtitle="El Sobrarbe es uno de los grandes patios de juego de Europa. El único problema es que no te va a dar tiempo a todo."
     />
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {actividades.map((cat, ci) => (
@@ -484,7 +503,7 @@ const rincones = [
       <SectionHeader
         eyebrow="No coleccionas sitios, coleccionas momentos"
         title="Experiencias para recordar"
-        subtitle="Olvídate por un momento de la lista de lugares. Estas son las cosas que de verdad te vas a llevar a casa."
+        subtitle="Olvídate un momento de la lista de lugares. Esto es lo que vas a seguir contando meses después de volver a casa."
         dark
       />
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-2">
@@ -516,12 +535,12 @@ const rincones = [
         />
         <div class="prose-arcusa">
           <p>
-            Aquí se come de verdad. Cocina de montaña, contundente y honesta, hecha con lo que
-            da la tierra y pensada para reponer fuerzas después de un día de aventura.
+            Aquí se come para reponer fuerzas, no para hacer fotos. Cocina de montaña, honesta
+            y contundente, hecha con lo que da la tierra y pensada para después de un día largo.
           </p>
           <p>
-            En Arcusa y los pueblos de alrededor encontrarás bares y restaurantes donde probar
-            los guisos de siempre. Y si te llevas algo a casa, que sea de aquí.
+            En Arcusa y los pueblos de al lado todavía se guisa como siempre. Y si te llevas
+            algo a casa, que sea de aquí: sabe distinto.
           </p>
         </div>
         <p class="mt-8 text-xs font-semibold uppercase tracking-[0.18em] mb-4" style="color: var(--color-ocre);">
@@ -538,6 +557,14 @@ const rincones = [
             </span>
           ))}
         </div>
+        {restaurantesZona.length > 0 && (
+          <div class="mt-8">
+            <button type="button" class="btn-outline" data-open-modal="modal-comer">
+              <Icon name="utensils" size={15} />
+              Ver dónde comer en la zona
+            </button>
+          </div>
+        )}
       </div>
       <div
         class="rounded-3xl overflow-hidden flex items-center justify-center"
@@ -561,7 +588,7 @@ const rincones = [
       <SectionHeader
         eyebrow="Tu base en el Sobrarbe"
         title="Dónde dormir"
-        subtitle="Desde casas rurales de piedra hasta campings junto al río. Sea cual sea tu plan, hay un sitio para descansar."
+        subtitle="Desde casas de piedra hasta una tienda junto al río. Vengas como vengas, hay un sitio para caer rendido."
       />
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {alojamiento.map((a, i) => (
@@ -580,6 +607,14 @@ const rincones = [
           </div>
         ))}
       </div>
+      {alojamientosZona.length > 0 && (
+        <div class="mt-8 text-center">
+          <button type="button" class="btn-outline" data-open-modal="modal-dormir">
+            <Icon name="bed" size={15} />
+            Ver alojamientos de la zona
+          </button>
+        </div>
+      )}
     </div>
   </section>
 
@@ -588,7 +623,7 @@ const rincones = [
     <SectionHeader
       eyebrow="¿Cuánto tiempo tienes?"
       title="Itinerarios a tu medida"
-      subtitle="Da igual que vengas a pasar la tarde o una semana entera: aquí tienes por dónde empezar."
+      subtitle="Vengas una tarde o una semana entera, aquí tienes por dónde empezar."
     />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       {itinerarios.map((it, i) => (
@@ -691,8 +726,8 @@ const rincones = [
       </div>
       <div class="flex-1">
         <p class="text-xs font-semibold uppercase tracking-[0.2em] mb-2" style="color: rgba(232,169,106,0.9);">Cuando se apaga el día</p>
-        <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-white mb-2">También puedes descubrir Arcusa de noche</h2>
-        <p class="leading-relaxed" style="color: rgba(255,255,255,0.72);">Cielos limpios, silencio y estrellas sobre el Sobrarbe, primer Destino Starlight de Huesca.</p>
+        <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-white mb-2">Y cuando se hace de noche, esto no se acaba</h2>
+        <p class="leading-relaxed" style="color: rgba(255,255,255,0.72);">Apenas una farola, silencio absoluto y más estrellas de las que creías que existían. Arcusa fue el primer Destino Starlight de Huesca.</p>
       </div>
       <a href="/arcusa-de-noche" class="btn-ghost flex-shrink-0">
         <Icon name="moon" size={15} />
@@ -707,7 +742,7 @@ const rincones = [
       <SectionHeader
         eyebrow="Sobre el terreno"
         title="Explora Arcusa en el mapa"
-        subtitle="Antes de salir a recorrer la comarca, descubre el propio pueblo: casas con historia, los cuadros del museo al aire libre y sus servicios."
+        subtitle="Antes de salir a recorrer la comarca, conoce el pueblo desde dentro: las casas con historia, los cuadros pintados en las fachadas y dónde encontrar cada cosa."
         centered
       />
       <MapaArcusa puntos={puntos} />
@@ -718,14 +753,15 @@ const rincones = [
   <section class="bg-section-blue py-24 px-4">
     <div class="max-w-2xl mx-auto text-center text-white">
       <p class="text-xs font-semibold uppercase tracking-[0.25em] mb-5" style="color: rgba(255,255,255,0.6);">
-        Tu próxima escapada empieza aquí
+        Lo difícil no es llegar. Es marcharse.
       </p>
       <h2 class="font-serif font-bold leading-tight mb-5" style="font-size: clamp(1.9rem, 4.5vw, 3rem);">
-        No sabías que había tanto por ver cerca de Arcusa
+        Algunos sitios se visitan. El Sobrarbe se recuerda.
       </h2>
       <p class="text-lg leading-relaxed mb-9" style="color: rgba(255,255,255,0.82);">
-        Pueblos medievales, cañones, parques naturales y cielos estrellados, todo desde un
-        pueblo de piedra del Sobrarbe. Ven, quédate y descúbrelo a tu ritmo.
+        Pueblos colgados de la roca, cañones de agua turquesa, un parque nacional y un cielo
+        lleno de estrellas. Todo alrededor de un pueblo de piedra que sigue a su ritmo. El
+        Sobrarbe lleva aquí miles de años. Solo falta que pongas la fecha.
       </p>
       <div class="flex flex-wrap gap-3 justify-center">
         <a
@@ -748,5 +784,177 @@ const rincones = [
     </div>
   </section>
 
+  <!-- ══════════ Modales: lugares de la zona ══════════ -->
+  {alojamientosZona.length > 0 && (
+    <div id="modal-dormir" class="lugares-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Alojamientos de la zona">
+      <div class="lugares-backdrop" data-close-modal></div>
+      <div class="lugares-card" role="document">
+        <div class="lugares-head">
+          <div>
+            <p class="lugares-eyebrow">Dónde dormir</p>
+            <h3 class="lugares-title">Alojamientos de la zona</h3>
+          </div>
+          <button type="button" class="lugares-close" data-close-modal aria-label="Cerrar">
+            <Icon name="x" size={18} />
+          </button>
+        </div>
+        <div class="lugares-grid">
+          {alojamientosZona.map(l => (
+            <CardLugar
+              nombre={l.data.nombre}
+              categoria={l.data.categoria!}
+              descripcion={l.data.descripcion ?? l.data.resumen}
+              imagen={l.data.imagenes[0]}
+              distancia={l.data.distancia}
+              contacto={l.data.contacto}
+              enlace={l.data.enlace}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
+
+  {restaurantesZona.length > 0 && (
+    <div id="modal-comer" class="lugares-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Dónde comer en la zona">
+      <div class="lugares-backdrop" data-close-modal></div>
+      <div class="lugares-card" role="document">
+        <div class="lugares-head">
+          <div>
+            <p class="lugares-eyebrow">Dónde comer</p>
+            <h3 class="lugares-title">Restaurantes de la zona</h3>
+          </div>
+          <button type="button" class="lugares-close" data-close-modal aria-label="Cerrar">
+            <Icon name="x" size={18} />
+          </button>
+        </div>
+        <div class="lugares-grid">
+          {restaurantesZona.map(l => (
+            <CardLugar
+              nombre={l.data.nombre}
+              categoria={l.data.categoria!}
+              descripcion={l.data.descripcion ?? l.data.resumen}
+              imagen={l.data.imagenes[0]}
+              distancia={l.data.distancia}
+              contacto={l.data.contacto}
+              enlace={l.data.enlace}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
+
   <Footer />
 </Layout>
+
+<style>
+  .lugares-modal {
+    position: fixed; inset: 0; z-index: 120;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: clamp(1rem, 6vh, 4rem) 1rem;
+    overflow-y: auto;            /* el scroll vive aquí, no en la tarjeta */
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .lugares-modal.open { opacity: 1; visibility: visible; }
+  .lugares-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(46,42,36,0.55);
+    backdrop-filter: blur(3px);
+  }
+  .lugares-card {
+    position: relative;
+    width: 100%; max-width: 900px;
+    margin: auto;               /* centrado vertical cuando hay sitio; sin recortar sombras */
+    background: var(--color-pergamino);
+    border-radius: 1.25rem;
+    box-shadow: 0 24px 60px rgba(46,42,36,0.35);
+    padding: 1.5rem;
+    transform: translateY(16px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease;
+  }
+  .lugares-modal.open .lugares-card { transform: translateY(0) scale(1); opacity: 1; }
+  .lugares-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; margin-bottom: 1.4rem;
+  }
+  .lugares-eyebrow {
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--color-ocre); margin-bottom: 0.25rem;
+  }
+  .lugares-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem; font-weight: 700; line-height: 1.15;
+    color: var(--color-carbon);
+  }
+  .lugares-close {
+    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: white; color: var(--color-carbon);
+    border: 1px solid rgba(156,133,103,0.25);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .lugares-close:hover { transform: scale(1.08); }
+  .lugares-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.25rem;
+  }
+  /* Tarjetas del modal: hover propio, claro y fiable.
+     Anulamos will-change/preserve-3d (código muerto del tilt 3D que
+     creaba capas de composición y rompía la interacción de la 1ª card). */
+  .lugares-grid :global(.card-3d) {
+    will-change: auto;
+    transform-style: flat;
+    transform: none;
+    opacity: 1;                 /* no dependemos del IntersectionObserver dentro del modal */
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease;
+  }
+  .lugares-grid :global(.card-3d:hover) {
+    transform: translateY(-6px);
+    box-shadow:
+      0 22px 44px rgba(46, 42, 36, 0.18),
+      0 6px 16px rgba(91, 127, 166, 0.12);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lugares-modal, .lugares-card { transition: none; }
+  }
+</style>
+
+<script>
+  function setupLugaresModales() {
+    const abrir = (id: string) => {
+      const m = document.getElementById(id);
+      if (!m) return;
+      m.classList.add('open');
+      m.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    };
+    const cerrar = (m: Element) => {
+      m.classList.remove('open');
+      m.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+
+    document.querySelectorAll<HTMLElement>('[data-open-modal]').forEach(btn => {
+      btn.addEventListener('click', () => abrir(btn.dataset.openModal!));
+    });
+    document.querySelectorAll<HTMLElement>('[data-close-modal]').forEach(el => {
+      el.addEventListener('click', () => {
+        const m = el.closest('.lugares-modal');
+        if (m) cerrar(m);
+      });
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.lugares-modal.open').forEach(cerrar);
+      }
+    });
+  }
+  setupLugaresModales();
+</script>

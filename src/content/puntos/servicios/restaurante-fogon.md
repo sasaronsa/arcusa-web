@@ -1,10 +1,14 @@
 ---
 nombre: El Fogón de Arcusa
+tipo: servicio
 categoria: comer
 descripcion: Cocina tradicional, productos de proximidad y el sabor de siempre en pleno corazón de Arcusa.
+resumen: Cocina tradicional del Sobrarbe con productos de proximidad, en pleno corazón de Arcusa.
 distancia: "En el pueblo"
 contacto: ""
 enlace: ""
+x: 55
+y: 52
 lat: 42.2560
 lng: 0.1583
 ---

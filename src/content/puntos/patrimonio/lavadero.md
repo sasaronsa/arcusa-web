@@ -1,8 +1,8 @@
 ---
 nombre: Lavadero, fuente y abrevadero
 tipo: edificio
-x: 52
-y: 66
+x: 39
+y: 8.5
 resumen: El lugar donde transcurría la vida cotidiana de Arcusa.
 imagenes: ["/images/puntos/lavadero.webp"]
 anio: "1923"

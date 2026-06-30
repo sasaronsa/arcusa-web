@@ -1,8 +1,8 @@
 ---
 nombre: Cruz de San Antonio
 tipo: edificio
-x: 28
-y: 40
+x: 43
+y: 48
 resumen: Un símbolo que durante siglos dio la bienvenida a quienes llegaban a Arcusa.
 imagenes: []
 ---

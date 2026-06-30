@@ -1,8 +1,8 @@
 ---
 nombre: Casa Juste
 tipo: casa
-x: 40
-y: 60
+x: 72
+y: 74
 resumen: La casa señorial más representativa de Arcusa.
 imagenes: ["/images/puntos/juste.webp"]
 anio: "s. XVI–XVIII"

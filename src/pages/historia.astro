@@ -344,7 +344,7 @@ const capasHistoria = [
               {casa.data.resumen}
             </p>
             <a
-              href={`/historia/${casa.id}`}
+              href={`/historia/${casa.id.split('/').pop()}`}
               class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-75"
               style="color: var(--color-azul-pirineo);"
             >
@@ -393,7 +393,7 @@ const capasHistoria = [
               {ed.data.resumen}
             </p>
             <a
-              href={`/historia/${ed.id}`}
+              href={`/historia/${ed.id.split('/').pop()}`}
               class="mt-3 inline-flex items-center gap-1 text-xs font-semibold transition-colors hover:opacity-75"
               style="color: var(--color-azul-pirineo);"
             >
@@ -445,7 +445,7 @@ const capasHistoria = [
                 {c.data.resumen}
               </p>
               <a
-                href={`/historia/${c.id}`}
+                href={`/historia/${c.id.split('/').pop()}`}
                 class="mt-2 inline-flex items-center gap-1 text-xs font-semibold transition-colors hover:opacity-75"
                 style="color: var(--color-azul-pirineo);"
               >

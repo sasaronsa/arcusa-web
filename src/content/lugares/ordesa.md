@@ -2,8 +2,9 @@
 nombre: Parque Nacional de Ordesa y Monte Perdido
 categoria: actividad
 descripcion: El gran icono natural del Pirineo aragonés y Patrimonio Mundial de la UNESCO.
-distancia: "~35 km"
-enlace: ""
+imagen: /images/que-ver/ordesa.webp
+distancia: "~55 km"
+enlace: "https://www.parquenacionalordesa.com/"
 lat: 42.6500
 lng: -0.0500
 ---

@@ -8,7 +8,7 @@ import InfoBlock from '../../components/InfoBlock.astro';
 
 export async function getStaticPaths() {
   const puntos = await getCollection('puntos');
-  return puntos.map(p => ({ params: { slug: p.id }, props: { entry: p } }));
+  return puntos.map(p => ({ params: { slug: p.id.split('/').pop()! }, props: { entry: p } }));
 }
 
 const { entry } = Astro.props;

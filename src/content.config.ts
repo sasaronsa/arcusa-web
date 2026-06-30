@@ -20,6 +20,11 @@ const puntos = defineCollection({
     anio: z.string().optional(),
     autor: z.string().optional(),
     enlace: z.string().optional(),
+    // Solo para tipo "servicio": alimentan los modales de Dormir/Comer en /que-ver.
+    categoria: z.enum(['ver', 'comer', 'dormir', 'actividad']).optional(),
+    descripcion: z.string().optional(),
+    distancia: z.string().optional(),
+    contacto: z.string().optional(),
     // Resumen rápido "En 30 segundos" (opcional)
     en30s: z.string().optional(),
     // Bloques informativos opcionales que se muestran al pie de la ficha

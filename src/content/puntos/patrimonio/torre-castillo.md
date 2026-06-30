@@ -1,8 +1,8 @@
 ---
 nombre: Torre de Arcusa
 tipo: edificio
-x: 35
-y: 18
+x: 66
+y: 11
 resumen: Torre defensiva del siglo XI, de rara planta pentagonal, alzada hacia 1050 para vigilar la cabecera del valle del Susía. Patrimonio protegido.
 imagenes: ["/images/puntos/torre-arcusa.webp"]
 anio: "h. 1050"

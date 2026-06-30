@@ -2,8 +2,9 @@
 nombre: Alquézar
 categoria: ver
 descripcion: Un pueblo medieval suspendido sobre el cañón del Vero y uno de los lugares más impresionantes de Aragón.
-distancia: "~25 km"
-enlace: ""
+imagen: /images/que-ver/alquezar.webp
+distancia: "~39 km"
+enlace: "https://turismoalquezar.es/"
 lat: 42.1642
 lng: 0.0247
 ---
