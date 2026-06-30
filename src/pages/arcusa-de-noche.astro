@@ -1,0 +1,454 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import InfoBlock from '../components/InfoBlock.astro';
+import StarCard from '../components/StarCard.astro';
+import Icon from '../components/Icon.astro';
+
+// ── Qué puedes ver ────────────────────────────────
+const queVer = [
+  { icon: 'sparkles', title: 'La Vía Láctea', text: 'En las noches más oscuras, la banda de la galaxia cruza el cielo de lado a lado sobre las montañas.', nota: 'Primavera y verano' },
+  { icon: 'star',     title: 'Constelaciones', text: 'El cielo cambia con las estaciones: del Triángulo de verano a Orión en las noches de invierno.', nota: 'Según temporada' },
+  { icon: 'mountain', title: 'Siluetas del paisaje', text: 'La línea de las montañas y los tejados de piedra se recortan en negro contra el cielo estrellado.', nota: 'Todo el año' },
+  { icon: 'sunset',   title: 'Atardeceres sobre la piedra', text: 'Antes de la noche, la luz baja enciende las fachadas y dibuja los relieves del valle.', nota: 'Cada tarde' },
+];
+
+// ── Consejos para observar ────────────────────────
+const consejos = [
+  'Elige noches sin luna: la luz lunar apaga las estrellas más débiles.',
+  'Apaga las linternas y las pantallas; si necesitas luz, usa el modo rojo.',
+  'Da tiempo a tus ojos: necesitan unos 20 minutos para acostumbrarse a la oscuridad.',
+  'Lleva abrigo aunque sea verano: de noche, en la montaña, refresca.',
+  'Consulta la previsión meteorológica: un cielo despejado lo es todo.',
+  'No accedas a propiedades privadas para buscar un mejor ángulo.',
+];
+
+// ── Normas de respeto ─────────────────────────────
+const normas = [
+  'Guarda silencio: de noche el sonido viaja y el pueblo descansa.',
+  'No apuntes luces ni focos hacia las casas.',
+  'No entres en propiedades privadas ni en fincas valladas.',
+  'No dejes basura: llévate todo lo que traigas.',
+  'Deja el lugar tal y como lo encontraste.',
+];
+
+// ── Apps recomendadas ─────────────────────────────
+const apps = [
+  { nombre: 'Stellarium Mobile', desc: 'Planetario completo para identificar todo lo que ves.', url: 'https://stellarium-labs.com/stellarium-mobile-plus/' },
+  { nombre: 'Sky Tonight',       desc: 'Apunta el móvil al cielo y reconoce estrellas y planetas.', url: 'https://starwalk.space/en' },
+  { nombre: 'SkyView',           desc: 'Realidad aumentada sencilla, ideal para empezar.', url: 'https://www.terminaleleven.com/skyview/' },
+];
+
+// Coordenadas del mapa del cielo.
+// TODO: sustituir por las coordenadas reales del mirador del Mesón de Arcusa (~2 km del pueblo).
+// Placeholder = centro del pueblo (según el footer): lat 42.25, lon 0.15.
+const MIRADOR_LAT = 42.25;
+const MIRADOR_LON = 0.15;
+const virtualSkyParams = new URLSearchParams({
+  latitude: String(MIRADOR_LAT),
+  longitude: String(MIRADOR_LON),
+  projection: 'stereo',
+  constellations: 'true',
+  constellationlabels: 'false',
+  live: 'true',
+  cardinalpoints: 'true',
+  showdate: 'true',
+  ground: 'true',
+}).toString();
+const virtualSkyUrl = `https://slowe.github.io/VirtualSky/embed?${virtualSkyParams}`;
+---
+
+<Layout
+  title="Arcusa de noche – Astroturismo en el Sobrarbe"
+  description="Cuando cae el sol, Arcusa ofrece otra forma de mirar el Sobrarbe: cielos limpios, silencio y estrellas. Sobrarbe es Destino Turístico Starlight; descubre el mirador del Mesón de Arcusa."
+>
+  <Navigation />
+
+  <main class="noche">
+
+    <!-- ══════════ 1 · HERO ══════════ -->
+    <section class="hero-noche relative flex items-center overflow-hidden" aria-label="Arcusa de noche">
+      <div class="starfield" aria-hidden="true"></div>
+      <div class="starfield starfield-2" aria-hidden="true"></div>
+      <!-- Transición al cuerpo -->
+      <div class="absolute inset-x-0 bottom-0 h-32 pointer-events-none" style="background: linear-gradient(to bottom, transparent, var(--noche-bg));"></div>
+
+      <div class="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 text-center">
+        <div
+          class="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full"
+          style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: rgba(234,239,247,0.8);"
+        >
+          <Icon name="moon" size={12} />
+          <span class="text-xs font-semibold uppercase tracking-[0.22em]">Sobrarbe · Huesca · Aragón · de noche</span>
+        </div>
+        <h1 class="hero-title font-serif font-bold" style="font-size: clamp(2.6rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -0.02em;">
+          Arcusa de noche
+        </h1>
+        <p class="mt-6 max-w-2xl mx-auto leading-relaxed" style="color: rgba(234,239,247,0.82); font-size: clamp(1rem, 2.2vw, 1.25rem);">
+          Cuando cae el sol, la piedra se apaga, el silencio crece y el cielo del Sobrarbe se llena de estrellas.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-3 justify-center">
+          <a href="#mirador" class="btn-primary">
+            <Icon name="navigation" size={15} />
+            Cómo llegar al mirador
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 2 · INTRO ══════════ -->
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
+      <p class="reveal leading-relaxed" style="color: rgba(234,239,247,0.9); font-size: clamp(1.1rem, 2.4vw, 1.4rem); font-family: var(--font-serif); font-style: italic;">
+        Arcusa no solo se descubre de día. Por la noche, lejos del ruido y las luces de las ciudades,
+        el pueblo ofrece otra forma de mirar el territorio: más lenta, más silenciosa, más conectada
+        con el paisaje.
+      </p>
+    </section>
+
+    <!-- ══════════ 3 · STARLIGHT ══════════ -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div class="lg:col-span-7">
+          <SectionHeader eyebrow="Cielo protegido" title="Un cielo de los mejores del Pirineo" dark />
+          <p class="reveal leading-relaxed" style="color: rgba(234,239,247,0.82);">
+            Sobrarbe es <strong style="color:#F2F5FA;">Destino Turístico Starlight</strong> desde 2026,
+            el primer territorio de Huesca con este reconocimiento internacional a la calidad de su cielo
+            nocturno y su lucha contra la contaminación lumínica. Arcusa, dentro de esa comarca, disfruta
+            de uno de los cielos más limpios de la zona.
+          </p>
+        </div>
+        <div class="lg:col-span-5">
+          <div
+            data-tilt
+            class="reveal stat-card rounded-2xl p-8 text-center"
+            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);"
+          >
+            <div class="flex items-center justify-center gap-2 mb-2" style="color:#E8A96A;">
+              <Icon name="star" size={22} />
+            </div>
+            <p class="font-serif font-bold" style="font-size: clamp(2.5rem,7vw,3.5rem); color:#EAEFF7; line-height:1;">1.<span style="font-size:0.5em; vertical-align: super;">er</span></p>
+            <p class="mt-3 text-sm font-semibold uppercase tracking-[0.14em]" style="color:#9FC0E0;">Destino Starlight de Huesca</p>
+            <p class="mt-2 text-xs" style="color: rgba(234,239,247,0.6);">Comarca de Sobrarbe · desde 2026</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 4 · EL MIRADOR (bloque central) ══════════ -->
+    <section id="mirador" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 scroll-mt-20">
+      <div
+        class="rounded-3xl overflow-hidden"
+        style="background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.10);"
+      >
+        <div class="p-6 sm:p-10">
+          <SectionHeader
+            eyebrow="El balcón de las estrellas"
+            title="El mirador del Mesón de Arcusa"
+            subtitle="A unos 2 km del pueblo, junto al Mesón de Arcusa, se encuentra este mirador de la red Starlight de Sobrarbe: un lugar pensado para mirar al cielo sin prisa."
+            dark
+          />
+
+          <!-- Datos prácticos -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {[
+              { icon: 'car', titulo: 'Cómo llegar', texto: 'A unos 2 km de Arcusa. /* TODO: indicar acceso a pie y en coche desde el pueblo */' },
+              { icon: 'navigation', titulo: 'Aparcamiento', texto: '/* TODO: indicar dónde aparcar y a qué distancia queda del mirador */' },
+              { icon: 'telescope', titulo: 'Qué hay allí', texto: '/* TODO: describir el mirador (paneles, orientación, bancos, etc.) */' },
+            ].map((d) => (
+              <div data-tilt class="mirador-card rounded-2xl p-5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background: rgba(159,192,224,0.12); color:#9FC0E0;">
+                  <Icon name={d.icon} size={19} />
+                </div>
+                <p class="font-semibold mb-1" style="color:#EAEFF7;">{d.titulo}</p>
+                <p class="text-sm leading-relaxed" style="color: rgba(234,239,247,0.6);">{d.texto}</p>
+              </div>
+            ))}
+          </div>
+
+          <!-- Mapa del cielo en vivo -->
+          <div class="flex items-center gap-2 mb-3">
+            <Icon name="sparkles" size={16} class="flex-shrink-0" />
+            <h3 class="font-serif text-xl font-semibold" style="color:#EAEFF7;">El cielo, ahora mismo</h3>
+          </div>
+
+          <!-- Escritorio/tablet: planetario en vivo (carga diferida) -->
+          <figure class="sky-map hidden sm:block">
+            <div class="rounded-2xl overflow-hidden" style="border: 1px solid rgba(255,255,255,0.12); background:#05070d; aspect-ratio: 16/9;">
+              <iframe
+                class="sky-iframe"
+                data-src={virtualSkyUrl}
+                title="Mapa del cielo en vivo sobre el mirador del Mesón de Arcusa"
+                loading="lazy"
+                style="width:100%; height:100%; border:0; display:block;"
+                referrerpolicy="no-referrer"
+              ></iframe>
+            </div>
+            <figcaption class="mt-3 text-sm text-center" style="color: rgba(234,239,247,0.6);">
+              El cielo sobre el mirador del Mesón de Arcusa, ahora mismo.
+            </figcaption>
+          </figure>
+
+          <!-- Móvil: el planetario es incómodo en pantalla pequeña → remite a las apps -->
+          <div class="sm:hidden rounded-2xl p-6 text-center" style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(232,169,106,0.14); color:#E8A96A;">
+              <Icon name="smartphone" size={22} />
+            </div>
+            <p class="text-sm leading-relaxed mb-4" style="color: rgba(234,239,247,0.78);">
+              En el móvil, lo mejor es mirar el cielo real con una app: apúntala arriba y reconoce
+              estrellas y constelaciones al instante.
+            </p>
+            <a href="#apps" class="inline-flex items-center gap-1.5 text-sm font-semibold" style="color:#9FC0E0;">
+              Ver apps recomendadas
+              <Icon name="arrow-right" size={13} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 5 · QUÉ PUEDES VER ══════════ -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+      <SectionHeader eyebrow="Levanta la vista" title="Qué puedes ver" dark />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {queVer.map((q) => (
+          <StarCard icon={q.icon} title={q.title} text={q.text} nota={q.nota} />
+        ))}
+      </div>
+    </section>
+
+    <!-- ══════════ 6 · CONSEJOS ══════════ -->
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <SectionHeader eyebrow="Para disfrutarlo de verdad" title="Consejos para observar" dark />
+      <InfoBlock type="consejo" dark>
+        <ul class="flex flex-col gap-2.5">
+          {consejos.map((c) => (
+            <li class="flex gap-2.5">
+              <Icon name="check" size={16} class="flex-shrink-0 mt-0.5" style="color:#8FC093;" />
+              <span>{c}</span>
+            </li>
+          ))}
+        </ul>
+      </InfoBlock>
+    </section>
+
+    <!-- ══════════ 7 · ATARDECER ══════════ -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <SectionHeader eyebrow="La hora dorada" title="Arcusa al atardecer" dark />
+          <p class="reveal leading-relaxed" style="color: rgba(234,239,247,0.82);">
+            Antes de que aparezcan las estrellas, el atardecer es uno de los mejores momentos para
+            pasear: la luz baja resalta la piedra y los relieves del paisaje. Es el preludio perfecto
+            de la noche.
+          </p>
+        </div>
+        <!-- Sin foto real → patrón "Sin fotografía aún" -->
+        <div
+          class="reveal rounded-3xl overflow-hidden flex flex-col items-center justify-center gap-3"
+          style="aspect-ratio: 16/10; background: linear-gradient(135deg, #1A2335 0%, #0E1320 100%); border: 1px solid rgba(255,255,255,0.08);"
+        >
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: rgba(232,169,106,0.14); color:#E8A96A;">
+            <Icon name="sunset" size={26} />
+          </div>
+          <span class="text-sm" style="color: rgba(234,239,247,0.55);">Sin fotografía aún</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 8 · NORMAS DE RESPETO ══════════ -->
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <SectionHeader eyebrow="Un pueblo que descansa" title="Normas de respeto" dark />
+      <InfoBlock type="ninos" dark title="Normas de respeto" icon="shield">
+        <ul class="flex flex-col gap-2.5">
+          {normas.map((n) => (
+            <li class="flex gap-2.5">
+              <Icon name="check" size={16} class="flex-shrink-0 mt-0.5" style="color:#F0C088;" />
+              <span>{n}</span>
+            </li>
+          ))}
+        </ul>
+      </InfoBlock>
+    </section>
+
+    <!-- ══════════ 9 · APPS ══════════ -->
+    <section id="apps" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 scroll-mt-20">
+      <SectionHeader eyebrow="Tu guía de bolsillo" title="Lleva el cielo en el bolsillo" subtitle="Estas apps te ayudan a identificar estrellas, planetas y constelaciones desde el propio móvil." dark />
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {apps.map((a) => (
+          <a
+            href={a.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-tilt
+            class="app-card rounded-2xl p-5 flex flex-col gap-3"
+            style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);"
+          >
+            <div class="flex items-center justify-between">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: rgba(159,192,224,0.12); color:#9FC0E0;">
+                <Icon name="smartphone" size={20} />
+              </div>
+              <Icon name="external-link" size={15} style="color: rgba(234,239,247,0.45);" />
+            </div>
+            <div>
+              <p class="font-serif text-lg font-semibold" style="color:#EAEFF7;">{a.nombre}</p>
+              <p class="text-sm leading-relaxed mt-1" style="color: rgba(234,239,247,0.7);">{a.desc}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ══════════ 10 · CTA FINAL ══════════ -->
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <h2 class="font-serif font-bold leading-tight mb-8" style="font-size: clamp(1.9rem,4.5vw,3rem); color:#EAEFF7;">
+        Descubre Arcusa también cuando se apaga el día
+      </h2>
+      <div class="flex flex-wrap gap-3 justify-center">
+        <a href="/explora" class="btn-primary">
+          <Icon name="compass" size={15} />
+          Explorar el mapa
+        </a>
+        <a href="/que-ver" class="btn-ghost">
+          <Icon name="eye" size={15} />
+          Qué ver y hacer
+        </a>
+        <a href="/historia" class="btn-ghost">
+          <Icon name="scroll" size={15} />
+          Historia
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ── Tema nocturno SCOPEADO a esta página (no toca variables globales) ── */
+  .noche {
+    --noche-bg: #0E1320;
+    background: var(--noche-bg);
+    color: #EAEFF7;
+  }
+  /* Hero: índigo profundo, no negro */
+  .noche .hero-noche {
+    min-height: 78svh;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 0%, rgba(91,127,166,0.22) 0%, transparent 60%),
+      linear-gradient(180deg, #131B2E 0%, #0E1320 70%, var(--noche-bg) 100%);
+  }
+  .noche .hero-title {
+    color: #F4F7FC;
+    text-shadow: 0 0 18px rgba(159,192,224,0.35), 0 2px 24px rgba(0,0,0,0.4);
+  }
+
+  /* ── Campo de estrellas (CSS puro) ── */
+  .noche .starfield {
+    position: absolute;
+    inset: -24px;
+    pointer-events: none;
+    transition: transform 0.25s ease-out;
+    background-image:
+      radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1px 1px at 70px 160px, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1.5px 1.5px at 180px 40px, rgba(255,255,255,0.85), transparent),
+      radial-gradient(1px 1px at 240px 120px, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1px 1px at 300px 200px, rgba(255,255,255,0.75), transparent);
+    background-repeat: repeat;
+    background-size: 340px 240px;
+    opacity: 0.7;
+  }
+  .noche .starfield-2 {
+    background-image:
+      radial-gradient(1.5px 1.5px at 50px 90px, rgba(232,201,160,0.9), transparent),
+      radial-gradient(1px 1px at 160px 200px, rgba(255,255,255,0.6), transparent),
+      radial-gradient(2px 2px at 260px 60px, rgba(255,255,255,0.7), transparent);
+    background-size: 420px 320px;
+    opacity: 0.55;
+  }
+
+  /* Parpadeo solo si el usuario lo permite */
+  @media (prefers-reduced-motion: no-preference) {
+    .noche .starfield   { animation: twinkle 5s ease-in-out infinite; }
+    .noche .starfield-2 { animation: twinkle 7s ease-in-out infinite 1s; }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 0.8; }
+  }
+
+  /* ── Bloques 3D interactivos (tilt) ── */
+  .noche [data-tilt] {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .noche [data-tilt]:hover {
+    border-color: rgba(159,192,224,0.42);
+    box-shadow: 0 24px 55px -18px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .noche [data-tilt] { transform: none !important; }
+  }
+
+  /* Foco visible reforzado sobre fondo oscuro */
+  .noche a:focus-visible {
+    outline: 2px solid #9FC0E0;
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+</style>
+
+<script>
+  /* Carga diferida del planetario: solo cuando el bloque entra en pantalla */
+  const iframe = document.querySelector<HTMLIFrameElement>('.sky-iframe');
+  if (iframe && iframe.dataset.src) {
+    const load = () => {
+      if (iframe.dataset.src) {
+        iframe.src = iframe.dataset.src;
+        delete iframe.dataset.src;
+      }
+    };
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { load(); obs.disconnect(); }
+        });
+      }, { rootMargin: '200px' });
+      obs.observe(iframe);
+    } else {
+      load();
+    }
+  }
+
+  /* Parallax sutil del campo de estrellas con el puntero (profundidad) */
+  const heroNoche = document.querySelector<HTMLElement>('.hero-noche');
+  const fields = heroNoche ? Array.from(heroNoche.querySelectorAll<HTMLElement>('.starfield')) : [];
+  const motionOk =
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+    window.matchMedia('(pointer: fine)').matches;
+
+  if (heroNoche && fields.length && motionOk) {
+    let raf = 0;
+    heroNoche.addEventListener('mousemove', (e: MouseEvent) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const r = heroNoche.getBoundingClientRect();
+        const x = e.clientX / r.width - 0.5;
+        const y = e.clientY / r.height - 0.5;
+        fields.forEach((f, i) => {
+          const depth = (i + 1) * 10;
+          f.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+        });
+        raf = 0;
+      });
+    });
+    heroNoche.addEventListener('mouseleave', () => {
+      fields.forEach((f) => { f.style.transform = 'translate(0,0)'; });
+    });
+  }
+</script>

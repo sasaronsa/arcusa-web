@@ -8,7 +8,7 @@ import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
 
 // Mapa del pueblo (se mantiene el mapa interactivo actual)
-const puntos = (await getCollection('puntos')).map(p => ({
+const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== false).map(p => ({
   slug: p.id,
   nombre: p.data.nombre,
   tipo: p.data.tipo,
@@ -104,7 +104,7 @@ const visitar = [
     icon: 'landmark',
     items: [
       { n: 'Torre de Arcusa',          d: 'La atalaya pentagonal del propio pueblo, del siglo XI.' },
-      { n: 'Dolmen de Pueyoril',       d: 'Memoria prehistórica, junto al Mesón de Arcusa.' },
+      { n: 'Dolmen de Pueyoril',       d: 'Memoria prehistórica en el entorno de Arcusa.' },
       { n: 'Castillo de Samitier',     d: 'Castillo y ermita románica colgados sobre el embalse.' },
       { n: 'Castillo de Abizanda',     d: 'Torre defensiva del siglo XI con vistas de 360º.' },
       { n: 'Monasterio de San Victorián', d: 'Uno de los más antiguos de España, al pie de Peña Montañesa.' },
@@ -243,7 +243,7 @@ const rincones = [
     aria-label="Descubre el Sobrarbe desde Arcusa"
   >
     <img
-      src="/images/hero/Header4.png"
+      src="/images/hero/Header4.webp"
       alt="Paisaje de montañas del Sobrarbe, en el Pirineo aragonés"
       class="absolute inset-0 w-full h-full object-cover"
       style="object-position: center 30%;"
@@ -680,6 +680,24 @@ const rincones = [
           ))}
         </ul>
       </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Enlace a Arcusa de noche ══════════ -->
+  <section class="bg-section-dark py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-left">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0" style="background: rgba(159,192,224,0.14); color:#9FC0E0;">
+        <Icon name="moon" size={30} />
+      </div>
+      <div class="flex-1">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] mb-2" style="color: rgba(232,169,106,0.9);">Cuando se apaga el día</p>
+        <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-white mb-2">También puedes descubrir Arcusa de noche</h2>
+        <p class="leading-relaxed" style="color: rgba(255,255,255,0.72);">Cielos limpios, silencio y estrellas sobre el Sobrarbe, primer Destino Starlight de Huesca.</p>
+      </div>
+      <a href="/arcusa-de-noche" class="btn-ghost flex-shrink-0">
+        <Icon name="moon" size={15} />
+        Arcusa de noche
+      </a>
     </div>
   </section>
 

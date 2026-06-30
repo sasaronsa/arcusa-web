@@ -2,6 +2,7 @@
 nombre: Villa Medieval de Aínsa
 categoria: ver
 descripcion: La capital del Sobrarbe y uno de los pueblos medievales mejor conservados de España.
+
 distancia: "~12 km"
 enlace: ""
 lat: 42.4183

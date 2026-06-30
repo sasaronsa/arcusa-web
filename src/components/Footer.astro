@@ -29,7 +29,7 @@ const year = new Date().getFullYear();
           <p class="font-serif text-2xl font-semibold text-white">Arcusa</p>
         </div>
         <p class="text-sm leading-relaxed mb-4" style="color: var(--color-piedra-clara);">
-          Pueblo Museo del Viello Sobrarbe<br />
+          Pueblo Museo del Biello Sobrarbe<br />
           Aínsa-Sobrarbe · Huesca, Aragón
         </p>
         <div class="flex flex-col gap-2">
@@ -58,6 +58,7 @@ const year = new Date().getFullYear();
             { href: '/explora',  label: 'Mapa del pueblo',     icon: 'compass' },
             { href: '/historia', label: 'Historia y patrimonio', icon: 'scroll' },
             { href: '/que-ver',  label: 'Qué ver y hacer',      icon: 'eye' },
+            { href: '/arcusa-de-noche', label: 'Arcusa de noche', icon: 'moon' },
             { href: '/eventos',  label: 'Eventos y fiestas',    icon: 'calendar' },
           ].map(item => (
             <a
@@ -107,6 +108,15 @@ const year = new Date().getFullYear();
               Visitable todo el año · Sin restricciones horarias
             </span>
           </li>
+          <li class="flex items-start gap-2.5">
+            <Icon name="mail" size={14} class="flex-shrink-0 mt-0.5" style="color: var(--color-ocre);" />
+            <span class="text-sm" style="color: var(--color-piedra-clara);">
+              Contacto y eventos:{' '}
+              <a href="mailto:avaltosobrarbe@gmail.com" class="text-white underline underline-offset-2 break-all hover:opacity-80 transition-opacity">
+                avaltosobrarbe@gmail.com
+              </a>
+            </span>
+          </li>
         </ul>
       </div>
     </div>
@@ -118,9 +128,9 @@ const year = new Date().getFullYear();
     >
       <p>© {year} Web de Arcusa — hecha con orgullo por un vecino del pueblo</p>
       <p>
-        Contenidos verificados · ¿Añadir información?{' '}
-        <a href="mailto:hola@arcusa.es" class="underline underline-offset-2 hover:text-white transition-colors">
-          Escríbenos
+        ¿Quieres añadir o corregir algo, o anunciar un evento? Escríbenos a{' '}
+        <a href="mailto:avaltosobrarbe@gmail.com" class="underline underline-offset-2 hover:text-white transition-colors">
+          avaltosobrarbe@gmail.com
         </a>
       </p>
     </div>

@@ -1,0 +1,94 @@
+---
+import Icon from './Icon.astro';
+
+/**
+ * Bloque informativo reutilizable para romper textos largos.
+ * Tipos: sabias · tradicion · dato · mito · fijate · consejo · resumen · ninos
+ *
+ * Uso en .astro:
+ *   <InfoBlock type="sabias">Texto…</InfoBlock>
+ *   <InfoBlock type="mito" cuenta="…" sabemos="…" />
+ *   <InfoBlock type="resumen" title="En 30 segundos">Texto…</InfoBlock>
+ */
+interface Props {
+  type: 'sabias' | 'tradicion' | 'dato' | 'mito' | 'fijate' | 'consejo' | 'resumen' | 'ninos';
+  title?: string;
+  icon?: string;
+  texto?: string;       // alternativa al slot (útil desde frontmatter)
+  cuenta?: string;      // solo type="mito"
+  sabemos?: string;     // solo type="mito"
+  dark?: boolean;       // variante para fondos oscuros (página "de noche")
+}
+
+const { type, title, icon, texto, cuenta, sabemos, dark = false } = Astro.props;
+
+const config: Record<string, { label: string; icon: string; accent: string; bg: string; border: string; darkAccent: string }> = {
+  sabias:   { label: '¿Sabías que…?',        icon: 'help-circle', accent: '#C4773D', bg: 'rgba(196,119,61,0.07)',  border: 'rgba(196,119,61,0.22)', darkAccent: '#E8A96A' },
+  tradicion:{ label: 'Tradición oral',        icon: 'feather',     accent: '#7C8A5C', bg: 'rgba(124,138,92,0.09)',  border: 'rgba(124,138,92,0.26)', darkAccent: '#AEBD86' },
+  dato:     { label: 'Dato histórico',        icon: 'scroll',      accent: '#5B7FA6', bg: 'rgba(91,127,166,0.08)',  border: 'rgba(91,127,166,0.22)', darkAccent: '#9FC0E0' },
+  mito:     { label: 'Mito o realidad',       icon: 'scale',       accent: '#6B5842', bg: 'rgba(107,88,66,0.07)',   border: 'rgba(107,88,66,0.22)', darkAccent: '#CDB79B' },
+  fijate:   { label: 'Fíjate en…',            icon: 'eye',         accent: '#4F6E45', bg: 'rgba(79,110,69,0.08)',   border: 'rgba(79,110,69,0.24)', darkAccent: '#93BE8D' },
+  consejo:  { label: 'Consejo para la visita',icon: 'lightbulb',   accent: '#3E5C3A', bg: 'rgba(62,92,58,0.08)',    border: 'rgba(62,92,58,0.24)', darkAccent: '#8FC093' },
+  resumen:  { label: 'En 30 segundos',        icon: 'clock',       accent: '#2E2A24', bg: 'rgba(46,42,36,0.05)',    border: 'rgba(46,42,36,0.16)', darkAccent: '#D6DCE6' },
+  ninos:    { label: 'Para niños',            icon: 'star',        accent: '#C4773D', bg: 'rgba(232,169,106,0.12)', border: 'rgba(232,169,106,0.35)', darkAccent: '#F0C088' },
+};
+
+const cfg = config[type] ?? config.dato;
+const label = title ?? cfg.label;
+const iconName = icon ?? cfg.icon;
+const isMito = type === 'mito';
+
+// Estilos según tema
+const accent = dark ? cfg.darkAccent : cfg.accent;
+const blockBg = dark ? 'rgba(255,255,255,0.04)' : cfg.bg;
+const blockBorder = dark ? 'rgba(255,255,255,0.12)' : cfg.border;
+const bodyColor = dark ? 'rgba(234,239,247,0.82)' : 'var(--color-carbon-suave)';
+const subColor = dark ? 'rgba(234,239,247,0.6)' : 'var(--color-piedra-media)';
+const iconBg = dark ? `${accent}26` : `${cfg.accent}1F`;
+---
+
+<aside
+  class:list={['info-block reveal rounded-2xl p-5 sm:p-6 my-7', dark && 'is-dark']}
+  style={`background: ${blockBg}; border: 1px solid ${blockBorder}; border-left: 3px solid ${accent};`}
+>
+  <div class="flex items-center gap-2.5 mb-3">
+    <span
+      class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+      style={`background: ${iconBg}; color: ${accent};`}
+    >
+      <Icon name={iconName} size={17} />
+    </span>
+    <p class="text-xs font-bold uppercase tracking-[0.12em]" style={`color: ${accent};`}>
+      {label}
+    </p>
+  </div>
+
+  {isMito ? (
+    <div class="flex flex-col gap-3">
+      {cuenta && (
+        <div>
+          <p class="text-xs font-semibold mb-0.5" style={`color: ${subColor};`}>Lo que se cuenta</p>
+          <p class="leading-relaxed" style={`color: ${bodyColor};`}>{cuenta}</p>
+        </div>
+      )}
+      {sabemos && (
+        <div>
+          <p class="text-xs font-semibold mb-0.5" style={`color: ${subColor};`}>Lo que sabemos</p>
+          <p class="leading-relaxed" style={`color: ${bodyColor};`}>{sabemos}</p>
+        </div>
+      )}
+      {!cuenta && !sabemos && <slot />}
+    </div>
+  ) : (
+    <div class="info-block-body leading-relaxed" style={`color: ${bodyColor};`}>
+      {texto ? <p>{texto}</p> : <slot />}
+    </div>
+  )}
+</aside>
+
+<style>
+  .info-block-body :global(p) { margin: 0; }
+  .info-block-body :global(p + p) { margin-top: 0.7em; }
+  .info-block-body :global(strong) { color: var(--color-carbon); font-weight: 600; }
+  .info-block.is-dark .info-block-body :global(strong) { color: #F2F5FA; }
+</style>

@@ -1,0 +1,59 @@
+---
+import Icon from './Icon.astro';
+
+/**
+ * Tarjeta pequeña para la sección "Qué puedes ver" de la página nocturna.
+ * Pensada para fondo oscuro; alineada con el patrón de tarjetas del sitio.
+ */
+interface Props {
+  icon: string;
+  title: string;
+  text: string;
+  nota?: string;   // p. ej. temporada / mejor época
+}
+
+const { icon, title, text, nota } = Astro.props;
+---
+
+<article
+  data-tilt
+  class="star-card reveal rounded-2xl p-5 h-full flex flex-col gap-3"
+  style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);"
+>
+  <div
+    class="star-card-icon w-11 h-11 rounded-xl flex items-center justify-center"
+    style="background: rgba(232,169,106,0.14); color: #E8A96A;"
+  >
+    <Icon name={icon} size={20} />
+  </div>
+  <div class="flex-1">
+    <h3 class="font-serif text-lg font-semibold mb-1.5" style="color: #EAEFF7;">{title}</h3>
+    <p class="text-sm leading-relaxed" style="color: rgba(234,239,247,0.72);">{text}</p>
+  </div>
+  {nota && (
+    <span
+      class="inline-flex items-center gap-1.5 self-start text-xs font-semibold px-2.5 py-1 rounded-full"
+      style="background: rgba(159,192,224,0.12); color: #9FC0E0;"
+    >
+      <Icon name="clock" size={11} />
+      {nota}
+    </span>
+  )}
+</article>
+
+<style>
+  .star-card {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .star-card:hover {
+    border-color: rgba(232,169,106,0.4);
+    box-shadow: 0 22px 50px -16px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  /* El icono flota un poco por delante en el efecto 3D */
+  .star-card-icon { transform: translateZ(26px); transition: transform 0.3s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .star-card, .star-card-icon { transform: none !important; }
+  }
+</style>

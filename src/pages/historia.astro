@@ -4,6 +4,7 @@ import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import Icon from '../components/Icon.astro';
+import InfoBlock from '../components/InfoBlock.astro';
 import { getCollection } from 'astro:content';
 
 const puntos = await getCollection('puntos');
@@ -125,6 +126,11 @@ const capasHistoria = [
       </p>
     </div>
 
+    <InfoBlock type="dato">
+      El nombre del valle aparece documentado hacia <strong>1024</strong> como <em>Ballis de Arcusa</em>:
+      el momento en que este lugar empieza a entrar en la historia escrita.
+    </InfoBlock>
+
     <div class="prose-arcusa mt-12 reveal reveal-d1">
       <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
         Una torre para vigilar una frontera
@@ -146,6 +152,12 @@ const capasHistoria = [
         al horizonte porque de esa vigilancia dependía la seguridad del territorio.
       </p>
     </div>
+
+    <InfoBlock type="fijate">
+      La puerta original de la torre <strong>no estaba a ras de suelo</strong>. Se accedía por una
+      escalera de madera que podía retirarse en caso de ataque: una defensa tan sencilla como eficaz.
+      Si te acercas, intenta localizar dónde debió estar ese acceso elevado.
+    </InfoBlock>
 
     <div class="prose-arcusa mt-12 reveal reveal-d2">
       <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
@@ -170,6 +182,11 @@ const capasHistoria = [
       </p>
     </div>
 
+    <InfoBlock type="mito"
+      cuenta="La tradición popular asegura que Felipe II pasó una noche en Casa Juste durante uno de sus viajes por Aragón."
+      sabemos="No existen documentos que lo confirmen, pero la historia sigue viva entre los vecinos y forma parte del patrimonio oral del pueblo."
+    />
+
     <div class="prose-arcusa mt-12 reveal reveal-d3">
       <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
         Cuando Arcusa fue capital del Alto Sobrarbe
@@ -188,6 +205,11 @@ const capasHistoria = [
       </p>
     </div>
 
+    <InfoBlock type="sabias">
+      Aunque hoy es un pueblo pequeño, Arcusa llegó a ser <strong>capital del municipio de Alto
+      Sobrarbe</strong> entre 1967 y 1976, antes de integrarse en el actual Aínsa-Sobrarbe.
+    </InfoBlock>
+
     <div class="prose-arcusa mt-12 reveal reveal-d4">
       <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
         Del silencio a la memoria pintada
@@ -205,6 +227,18 @@ const capasHistoria = [
         Esa es quizá la mejor forma de entender Arcusa hoy. Su historia no terminó hace siglos con la construcción de la torre o de sus casas señoriales. Sigue escribiéndose cada día. La restauración del lavadero, la recuperación de la campana de la iglesia, el cuidado del patrimonio y las numerosas obras repartidas por el pueblo muestran una comunidad que mira al futuro sin olvidar el camino recorrido. 
       </p>
     </div>
+
+    <InfoBlock type="resumen">
+      Arcusa fue un núcleo importante del Biello Sobrarbe: una torre defensiva medieval, casas
+      señoriales de piedra y un museo de pintura al aire libre que une memoria, arte y territorio.
+      En sus alrededores, un dolmen recuerda que estas montañas se habitan desde la Prehistoria.
+      Pequeño en tamaño, enorme en historia.
+    </InfoBlock>
+
+    <InfoBlock type="consejo">
+      Recorre el pueblo sin prisa y, si puedes, a primera hora o al atardecer. La luz rasante sobre
+      la piedra cambia por completo cómo se ven las fachadas, las portadas y la torre.
+    </InfoBlock>
   </section>
 
   <!-- Línea de tiempo visual -->

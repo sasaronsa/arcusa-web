@@ -71,41 +71,35 @@ const pasados = todos
           Sin eventos próximos
         </p>
         <p class="text-sm" style="color: var(--color-piedra-media);">
-          Las fiestas patronales son cada 13 de julio. Vuelve pronto para ver la agenda actualizada.
+          Las fiestas en honor a San Antonio se celebran cada mes de junio. Vuelve pronto para ver la agenda actualizada.
         </p>
       </div>
     )}
   </section>
 
-  <!-- Cómo añadir un evento -->
-  <section
-    class="py-12"
-    style="background: var(--color-cielo-palido);"
-  >
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="font-serif text-xl font-semibold mb-3" style="color: var(--color-carbon);">
-        ¿Tienes un evento que anunciar?
-      </h2>
-      <p class="text-sm leading-relaxed mb-4" style="color: var(--color-carbon-suave);">
-        Añadir un evento es tan sencillo como crear un archivo de texto. Si sabes usar GitHub,
-        puedes hacerlo directamente. Si no, escríbenos y lo publicamos nosotros. Consulta el
-        README del proyecto para ver cómo.
-      </p>
+  <!-- ¿Quieres anunciar un evento? -->
+  <section class="py-14" style="background: var(--color-cielo-palido);">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <div
-        class="inline-block text-left rounded-xl p-4 text-xs font-mono"
-        style="background: var(--color-carbon); color: var(--color-cielo-palido);"
+        class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
+        style="background: white; color: var(--color-azul-pirineo);"
       >
-        <span style="color: var(--color-salvia);"># src/content/eventos/mi-evento.md</span><br />
-        <span style="color: var(--color-piedra-clara);">---</span><br />
-        titulo: Mi evento en Arcusa<br />
-        fecha: "2025-08-15"<br />
-        lugar: Plaza Mayor<br />
-        descripcion: Descripción del evento<br />
-        categoria: actividad<br />
-        <span style="color: var(--color-piedra-clara);">---</span><br />
-        <br />
-        Texto completo del evento...
+        <Icon name="mail" size={26} />
       </div>
+      <h2 class="font-serif text-2xl font-semibold mb-3" style="color: var(--color-carbon);">
+        ¿Quieres anunciar un evento?
+      </h2>
+      <p class="leading-relaxed mb-7" style="color: var(--color-carbon-suave);">
+        Si organizas una fiesta, una actividad o cualquier cosa que ocurra en el pueblo y quieres
+        que aparezca aquí, ponte en contacto con nosotros. Nosotros nos encargamos de publicarlo.
+      </p>
+      <a
+        href="mailto:avaltosobrarbe@gmail.com?subject=Evento para la web de Arcusa"
+        class="btn-primary"
+      >
+        <Icon name="mail" size={15} />
+        Escríbenos a avaltosobrarbe@gmail.com
+      </a>
     </div>
   </section>
 

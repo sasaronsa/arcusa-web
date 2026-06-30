@@ -6,6 +6,13 @@ y: 60
 resumen: La casa señorial más representativa de Arcusa.
 imagenes: ["/images/puntos/juste.webp"]
 anio: "s. XVI–XVIII"
+en30s: "Casa Juste es la casa señorial más representativa de Arcusa: una casa fuerte que reunía torre defensiva, vivienda y capilla privada bajo un mismo tejado."
+bloques:
+  - tipo: mito
+    cuenta: "La tradición popular asegura que Felipe II pasó una noche en Casa Juste durante uno de sus viajes por Aragón."
+    sabemos: "No existen documentos que lo confirmen, pero la historia sigue viva entre los vecinos y forma parte del patrimonio oral del pueblo."
+  - tipo: fijate
+    texto: "Fíjate en los muros gruesos, las portadas de piedra y los elementos defensivos: detalles que todavía delatan el poder de la familia que la levantó."
 ---
 
 # Mucho más que una casa
@@ -17,7 +24,3 @@ No era simplemente una vivienda. Era una **casa fuerte** donde convivían la vid
 Con el paso de los siglos el edificio fue creciendo hasta convertirse en uno de los conjuntos civiles más importantes del pueblo. Sus gruesos muros y su presencia siguen recordando la importancia que Arcusa llegó a tener dentro del Alto Sobrarbe.
 
 Hoy continúa siendo uno de esos lugares que mejor explican cómo era la vida de las familias acomodadas en la montaña aragonesa.
-
-> **Un detalle que suele pasar desapercibido**
->
-> La tradición popular asegura que **Felipe II** pasó aquí una noche durante uno de sus viajes por Aragón. Aunque no existen documentos que lo confirmen, la historia sigue viva entre los vecinos y forma parte del patrimonio oral del pueblo.

@@ -20,7 +20,7 @@ const lugaresDestacados = (await getCollection('lugares'))
 ---
 
 <Layout
-  title="Arcusa – El Pueblo Museo del Viello Sobrarbe"
+  title="Arcusa – El Pueblo Museo del Biello Sobrarbe"
   description="Arcusa, en el Biello Sobrarbe, es un pueblo del Pirineo aragonés donde la historia medieval, la arquitectura tradicional y el museo de pintura al aire libre conviven entre montañas.">
   <Navigation />
   <HeroParallax />
@@ -155,7 +155,7 @@ const lugaresDestacados = (await getCollection('lugares'))
   <!-- Accesos rápidos 3D ────────────────────────── -->
   <section class="bg-section-dark py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           {
             href: '/explora',
@@ -180,6 +180,14 @@ const lugaresDestacados = (await getCollection('lugares'))
             icon: 'footprints',
             iconColor: '#7C8A5C',
             grad: 'from-[#1C2818] to-[#263420]',
+          },
+          {
+            href: '/arcusa-de-noche',
+            titulo: 'Arcusa de noche',
+            desc: 'Cielos limpios, silencio y estrellas sobre el Sobrarbe',
+            icon: 'moon',
+            iconColor: '#9FC0E0',
+            grad: 'from-[#141A2B] to-[#1E2740]',
           },
           {
             href: '/eventos',
@@ -335,7 +343,7 @@ const lugaresDestacados = (await getCollection('lugares'))
     />
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {lugaresDestacados.map((lugar, i) => (
-        <div class={`reveal reveal-d${i + 1}`}>
+        <div class={`reveal reveal-d${i + 1} h-full`}>
           <CardLugar
             nombre={lugar.data.nombre}
             categoria={lugar.data.categoria}

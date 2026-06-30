@@ -21,4 +21,4 @@ Aunque pueda parecer un elemento sencillo, representa una parte esencial de la i
 
 > **Un detalle que suele pasar desapercibido**
 >
-> Junto con la Torre de Arcusa y el Dolmen de Pueyoril, forma parte de los tres bienes patrimoniales protegidos oficialmente dentro del pueblo.
+> Junto con la Torre de Arcusa y el Dolmen de Pueyoril, forma parte de los tres bienes patrimoniales protegidos oficialmente vinculados a Arcusa y su entorno.

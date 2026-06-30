@@ -13,11 +13,23 @@ const puntos = defineCollection({
     // lat/lng: legado, ya no se usa para posicionar (queda como dato).
     lat: z.number().optional(),
     lng: z.number().optional(),
+    // Si es false, el punto no se muestra en el mapa del pueblo (p. ej. está en el entorno, no dentro).
+    enMapa: z.boolean().default(true),
     resumen: z.string(),
     imagenes: z.array(z.string()).default([]),
     anio: z.string().optional(),
     autor: z.string().optional(),
     enlace: z.string().optional(),
+    // Resumen rápido "En 30 segundos" (opcional)
+    en30s: z.string().optional(),
+    // Bloques informativos opcionales que se muestran al pie de la ficha
+    bloques: z.array(z.object({
+      tipo: z.enum(['sabias', 'tradicion', 'dato', 'mito', 'fijate', 'consejo', 'ninos']),
+      titulo: z.string().optional(),
+      texto: z.string().optional(),
+      cuenta: z.string().optional(),   // solo tipo "mito"
+      sabemos: z.string().optional(),  // solo tipo "mito"
+    })).default([]),
   }),
 });
 

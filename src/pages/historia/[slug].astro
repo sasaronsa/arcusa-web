@@ -4,6 +4,7 @@ import Navigation from '../../components/Navigation.astro';
 import Footer from '../../components/Footer.astro';
 import { getCollection, render } from 'astro:content';
 import Icon from '../../components/Icon.astro';
+import InfoBlock from '../../components/InfoBlock.astro';
 
 export async function getStaticPaths() {
   const puntos = await getCollection('puntos');
@@ -103,11 +104,32 @@ const tipoLabel: Record<string, string> = {
     )}
   </div>
 
+  <!-- Resumen rápido -->
+  {entry.data.en30s && (
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <InfoBlock type="resumen" texto={entry.data.en30s} />
+    </div>
+  )}
+
   <!-- Contenido -->
   <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
     <div class="prose-arcusa">
       <Content />
     </div>
+
+    {entry.data.bloques.length > 0 && (
+      <div class="mt-4">
+        {entry.data.bloques.map((b) => (
+          <InfoBlock
+            type={b.tipo}
+            title={b.titulo}
+            texto={b.texto}
+            cuenta={b.cuenta}
+            sabemos={b.sabemos}
+          />
+        ))}
+      </div>
+    )}
 
     <!-- Ver en el mapa -->
     <div class="mt-12 p-5 rounded-2xl flex items-center gap-4"

@@ -6,7 +6,7 @@ import SectionHeader from '../components/SectionHeader.astro';
 import MapaArcusa from '../components/MapaArcusa.astro';
 import { getCollection } from 'astro:content';
 
-const puntos = (await getCollection('puntos')).map(p => ({
+const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== false).map(p => ({
   slug: p.id,
   nombre: p.data.nombre,
   tipo: p.data.tipo,
@@ -50,7 +50,7 @@ const puntos = (await getCollection('puntos')).map(p => ({
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { color: 'var(--color-verde-pino)', label: 'Casas tradicionales', desc: 'Viviendas con nombre propio e historia familiar' },
-          { color: 'var(--color-azul-pirineo)', label: 'Patrimonio', desc: 'Torre, iglesia, dolmen, cruz y lavadero' },
+          { color: 'var(--color-azul-pirineo)', label: 'Patrimonio', desc: 'Torre, iglesia, cruz y lavadero' },
           { color: 'var(--color-piedra-media)', label: 'Museo al aire libre', desc: 'Pinturas de Luis Moreno en las fachadas' },
           { color: 'var(--color-verde-medio)', label: 'Servicios', desc: 'Alojamiento, restauración y otros' },
         ].map(item => (

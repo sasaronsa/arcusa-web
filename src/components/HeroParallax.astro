@@ -3,28 +3,28 @@ import Icon from './Icon.astro';
 
 const layers = [
   {
-    src: '/images/hero/Header4.png',
+    src: '/images/hero/Header4.webp',
     alt: 'Cielo y montañas del Pirineo',
     factor: 0.08,
     className: 'hero-layer-sky',
     style: 'bottom: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center;',
   },
   {
-    src: '/images/hero/Header3.png',
+    src: '/images/hero/Header3.webp',
     alt: 'Acantilado rocoso de la Sierra de Guara',
     factor: 0.13,
     className: 'hero-layer-cliff',
     style: 'bottom: 0; right: 0; width: auto; height: 80%; object-fit: contain; object-position: bottom right;',
   },
   {
-    src: '/images/hero/Header2.png',
+    src: '/images/hero/Header2.webp',
     alt: 'Ladera verde del Sobrarbe',
     factor: 0.22,
     className: 'hero-layer-slope',
     style: 'bottom: 0; left: 0; width: auto; height: 70%; object-fit: contain; object-position: bottom left;',
   },
   {
-    src: '/images/hero/Header1.png',
+    src: '/images/hero/Header1.webp',
     alt: 'Torreón medieval de Arcusa',
     factor: 0.38,
     className: 'hero-layer-tower',
@@ -64,11 +64,16 @@ const layers = [
     style="background: linear-gradient(to bottom, transparent 0%, rgba(244,239,230,0.6) 70%, var(--color-pergamino) 100%);"
   />
 
+  <!-- Velo de contraste para legibilidad del texto -->
+  <div
+    class="absolute inset-0 pointer-events-none hero-scrim"
+    style="background: radial-gradient(ellipse 95% 55% at 50% 38%, rgba(14,22,31,0.55) 0%, rgba(14,22,31,0.2) 45%, transparent 72%);"
+  />
+
   <!-- Contenido textual sobre las capas -->
   <div
     id="hero-text"
-    class="relative z-10 flex flex-col items-center justify-center h-full text-center px-4"
-    style="padding-bottom: 6rem;"
+    class="relative z-10 flex flex-col items-center text-center px-4 h-full justify-start pt-28 md:justify-center md:pt-0 md:pb-24"
   >
     <!-- Etiqueta geográfica -->
     <div
@@ -81,17 +86,17 @@ const layers = [
 
     <h1
       class="font-serif font-bold text-white"
-      style="font-size: clamp(4rem, 11vw, 8rem); line-height: 0.9; text-shadow: 0 2px 24px rgba(0,0,0,0.22); letter-spacing: -0.02em;"
+      style="font-size: clamp(4rem, 11vw, 8rem); line-height: 0.9; text-shadow: 0 2px 28px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.35); letter-spacing: -0.02em;"
     >
       Arcusa
     </h1>
 
     <p
-      class="mt-5 text-white/85 max-w-lg leading-relaxed"
-      style="font-size: clamp(1rem, 2.5vw, 1.2rem); text-shadow: 0 1px 10px rgba(0,0,0,0.25);"
+      class="mt-5 text-white max-w-lg leading-relaxed"
+      style="font-size: clamp(1rem, 2.5vw, 1.2rem); text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 2px 16px rgba(0,0,0,0.4);"
     >
-      El Pueblo Museo del Viello Sobrarbe.<br />
-      Dolmen, torre de frontera y arte en la piedra, a las puertas de Guara.
+      El Pueblo Museo del Biello Sobrarbe.<br />
+      Donde la piedra guarda memoria y las calles cuentan historias.
     </p>
 
     <div class="mt-9 flex flex-wrap gap-3 justify-center">
@@ -123,16 +128,20 @@ const layers = [
   @media (max-width: 767px) {
     .hero-layer-tower {
       bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      height: auto !important;
-      transform: none !important;
+      left: 50% !important;
+      right: auto !important;
+      width: auto !important;
+      height: 52% !important;
+      transform: translateX(-50%) !important;
       object-fit: contain !important;
       object-position: bottom center !important;
     }
-    .hero-layer-slope { height: 45% !important; }
-    .hero-layer-cliff { height: 45% !important; }
+    .hero-layer-slope { height: 36% !important; }
+    .hero-layer-cliff { height: 36% !important; }
+    /* En móvil el texto va arriba: velo más cargado en la zona superior */
+    .hero-scrim {
+      background: linear-gradient(to bottom, rgba(14,22,31,0.5) 0%, rgba(14,22,31,0.15) 38%, transparent 60%) !important;
+    }
   }
 </style>
 

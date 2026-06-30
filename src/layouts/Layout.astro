@@ -10,7 +10,7 @@ interface Props {
 
 const {
   title = 'Arcusa – Pueblo del Sobrarbe, Huesca',
-  description = 'Arcusa, el Pueblo Museo del Viello Sobrarbe (Aínsa-Sobrarbe, Huesca): dolmen prehistórico, torre pentagonal del siglo XI, casas señoriales, museo de pintura al aire libre y la puerta a la Sierra de Guara.',
+  description = 'Arcusa, el Pueblo Museo del Biello Sobrarbe (Aínsa-Sobrarbe, Huesca): torre pentagonal del siglo XI, casas señoriales, museo de pintura al aire libre y, en su entorno, patrimonio megalítico y la puerta a la Sierra de Guara.',
   image = '/images/og-arcusa.jpg',
   type = 'website',
 } = Astro.props;
@@ -115,17 +115,23 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
   document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
 
-  /* ── 3D tilt on data-tilt cards ──────────────────── */
-  document.querySelectorAll<HTMLElement>('[data-tilt]').forEach(card => {
-    const MAX = 8;
-    card.addEventListener('mousemove', (e: MouseEvent) => {
-      const r = card.getBoundingClientRect();
-      const x = ((e.clientX - r.left) / r.width  - 0.5) * 2;
-      const y = ((e.clientY - r.top)  / r.height - 0.5) * 2;
-      card.style.transform = `perspective(700px) rotateY(${x * MAX}deg) rotateX(${-y * MAX}deg) translateZ(6px)`;
+  /* ── 3D tilt on data-tilt cards (solo con ratón y sin reduced-motion) ── */
+  const tiltEnabled =
+    window.matchMedia('(pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (tiltEnabled) {
+    document.querySelectorAll<HTMLElement>('[data-tilt]').forEach(card => {
+      const MAX = 7;
+      card.addEventListener('mousemove', (e: MouseEvent) => {
+        const r = card.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+        const y = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+        card.style.transform = `perspective(800px) rotateY(${x * MAX}deg) rotateX(${-y * MAX}deg) translateZ(8px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg) translateZ(0)';
+      });
     });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(700px) rotateY(0deg) rotateX(0deg) translateZ(0)';
-    });
-  });
+  }
 </script>
