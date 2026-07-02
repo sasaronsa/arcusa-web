@@ -8,6 +8,7 @@ import CardLugar from '../components/CardLugar.astro';
 import CardEvento from '../components/CardEvento.astro';
 import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
+import { pueblo } from '../data/pueblo';
 
 const proximosEventos = (await getCollection('eventos'))
   .filter(e => new Date(e.data.fecha) >= new Date())
@@ -74,7 +75,7 @@ const lugaresDestacados = (await getCollection('lugares'))
             icon: 'mountain',
             iconColor: '#5B7FA6',
             iconBg:    '#EAF2FA',
-            static: '~869',
+            static: `~${pueblo.altitud}`,
             suffix: ' m',
             label: 'Altitud sobre el nivel del mar',
           },
@@ -82,22 +83,22 @@ const lugaresDestacados = (await getCollection('lugares'))
             icon: 'users',
             iconColor: '#3E5C3A',
             iconBg:    '#E8F0E8',
-            count: 37,
+            count: pueblo.habitantes,
             prefix: '~',
-            label: 'Vecinos que mantienen vivo el pueblo durante todo el año',
+            label: 'Habitantes censados que mantienen vivo el pueblo durante todo el año',
           },
           {
             icon: 'castle',
             iconColor: '#9C8567',
             iconBg:    '#F2EDE6',
-            static: 'h. 1050',
+            static: pueblo.anioTorre,
             label: 'Casi mil años vigilando el Sobrarbe',
           },
           {
             icon: 'palette',
             iconColor: '#C4773D',
             iconBg:    '#FAF0E6',
-            count: 36,
+            count: pueblo.murales,
             suffix: '+',
             label: 'Murales que convierten las calles en un museo al aire libre',
           },
@@ -365,5 +366,5 @@ const lugaresDestacados = (await getCollection('lugares'))
   </div>
   </section>
 
-  <Footer />
+  <Footer completo />
 </Layout>

@@ -20,4 +20,4 @@ En su interior se conserva una de las piezas más valiosas de Arcusa: la **pila 
 
 > **Un detalle que suele pasar desapercibido**
 >
-> La campana actual fue instalada en **1945** y restaurada en **2024** gracias al impulso de los vecinos. Durante siglos las campanas no solo llamaban a misa: también avisaban de incendios, tormentas y acontecimientos importantes para todo el pueblo.
+> La campana actual fue instalada en *1945* y restaurada en *2024* gracias al impulso de los vecinos. Durante siglos las campanas no solo llamaban a misa: también avisaban de incendios, tormentas y acontecimientos importantes para todo el pueblo.

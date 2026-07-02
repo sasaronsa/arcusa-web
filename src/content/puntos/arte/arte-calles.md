@@ -4,7 +4,9 @@ tipo: cuadro
 x: 50
 y: 58
 resumen: Arcusa es mucho más que un museo al aire libre. Es un pueblo donde el arte forma parte de la vida cotidiana.
-imagenes: []
+imagenes: ["/images/puntos/Museo/test1.webp"]
+autor: Luis Moreno y vecinos
+anio: "2020"
 enMapa: false
 ---
 

@@ -1,138 +1,76 @@
 ---
-import Icon from './Icon.astro';
+import { pueblo } from '../data/pueblo';
+
+interface Props {
+  // Se mantiene por compatibilidad con las páginas que lo pasan; el pie es
+  // minimalista e idéntico en todas.
+  completo?: boolean;
+}
 const year = new Date().getFullYear();
+
+const navItems = [
+  { href: '/explora',        label: 'Explora' },
+  { href: '/historia',       label: 'Patrimonio' },
+  { href: '/que-ver',        label: 'Experiencias' },
+  { href: '/museo',          label: 'Museo' },
+  { href: '/arcusa-de-noche', label: 'Noches' },
+  { href: '/eventos',        label: 'Agenda' },
+];
 ---
 
 <footer style="background: var(--color-carbon);" class="mt-auto">
-  <!-- Franja decorativa superior -->
+  <!-- Línea de acento fina -->
   <div
-    class="h-1 w-full"
-    style="background: linear-gradient(90deg, var(--color-verde-pino) 0%, var(--color-ocre) 50%, var(--color-azul-pirineo) 100%);"
+    class="h-px w-full"
+    style="background: linear-gradient(90deg, transparent, var(--color-ocre) 50%, transparent); opacity: 0.55;"
   />
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+    <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+      <!-- Marca -->
+      <a href="/" class="flex items-center gap-2.5" style="text-decoration: none;">
+        <svg viewBox="0 0 22 30" width="16" height="21" fill="white" aria-hidden="true">
+          <rect x="1"  y="0" width="4.5" height="7" rx="0.5"/>
+          <rect x="7"  y="0" width="4.5" height="7" rx="0.5"/>
+          <rect x="13" y="0" width="4.5" height="7" rx="0.5"/>
+          <rect x="19" y="0" width="2"   height="7" rx="0.5"/>
+          <rect x="1"  y="6" width="20" height="14" rx="0.5"/>
+          <rect x="9"  y="9" width="4" height="7" rx="2" fill="rgba(0,0,0,0.4)"/>
+          <rect x="0"  y="20" width="22" height="10" rx="0.5"/>
+          <rect x="8.5" y="24" width="5" height="6" rx="2.5" fill="rgba(0,0,0,0.4)"/>
+        </svg>
+        <span class="font-serif text-lg font-semibold text-white leading-none">Arcusa</span>
+        <span class="hidden sm:inline text-xs" style="color: var(--color-piedra-media);">
+          · Pueblo Museo del Sobrarbe
+        </span>
+      </a>
 
-      <!-- Identidad -->
-      <div>
-        <div class="flex items-center gap-2.5 mb-4">
-          <svg viewBox="0 0 22 30" width="20" height="26" fill="white" aria-hidden="true">
-            <rect x="1"  y="0" width="4.5" height="7" rx="0.5"/>
-            <rect x="7"  y="0" width="4.5" height="7" rx="0.5"/>
-            <rect x="13" y="0" width="4.5" height="7" rx="0.5"/>
-            <rect x="19" y="0" width="2"   height="7" rx="0.5"/>
-            <rect x="1"  y="6" width="20" height="14" rx="0.5"/>
-            <rect x="9"  y="9" width="4" height="7" rx="2" fill="rgba(0,0,0,0.4)"/>
-            <rect x="0"  y="20" width="22" height="10" rx="0.5"/>
-            <rect x="8.5" y="24" width="5" height="6" rx="2.5" fill="rgba(0,0,0,0.4)"/>
-          </svg>
-          <p class="font-serif text-2xl font-semibold text-white">Arcusa</p>
-        </div>
-        <p class="text-sm leading-relaxed mb-4" style="color: var(--color-piedra-clara);">
-          Pueblo Museo del Biello Sobrarbe<br />
-          Aínsa-Sobrarbe · Huesca, Aragón
-        </p>
-        <div class="flex flex-col gap-2">
-          <div class="flex items-center gap-2 text-xs" style="color: var(--color-piedra-media);">
-            <Icon name="mountain" size={13} class="flex-shrink-0" />
-            Altitud ~869 m · Valle del alto Vero
-          </div>
-          <div class="flex items-center gap-2 text-xs" style="color: var(--color-piedra-media);">
-            <Icon name="users" size={13} class="flex-shrink-0" />
-            ~38 habitantes censados
-          </div>
-          <div class="flex items-center gap-2 text-xs" style="color: var(--color-piedra-media);">
-            <Icon name="map-pin" size={13} class="flex-shrink-0" />
-            42°15′N · 0°09′E
-          </div>
-        </div>
-      </div>
-
-      <!-- Navegación -->
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.18em] mb-5" style="color: var(--color-piedra-media);">
-          Explorar
-        </p>
-        <nav aria-label="Navegación pie de página" class="flex flex-col gap-3">
-          {[
-            { href: '/explora',  label: 'Mapa del pueblo',     icon: 'compass' },
-            { href: '/historia', label: 'Historia y patrimonio', icon: 'scroll' },
-            { href: '/que-ver',  label: 'Qué ver y hacer',      icon: 'eye' },
-            { href: '/arcusa-de-noche', label: 'Arcusa de noche', icon: 'moon' },
-            { href: '/eventos',  label: 'Eventos y fiestas',    icon: 'calendar' },
-          ].map(item => (
-            <a
-              href={item.href}
-              class="flex items-center gap-2.5 text-sm transition-colors hover:text-white group"
-              style="color: var(--color-piedra-clara);"
-            >
-              <span
-                class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors group-hover:text-white"
-                style="background: rgba(255,255,255,0.06); color: var(--color-piedra-media);"
-              >
-                <Icon name={item.icon} size={13} />
-              </span>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-
-      <!-- Info útil -->
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.18em] mb-5" style="color: var(--color-piedra-media);">
-          Visitar Arcusa
-        </p>
-        <ul class="flex flex-col gap-3.5">
-          <li class="flex items-start gap-2.5">
-            <Icon name="landmark" size={14} class="flex-shrink-0 mt-0.5" style="color: var(--color-ocre);" />
-            <span class="text-sm" style="color: var(--color-piedra-clara);">
-              Patrimonio protegido: <strong class="text-white">dolmen, torre y Cruz de San Antonio</strong>
-            </span>
-          </li>
-          <li class="flex items-start gap-2.5">
-            <Icon name="map-pin" size={14} class="flex-shrink-0 mt-0.5" style="color: var(--color-ocre);" />
-            <span class="text-sm" style="color: var(--color-piedra-clara);">
-              Cómo llegar: <strong class="text-white">A-2205 desde Aínsa</strong> (~12 km)
-            </span>
-          </li>
-          <li class="flex items-start gap-2.5">
-            <Icon name="palette" size={14} class="flex-shrink-0 mt-0.5" style="color: var(--color-ocre);" />
-            <span class="text-sm" style="color: var(--color-piedra-clara);">
-              Museo al aire libre: <strong class="text-white">entrada libre</strong>
-            </span>
-          </li>
-          <li class="flex items-start gap-2.5">
-            <Icon name="clock" size={14} class="flex-shrink-0 mt-0.5" style="color: var(--color-ocre);" />
-            <span class="text-sm" style="color: var(--color-piedra-clara);">
-              Visitable todo el año · Sin restricciones horarias
-            </span>
-          </li>
-          <li class="flex items-start gap-2.5">
-            <Icon name="mail" size={14} class="flex-shrink-0 mt-0.5" style="color: var(--color-ocre);" />
-            <span class="text-sm" style="color: var(--color-piedra-clara);">
-              Contacto y eventos:{' '}
-              <a href="mailto:avaltosobrarbe@gmail.com" class="text-white underline underline-offset-2 break-all hover:opacity-80 transition-opacity">
-                avaltosobrarbe@gmail.com
-              </a>
-            </span>
-          </li>
-        </ul>
-      </div>
+      <!-- Navegación en línea -->
+      <nav aria-label="Pie de página" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+        {navItems.map(item => (
+          <a
+            href={item.href}
+            class="transition-colors hover:text-white"
+            style="color: var(--color-piedra-clara);"
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
     </div>
 
-    <!-- Pie legal -->
+    <!-- Línea legal -->
     <div
-      class="mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs"
-      style="border-top: 1px solid rgba(205,187,160,0.12); color: var(--color-piedra-media);"
+      class="mt-6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs"
+      style="border-top: 1px solid rgba(205,187,160,0.1); color: var(--color-piedra-media);"
     >
-      <p>© {year} Web de Arcusa — hecha con orgullo por un vecino del pueblo</p>
-      <p>
-        ¿Quieres añadir o corregir algo, o anunciar un evento? Escríbenos a{' '}
-        <a href="mailto:avaltosobrarbe@gmail.com" class="underline underline-offset-2 hover:text-white transition-colors">
-          avaltosobrarbe@gmail.com
-        </a>
-      </p>
+      <p>© {year} Arcusa · hecho por un vecino del pueblo</p>
+      <a
+        href={`mailto:${pueblo.email}`}
+        class="underline underline-offset-2 hover:text-white transition-colors break-all"
+      >
+        {pueblo.email}
+      </a>
     </div>
   </div>
 </footer>

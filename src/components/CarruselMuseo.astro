@@ -1,0 +1,582 @@
+---
+import Icon from './Icon.astro';
+
+interface Cuadro {
+  slug: string;
+  nombre: string;
+  resumen: string;
+  imagen?: string;
+  anio?: string;
+  autor?: string;
+}
+
+interface Props {
+  cuadros: Cuadro[];
+}
+
+const { cuadros } = Astro.props;
+const multiple = cuadros.length > 1;
+---
+
+<div class="cf" data-cf-count={cuadros.length}>
+  <div class="cf-stage" id="cf-stage">
+    <div class="cf-track" id="cf-track">
+      {cuadros.map((c, i) => (
+        <div
+          class="cf-card"
+          data-index={i}
+          role="button"
+          tabindex="0"
+          aria-label={`Obra: ${c.nombre}`}
+        >
+          <div class="cf-inner">
+            <!-- Cara frontal: la obra -->
+            <div class="cf-face cf-front">
+              {c.imagen ? (
+                <img src={c.imagen} alt={c.nombre} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+              ) : (
+                <div class="cf-ph">
+                  <Icon name="frame" size={34} />
+                  <span>Obra sin fotografía todavía</span>
+                </div>
+              )}
+              <div class="cf-front-veil"></div>
+              <div class="cf-front-cap">
+                <span class="cf-num">Nº {String(i + 1).padStart(2, '0')}</span>
+                <h3>{c.nombre}</h3>
+              </div>
+              <span class="cf-flip-hint" aria-hidden="true">
+                <Icon name="info" size={13} />
+                Pulsa para girar
+              </span>
+            </div>
+
+            <!-- Cara trasera: la postal -->
+            <div class="cf-face cf-back">
+              <div class="cf-postmark" aria-hidden="true">
+                <span>ARCUSA</span>
+                <span>· SOBRARBE ·</span>
+              </div>
+              <p class="cf-back-eyebrow">Museo al aire libre</p>
+              <h3 class="cf-back-title">{c.nombre}</h3>
+              <div class="cf-back-meta">
+                {c.autor && (
+                  <span><Icon name="brush" size={12} />{c.autor}</span>
+                )}
+                {c.anio && (
+                  <span><Icon name="calendar" size={12} />{c.anio}</span>
+                )}
+              </div>
+              <div class="cf-back-rule"></div>
+              <p class="cf-back-quote">{c.resumen}</p>
+              <a
+                href={`/historia/${c.slug}`}
+                class="cf-back-link"
+                data-nav-link
+              >
+                Ver la historia completa
+                <Icon name="arrow-right" size={12} />
+              </a>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {multiple && (
+    <div class="cf-controls">
+      <button id="cf-prev" type="button" class="cf-arrow" aria-label="Obra anterior">
+        <Icon name="arrow-right" size={18} style="transform: rotate(180deg);" />
+      </button>
+      <div class="cf-dots" id="cf-dots">
+        {cuadros.map((_, i) => (
+          <button type="button" class="cf-dot" data-dot={i} aria-label={`Ir a la obra ${i + 1}`}></button>
+        ))}
+      </div>
+      <button id="cf-next" type="button" class="cf-arrow" aria-label="Obra siguiente">
+        <Icon name="arrow-right" size={18} />
+      </button>
+    </div>
+  )}
+</div>
+
+<style>
+  .cf {
+    --cf-paper: #f3e9d8;
+    width: 100%;
+    user-select: none;
+    /* Recorta las tarjetas laterales que asoman fuera del viewport (evita
+       scroll horizontal en móvil). `clip` recorta en pintura sin crear un
+       contenedor de scroll. */
+    overflow-x: clip;
+  }
+
+  .cf-stage {
+    position: relative;
+    width: 100%;
+    height: 480px; /* recalculado por JS */
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .cf-stage:active { cursor: grabbing; }
+
+  .cf-track { position: absolute; inset: 0; }
+
+  .cf-card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    height: 400px;
+    border-radius: 1.15rem;
+    transform: translate(-50%, -50%);
+    transition:
+      transform 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .cf-card:focus-visible { outline: none; }
+  .cf-card:focus-visible .cf-inner {
+    box-shadow: 0 0 0 3px var(--color-ocre-suave), 0 30px 60px -20px rgba(0, 0, 0, 0.7);
+  }
+
+  .cf-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    transition: box-shadow 0.4s ease;
+    box-shadow:
+      0 0 0 1px rgba(243, 233, 216, 0.12),
+      0 30px 60px -18px rgba(0, 0, 0, 0.8);
+  }
+  .cf-card.is-center .cf-inner {
+    box-shadow:
+      0 0 0 1px rgba(243, 233, 216, 0.18),
+      0 0 60px -12px rgba(232, 169, 106, 0.35),
+      0 40px 80px -24px rgba(0, 0, 0, 0.85);
+  }
+  /* Giro sin contexto 3D compartido: cada cara rota por su cuenta con
+     perspective() y se conmuta por opacidad a mitad del giro. Así no hay
+     preserve-3d ni backface-visibility que Chrome pueda descartar al scrollear. */
+  .cf-face {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    transition:
+      transform 0.75s cubic-bezier(0.65, 0, 0.35, 1),
+      opacity 0s linear 0.37s;
+  }
+  .cf-front { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+  .cf-back  { transform: perspective(1400px) rotateY(180deg); opacity: 0; }
+  .cf-card.is-flipped .cf-front { transform: perspective(1400px) rotateY(-180deg); opacity: 0; }
+  .cf-card.is-flipped .cf-back  { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+
+  /* ── Frente: la obra ── */
+  .cf-front {
+    background: linear-gradient(160deg, #2a221c 0%, #17110d 100%);
+    padding: 12px;
+  }
+  .cf-front img,
+  .cf-front .cf-ph {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0.85rem;
+    display: block;
+  }
+  .cf-ph {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1rem;
+    text-align: center;
+    background:
+      radial-gradient(ellipse 90% 70% at 50% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+      linear-gradient(150deg, #e9ddc8 0%, #d3c2a4 100%);
+    color: var(--color-piedra-oscura);
+    box-shadow: inset 0 0 0 1px rgba(107, 88, 66, 0.15), inset 0 2px 20px rgba(107, 88, 66, 0.12);
+  }
+  .cf-ph span { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; }
+
+  .cf-front-veil {
+    position: absolute;
+    inset: 12px;
+    border-radius: 0.85rem;
+    background: linear-gradient(to top, rgba(10, 7, 5, 0.82) 0%, rgba(10, 7, 5, 0.15) 40%, transparent 62%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .cf-front-cap {
+    position: absolute;
+    left: 26px;
+    right: 26px;
+    bottom: 24px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.45s ease 0.05s, transform 0.45s ease 0.05s;
+    pointer-events: none;
+  }
+  .cf-num {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-ocre-suave);
+    margin-bottom: 0.35rem;
+  }
+  .cf-front-cap h3 {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  }
+  .cf-flip-hint {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(20, 15, 11, 0.5);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    pointer-events: none;
+  }
+
+  /* Solo la carta central muestra rótulo, velo y pista */
+  .cf-card.is-center .cf-front-veil { opacity: 1; }
+  .cf-card.is-center .cf-front-cap { opacity: 1; transform: translateY(0); }
+  .cf-card.is-center:hover .cf-flip-hint,
+  .cf-card.is-center:focus-visible .cf-flip-hint { opacity: 1; transform: translateY(0); }
+  .cf-card.is-flipped .cf-front-cap,
+  .cf-card.is-flipped .cf-flip-hint { opacity: 0; }
+
+  /* ── Reverso: la postal ── */
+  .cf-back {
+    background:
+      radial-gradient(ellipse 120% 90% at 100% 0%, rgba(196, 119, 61, 0.1) 0%, transparent 55%),
+      var(--cf-paper);
+    color: var(--color-carbon-suave);
+    padding: 2rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Textura sutil de postal + sello de correos */
+  .cf-back::before {
+    content: '';
+    position: absolute;
+    top: 1.4rem;
+    bottom: 1.4rem;
+    left: 55%;
+    width: 1px;
+    background: repeating-linear-gradient(to bottom, rgba(107, 88, 66, 0.28) 0 5px, transparent 5px 11px);
+  }
+  .cf-postmark {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.6rem;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(107, 88, 66, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-11deg);
+    color: rgba(107, 88, 66, 0.65);
+    text-align: center;
+  }
+  .cf-postmark span:first-child { font-family: var(--font-serif); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; }
+  .cf-postmark span:last-child { font-size: 0.42rem; letter-spacing: 0.08em; margin-top: 1px; }
+
+  .cf-back-eyebrow {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+    margin-bottom: 0.5rem;
+  }
+  .cf-back-title {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.12;
+    color: var(--color-carbon);
+    max-width: 78%;
+  }
+  .cf-back-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin-top: 0.7rem;
+  }
+  .cf-back-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-piedra-oscura);
+  }
+  .cf-back-rule {
+    height: 1px;
+    margin: 0.9rem 0 0.9rem;
+    background: linear-gradient(to right, rgba(196, 119, 61, 0.6), transparent);
+  }
+  .cf-back-quote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--color-carbon-suave);
+    flex: 1;
+    overflow: hidden;
+  }
+  .cf-back-quote::before { content: '\201C'; }
+  .cf-back-quote::after { content: '\201D'; }
+  .cf-back-link {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-azul-pirineo);
+    text-decoration: none;
+  }
+  .cf-back-link:hover { color: var(--color-verde-medio); }
+
+  /* Las tarjetas laterales son rectángulos atenuados (mismo formato que la
+     central). Cursor de "pulsable" para indicar que llevan al centro. */
+  .cf-card:not(.is-center) { cursor: pointer; }
+  .cf-card:not(.is-center) .cf-inner {
+    box-shadow: 0 18px 34px -18px rgba(0, 0, 0, 0.7);
+  }
+
+  /* ── Controles ── */
+  .cf-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .cf-arrow {
+    width: 46px;
+    height: 46px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f3e9d8;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(243, 233, 216, 0.22);
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  .cf-arrow:hover {
+    background: var(--color-ocre);
+    border-color: var(--color-ocre);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  .cf-dots { display: flex; align-items: center; gap: 0.5rem; }
+  .cf-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: rgba(243, 233, 216, 0.25);
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+  .cf-dot.is-active { width: 26px; background: var(--color-ocre-suave); }
+
+  @media (max-width: 640px) {
+    .cf-back { padding: 1.5rem 1.4rem; }
+    .cf-back-title { font-size: 1.15rem; max-width: 100%; }
+    .cf-back-quote { font-size: 0.9rem; }
+    .cf-postmark { width: 50px; height: 50px; }
+    .cf-back::before { left: 60%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cf-card, .cf-inner { transition: opacity 0.3s ease; }
+    .cf-face { transition-delay: 0s; }
+  }
+</style>
+
+<script>
+  function initCoverflow() {
+    const stage = document.getElementById('cf-stage');
+    const track = document.getElementById('cf-track');
+    if (!stage || !track) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('.cf-card'));
+    const n = cards.length;
+    const prevBtn = document.getElementById('cf-prev');
+    const nextBtn = document.getElementById('cf-next');
+    const dots = Array.from(document.querySelectorAll<HTMLElement>('.cf-dot'));
+
+    let current = 0;
+
+    const wrappedOffset = (i: number) => {
+      let o = i - current;
+      o = ((o % n) + n) % n;
+      if (o > n / 2) o -= n;
+      return o;
+    };
+
+    const layout = () => {
+      // El escenario ocupa todo el ancho (full-bleed), así que el ancho del
+      // viewport es la fuente más fiable. `clientWidth` puede devolver valores
+      // transitorios pequeños durante el primer layout y colapsar el carrusel.
+      let cw = stage.getBoundingClientRect().width;
+      if (cw < 200) cw = window.innerWidth;
+      const mobile = cw < 640;
+
+      // Todas las tarjetas tienen el mismo tamaño; la central destaca por
+      // escala y opacidad, no por cambiar de forma. Deslizamiento limpio.
+      // Formato postal vertical: alto y estrecho. Las laterales van más
+      // encogidas para reforzar el foco en la central.
+      // Formato postal apaisado (3:2). La central manda; las laterales
+      // asoman encogidas y algo por detrás de sus bordes.
+      let baseW: number, baseH: number;
+      if (mobile) {
+        baseW = Math.min(cw * 0.82, 380);
+        baseH = baseW / 1.5;
+      } else {
+        baseW = Math.min(cw * 0.44, 560);
+        baseH = baseW / 1.5;
+      }
+      const spacing = baseW * (mobile ? 0.82 : 0.8);
+      const sideScale = mobile ? 0.72 : 0.76;
+      const sideOpacity = mobile ? 0.42 : 0.5;
+
+      stage.style.height = `${Math.round(baseH + (mobile ? 56 : 84))}px`;
+
+      cards.forEach((card, i) => {
+        const o = wrappedOffset(i);
+        const ao = Math.abs(o);
+        card.classList.toggle('is-center', o === 0);
+        card.style.width = `${Math.round(baseW)}px`;
+        card.style.height = `${Math.round(baseH)}px`;
+
+        if (o === 0) {
+          card.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+          card.style.opacity = '1';
+          card.style.zIndex = '30';
+          card.style.pointerEvents = 'auto';
+        } else {
+          const sign = o < 0 ? -1 : 1;
+          const x = sign * spacing * ao;
+          const scale = Math.pow(sideScale, ao);
+          // Solo se ven la central y sus dos vecinas inmediatas. El resto queda
+          // a opacidad 0, así el salto de wrap (360°) ocurre sin verse cruzar nada.
+          const visible = ao === 1;
+          card.style.transform =
+            `translate(-50%, -50%) translateX(${Math.round(x)}px) scale(${scale.toFixed(3)})`;
+          card.style.opacity = visible ? String(sideOpacity) : '0';
+          card.style.zIndex = String(20 - ao);
+          card.style.pointerEvents = visible ? 'auto' : 'none';
+          card.classList.remove('is-flipped');
+        }
+      });
+
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === current));
+    };
+
+    const unflipAll = () => cards.forEach(c => c.classList.remove('is-flipped'));
+
+    const goTo = (i: number) => {
+      current = ((i % n) + n) % n;
+      unflipAll();
+      layout();
+    };
+    const step = (dir: number) => goTo(current + dir);
+
+    prevBtn?.addEventListener('click', () => step(-1));
+    nextBtn?.addEventListener('click', () => step(1));
+    dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+
+    cards.forEach(card => {
+      const i = Number(card.dataset.index);
+      card.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+        else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (i === current) card.classList.toggle('is-flipped');
+          else goTo(i);
+        }
+      });
+    });
+
+    // Puntero: distinguir clic de arrastre; enlaces del reverso navegan sin girar
+    let downX = 0, downY = 0, moved = false, dragging = false;
+
+    stage.addEventListener('pointerdown', (e: PointerEvent) => {
+      dragging = true;
+      moved = false;
+      downX = e.clientX;
+      downY = e.clientY;
+    });
+    stage.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!dragging) return;
+      if (Math.abs(e.clientX - downX) > 8 || Math.abs(e.clientY - downY) > 8) moved = true;
+    });
+    const endDrag = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - downX;
+      if (moved && Math.abs(dx) > 45) { step(dx < 0 ? 1 : -1); return; }
+      if (moved) return;
+
+      // clic limpio
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-nav-link]')) return; // dejar navegar el enlace
+      const card = target.closest('.cf-card') as HTMLElement | null;
+      if (!card) return;
+      const i = Number(card.dataset.index);
+      if (i === current) card.classList.toggle('is-flipped');
+      else goTo(i);
+    };
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', () => { dragging = false; });
+
+    let resizeRaf = 0;
+    const scheduleLayout = () => {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(layout);
+    };
+    window.addEventListener('resize', scheduleLayout);
+    window.addEventListener('load', scheduleLayout);
+
+    // Layout inicial + reintentos por si las fuentes/estilos reflejan tarde.
+    layout();
+    requestAnimationFrame(layout);
+    setTimeout(layout, 250);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCoverflow);
+  } else {
+    initCoverflow();
+  }
+</script>

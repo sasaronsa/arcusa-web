@@ -1,0 +1,271 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
+import CarruselMuseo from '../components/CarruselMuseo.astro';
+import { getCollection } from 'astro:content';
+import { pueblo } from '../data/pueblo';
+
+const cuadros = (await getCollection('puntos'))
+  .filter(p => p.data.tipo === 'cuadro')
+  .map(p => ({
+    slug: p.id.split('/').pop()!,
+    nombre: p.data.nombre,
+    resumen: p.data.resumen,
+    imagen: p.data.imagenes[0],
+    anio: p.data.anio,
+    autor: p.data.autor,
+  }));
+
+const stats = [
+  { valor: `${pueblo.murales}+`, label: 'Murales y obras' },
+  { valor: '2020', label: 'Primer cuadro' },
+  { valor: 'Libre', label: 'Entrada · sin horario' },
+];
+---
+
+<Layout
+  title="Museo al aire libre – La memoria pintada de Arcusa"
+  description="El Museo de Pintura al Aire Libre de Arcusa: murales de Luis Moreno y vecinos que convierten las fachadas del pueblo en un recorrido por su memoria."
+>
+  <div class="museo">
+    <Navigation />
+
+    <!-- ══════ SALA 1 · La galería (oscuro, inmersivo) ══════ -->
+    <section class="museo-gallery">
+      <!-- Textura + focos de sala -->
+      <div class="museo-grain" aria-hidden="true"></div>
+
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+        <p class="museo-eyebrow">
+          <span class="museo-eyebrow-line"></span>
+          Colección viva · Sobrarbe
+          <span class="museo-eyebrow-line"></span>
+        </p>
+        <h1 class="museo-title">
+          La memoria<br /><em>pintada</em> de Arcusa
+        </h1>
+        <p class="museo-lead">
+          Un museo sin paredes ni vitrinas. Aquí las obras viven en las fachadas
+          y se descubren caminando, levantando la vista.
+        </p>
+
+        <div class="museo-stats" role="list">
+          {stats.map(s => (
+            <div class="museo-stat" role="listitem">
+              <span class="museo-stat-val">{s.valor}</span>
+              <span class="museo-stat-label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- El coverflow -->
+      <div class="museo-carousel-wrap">
+        <CarruselMuseo cuadros={cuadros} />
+        <p class="museo-hint">
+          <Icon name="navigation" size={13} />
+          Arrastra o usa las flechas · pulsa la obra central para leer su historia
+        </p>
+      </div>
+    </section>
+
+    <!-- ══════ SALA 2 · El origen (claro, narrativo, contraste) ══════ -->
+    <section class="museo-origin">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="reveal">
+          <p class="museo-origin-eyebrow">El origen</p>
+          <h2 class="museo-origin-title">Cuando un pueblo decidió pintar su memoria</h2>
+        </div>
+
+        <blockquote class="museo-pull reveal">
+          Primero existía el pueblo. Después llegaron las historias. Y finalmente
+          las pinturas, para que ninguna se perdiera con el tiempo.
+        </blockquote>
+
+        <div class="prose-arcusa reveal">
+          <p>
+            Todo comenzó en <strong>2020</strong>, cuando el vecino y artista{' '}
+            <strong>Luis Moreno</strong> sacó su pintura a la calle. Aquella primera obra fue
+            el inicio de un recorrido que hoy es una de las señas de identidad de Arcusa: cada
+            mural recuerda un oficio, un vecino, una tradición o una escena cotidiana.
+          </p>
+          <p>
+            Pero el arte no termina en las pinturas. Paseando aparecen esculturas de madera,
+            piedras talladas y pequeñas intervenciones creadas por los propios vecinos,
+            convirtiendo el pueblo en un espacio vivo donde cada persona ha dejado su huella.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ CTA ══════ -->
+    <section class="museo-cta">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <Icon name="map-pin" size={26} class="mx-auto mb-4" style="color: var(--color-ocre-suave);" />
+        <h2 class="museo-cta-title">Descúbrelo caminando</h2>
+        <p class="museo-cta-text">
+          Muchas obras no están señalizadas a propósito: esa es la idea, encontrarlas
+          poco a poco como pequeños secretos entre las calles.
+        </p>
+        <a href="/explora" class="btn-ghost">
+          Ver el pueblo en el mapa
+          <Icon name="arrow-right" size={14} />
+        </a>
+      </div>
+    </section>
+
+    <Footer />
+  </div>
+</Layout>
+
+<style>
+  /* ════════ SALA 1 · Galería oscura y cálida ════════ */
+  .museo-gallery {
+    position: relative;
+    overflow: hidden;
+    padding: 9rem 0 5rem;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(196, 119, 61, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 15% 110%, rgba(91, 127, 166, 0.12) 0%, transparent 55%),
+      linear-gradient(180deg, #1c1611 0%, #12100e 55%, #191512 100%);
+  }
+  .museo-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+    background-size: 34px 34px;
+  }
+
+  .museo-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-ocre-suave);
+    margin-bottom: 1.6rem;
+  }
+  .museo-eyebrow-line {
+    display: block;
+    width: 34px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(232, 169, 106, 0.7), transparent);
+  }
+
+  .museo-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(1.95rem, 7.5vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #f6efe4;
+    text-wrap: balance;
+  }
+  .museo-title em {
+    font-style: italic;
+    background: linear-gradient(120deg, var(--color-ocre-suave), #f0c48a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .museo-lead {
+    max-width: 34rem;
+    margin: 1.6rem auto 0;
+    font-size: 1.12rem;
+    line-height: 1.7;
+    color: rgba(243, 233, 216, 0.72);
+  }
+
+  .museo-stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    margin-top: 2.8rem;
+  }
+  .museo-stat { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+  .museo-stat-val {
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #f6efe4;
+  }
+  .museo-stat-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(243, 233, 216, 0.5);
+  }
+
+  .museo-carousel-wrap { margin-top: 4rem; }
+  .museo-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: rgba(243, 233, 216, 0.55);
+  }
+
+  /* ════════ SALA 2 · El origen (claro, aire y contraste) ════════ */
+  .museo-origin {
+    position: relative;
+    padding: 6.5rem 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 100% 0%, rgba(196, 119, 61, 0.08) 0%, transparent 55%),
+      #f7f1e7;
+  }
+  .museo-origin-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+    margin-bottom: 0.9rem;
+  }
+  .museo-origin-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.12;
+    color: var(--color-carbon);
+    letter-spacing: -0.01em;
+  }
+  .museo-pull {
+    margin: 2.4rem 0;
+    padding-left: 1.6rem;
+    border-left: 3px solid var(--color-ocre);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    line-height: 1.4;
+    color: var(--color-piedra-oscura);
+  }
+
+  /* ════════ CTA (vuelve a oscuro para cerrar la sala) ════════ */
+  .museo-cta {
+    padding: 6rem 0 7rem;
+    background: linear-gradient(180deg, #191512 0%, #12100e 100%);
+  }
+  .museo-cta-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #f6efe4;
+    margin-bottom: 1rem;
+  }
+  .museo-cta-text {
+    max-width: 32rem;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+    color: rgba(243, 233, 216, 0.7);
+  }
+</style>
