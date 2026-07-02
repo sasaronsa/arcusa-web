@@ -478,6 +478,11 @@ const puntosConPos = puntos.map(p => ({
       smoothScroll: false,
       // no iniciar arrastre al pulsar un marcador/burbuja (deja pasar el clic)
       beforeMouseDown: (e: any) => !!(e.target as HTMLElement)?.closest('.punto-marker'),
+      // Equivalente táctil de beforeMouseDown: sin esto, panzoom hace
+      // preventDefault()/stopPropagation() en TODO touchstart por defecto
+      // (incluidos los marcadores), así que el tap nunca llega a generar un
+      // click y los círculos del mapa no abren nada en móvil.
+      onTouch: (e: TouchEvent) => !(e.target as HTMLElement)?.closest('.punto-marker'),
     });
 
     resetView();
