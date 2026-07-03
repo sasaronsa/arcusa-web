@@ -129,18 +129,8 @@ import Icon from '../Icon.astro';
   .fp-mensaje.error { background: rgba(196,87,61,0.1); color: #A5432B; }
 
   :global(.fp-pin) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    background: #C4573D;
-    border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
   }
-  :global(.fp-pin svg) { transform: rotate(45deg); color: white; width: 13px; height: 13px; }
 </style>
 
 <script>
@@ -163,13 +153,11 @@ import Icon from '../Icon.astro';
   let seleccion: { lat: number; lng: number } | null = null;
   let marker: L.Marker | null = null;
 
-  // Icono propio (SVG inline): el icono por defecto de Leaflet depende de
-  // imágenes que Vite no resuelve bien, así que evitamos L.marker() sin icon.
-  const iconoSeleccion = L.divIcon({
+  const iconoSeleccion = L.icon({
     className: 'fp-pin',
-    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/></svg>',
-    iconSize: [26, 26],
-    iconAnchor: [13, 26],
+    iconUrl: '/images/icons/chicheta-roja.png',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
   });
 
   const picker = L.map(pickerEl, { worldCopyJump: true }).setView([30, 10], 2);

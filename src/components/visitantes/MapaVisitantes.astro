@@ -67,19 +67,8 @@ import Icon from '../Icon.astro';
   }
 
   :global(.mv-pin) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
   }
-  :global(.mv-pin-normal) { background: #C4573D; }
-  :global(.mv-pin-dorado) { background: linear-gradient(135deg, #E8A96A, #C4773D); }
-  :global(.mv-pin svg) { transform: rotate(45deg); color: white; width: 13px; height: 13px; }
 
   :global(.leaflet-popup-content-wrapper) {
     border-radius: 0.9rem;
@@ -115,17 +104,23 @@ import Icon from '../Icon.astro';
     maxZoom: 18,
   }).addTo(map);
 
+  const iconoNormal = L.icon({
+    className: 'mv-pin',
+    iconUrl: '/images/icons/chicheta-roja.png',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15],
+  });
+  const iconoDorado = L.icon({
+    className: 'mv-pin',
+    iconUrl: '/images/icons/chincheta-dorada.png',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15],
+  });
+
   function icono(tipo: 'normal' | 'dorado') {
-    const svg = tipo === 'dorado'
-      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>'
-      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/></svg>';
-    return L.divIcon({
-      className: `mv-pin ${tipo === 'dorado' ? 'mv-pin-dorado' : 'mv-pin-normal'}`,
-      html: svg,
-      iconSize: [26, 26],
-      iconAnchor: [13, 26],
-      popupAnchor: [0, -24],
-    });
+    return tipo === 'dorado' ? iconoDorado : iconoNormal;
   }
 
   function formatoFecha(ts: number) {
