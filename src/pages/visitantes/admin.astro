@@ -1,0 +1,141 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Administración de pines – Visitantes" noindex>
+  <main class="ad-main">
+    <div class="ad-wrap">
+      <h1 class="ad-title">Moderación de pines · Visitantes</h1>
+
+      <form id="ad-login" class="ad-login">
+        <label class="ad-label">
+          Contraseña de administración
+          <input id="ad-password" type="password" class="ad-input" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <p id="ad-login-error" class="ad-error" hidden></p>
+      </form>
+
+      <div id="ad-panel" class="ad-panel" hidden>
+        <p id="ad-total" class="ad-total"></p>
+        <div id="ad-lista" class="ad-lista"></div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .ad-main { min-height: 100svh; background: var(--color-pergamino); padding: 3rem 1.25rem; }
+  .ad-wrap { max-width: 860px; margin: 0 auto; }
+  .ad-title { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; color: var(--color-carbon); margin-bottom: 1.5rem; }
+
+  .ad-login { display: flex; flex-direction: column; gap: 1rem; max-width: 320px; }
+  .ad-label { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--color-carbon); }
+  .ad-input { padding: 0.6rem 0.8rem; border-radius: 0.6rem; border: 1px solid rgba(156,133,103,0.4); font-size: 0.95rem; }
+  .ad-error { color: #A5432B; font-size: 0.85rem; font-weight: 600; }
+
+  .ad-panel { margin-top: 2rem; }
+  .ad-total { font-size: 0.9rem; color: var(--color-piedra-media); margin-bottom: 1rem; }
+  .ad-lista { display: flex; flex-direction: column; gap: 0.75rem; }
+  .ad-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 0.9rem;
+    background: white;
+    border: 1px solid rgba(156,133,103,0.2);
+  }
+  .ad-row-info p { margin: 0; }
+  .ad-row-nombre { font-weight: 700; color: var(--color-carbon); }
+  .ad-row-meta { font-size: 0.78rem; color: var(--color-piedra-media); margin-top: 0.2rem !important; }
+  .ad-row-comentario { font-size: 0.85rem; color: var(--color-carbon-suave); margin-top: 0.35rem !important; }
+  .ad-row-borrar {
+    flex-shrink: 0;
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #A5432B;
+    background: rgba(196,87,61,0.1);
+    border: 1px solid rgba(196,87,61,0.3);
+    cursor: pointer;
+  }
+  .ad-row-borrar:hover { background: rgba(196,87,61,0.18); }
+  .ad-tag-dorado { color: #9C6B1F; font-weight: 700; }
+</style>
+
+<script>
+  interface PinAdmin {
+    id: number;
+    nombre: string;
+    comentario: string | null;
+    lat: number;
+    lng: number;
+    tipo: 'normal' | 'dorado';
+    pais: string | null;
+    ip_prefix: string;
+    created_at: number;
+  }
+
+  const loginForm = document.getElementById('ad-login') as HTMLFormElement;
+  const passwordInput = document.getElementById('ad-password') as HTMLInputElement;
+  const loginError = document.getElementById('ad-login-error')!;
+  const panel = document.getElementById('ad-panel')!;
+  const total = document.getElementById('ad-total')!;
+  const lista = document.getElementById('ad-lista')!;
+
+  let password = '';
+
+  function renderPines(pines: PinAdmin[]) {
+    total.textContent = `${pines.length} pines`;
+    lista.innerHTML = '';
+    pines.forEach((p) => {
+      const row = document.createElement('div');
+      row.className = 'ad-row';
+      row.innerHTML = `
+        <div class="ad-row-info">
+          <p class="ad-row-nombre">${p.nombre.replace(/</g, '&lt;')} ${p.tipo === 'dorado' ? '<span class="ad-tag-dorado">★ dorado</span>' : ''}</p>
+          <p class="ad-row-meta">#${p.id} · ${p.pais ?? 'país desconocido'} · ip ${p.ip_prefix}… · ${new Date(p.created_at).toLocaleString('es-ES')}</p>
+          ${p.comentario ? `<p class="ad-row-comentario">"${p.comentario.replace(/</g, '&lt;')}"</p>` : ''}
+        </div>
+        <button class="ad-row-borrar" data-id="${p.id}" type="button">Borrar</button>
+      `;
+      lista.appendChild(row);
+    });
+
+    lista.querySelectorAll<HTMLButtonElement>('.ad-row-borrar').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('¿Borrar este pin?')) return;
+        const id = btn.dataset.id;
+        const res = await fetch(`/api/admin/pins?id=${id}`, {
+          method: 'DELETE',
+          headers: { 'x-admin-password': password },
+        });
+        if (res.ok) cargarPines();
+      });
+    });
+  }
+
+  async function cargarPines() {
+    const res = await fetch('/api/admin/pins', { headers: { 'x-admin-password': password } });
+    if (!res.ok) {
+      loginError.textContent = 'Contraseña incorrecta.';
+      loginError.hidden = false;
+      panel.hidden = true;
+      return;
+    }
+    const pines: PinAdmin[] = await res.json();
+    loginForm.hidden = true;
+    panel.hidden = false;
+    renderPines(pines);
+  }
+
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    password = passwordInput.value;
+    loginError.hidden = true;
+    cargarPines();
+  });
+</script>

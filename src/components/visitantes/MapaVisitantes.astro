@@ -1,0 +1,186 @@
+---
+import Icon from '../Icon.astro';
+---
+
+<div id="mapa-visitantes-root">
+  <div class="mv-stats" role="list">
+    <div class="mv-stat" role="listitem">
+      <Icon name="users" size={16} />
+      <span class="mv-stat-val" id="mv-stat-total">–</span>
+      <span class="mv-stat-label">Visitantes</span>
+    </div>
+    <div class="mv-stat" role="listitem">
+      <Icon name="globe" size={16} />
+      <span class="mv-stat-val" id="mv-stat-paises">–</span>
+      <span class="mv-stat-label">Países</span>
+    </div>
+    <div class="mv-stat mv-stat-dorado" role="listitem">
+      <Icon name="star" size={16} />
+      <span class="mv-stat-val" id="mv-stat-dorados">–</span>
+      <span class="mv-stat-label">Huellas doradas</span>
+    </div>
+  </div>
+
+  <div id="mv-canvas" class="mv-canvas"></div>
+
+  <p id="mv-vacio" class="mv-vacio" hidden>
+    Aún no hay pines en el mapa. ¡Sé la primera persona en dejar tu huella!
+  </p>
+</div>
+
+<style>
+  .mv-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .mv-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(156,133,103,0.25);
+    color: var(--color-piedra-oscura);
+  }
+  .mv-stat-dorado { color: #9C6B1F; border-color: rgba(196,119,61,0.35); background: rgba(232,169,106,0.14); }
+  .mv-stat-val { font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--color-carbon); }
+  .mv-stat-dorado .mv-stat-val { color: #9C6B1F; }
+  .mv-stat-label { font-size: 0.75rem; font-weight: 600; }
+
+  .mv-canvas {
+    width: 100%;
+    height: 440px;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    border: 1px solid rgba(156,133,103,0.3);
+    box-shadow: 0 12px 30px rgba(46,42,36,0.12);
+  }
+
+  .mv-vacio {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-piedra-media);
+  }
+
+  :global(.mv-pin) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
+  :global(.mv-pin-normal) { background: #C4573D; }
+  :global(.mv-pin-dorado) { background: linear-gradient(135deg, #E8A96A, #C4773D); }
+  :global(.mv-pin svg) { transform: rotate(45deg); color: white; width: 13px; height: 13px; }
+
+  :global(.leaflet-popup-content-wrapper) {
+    border-radius: 0.9rem;
+    font-family: var(--font-sans);
+  }
+  :global(.mv-popup-nombre) { font-family: var(--font-serif); font-weight: 700; margin: 0 0 0.15rem; }
+  :global(.mv-popup-meta) { font-size: 0.72rem; color: var(--color-piedra-media); margin: 0 0 0.35rem; }
+  :global(.mv-popup-comentario) { font-size: 0.85rem; color: var(--color-carbon-suave); margin: 0; }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  interface Pin {
+    id: number;
+    nombre: string;
+    comentario: string | null;
+    lat: number;
+    lng: number;
+    tipo: 'normal' | 'dorado';
+    pais: string | null;
+    created_at: number;
+  }
+
+  const canvas = document.getElementById('mv-canvas');
+  const vacio = document.getElementById('mv-vacio');
+  if (!canvas) throw new Error('mv-canvas no encontrado');
+
+  const map = L.map(canvas, { worldCopyJump: true }).setView([30, 10], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(map);
+
+  function icono(tipo: 'normal' | 'dorado') {
+    const svg = tipo === 'dorado'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/></svg>';
+    return L.divIcon({
+      className: `mv-pin ${tipo === 'dorado' ? 'mv-pin-dorado' : 'mv-pin-normal'}`,
+      html: svg,
+      iconSize: [26, 26],
+      iconAnchor: [13, 26],
+      popupAnchor: [0, -24],
+    });
+  }
+
+  function formatoFecha(ts: number) {
+    return new Date(ts).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function actualizarContadores(pins: Pin[]) {
+    const paises = new Set(pins.map((p) => p.pais).filter(Boolean));
+    const dorados = pins.filter((p) => p.tipo === 'dorado').length;
+    const total = document.getElementById('mv-stat-total');
+    const ps = document.getElementById('mv-stat-paises');
+    const dor = document.getElementById('mv-stat-dorados');
+    if (total) total.textContent = String(pins.length);
+    if (ps) ps.textContent = String(paises.size);
+    if (dor) dor.textContent = String(dorados);
+  }
+
+  function pintarPin(p: Pin) {
+    const marker = L.marker([p.lat, p.lng], { icon: icono(p.tipo) }).addTo(map);
+    const comentario = p.comentario
+      ? `<p class="mv-popup-comentario">"${p.comentario.replace(/</g, '&lt;')}"</p>`
+      : '';
+    marker.bindPopup(`
+      <p class="mv-popup-nombre">${p.nombre.replace(/</g, '&lt;')}${p.tipo === 'dorado' ? ' ⭐' : ''}</p>
+      <p class="mv-popup-meta">${p.pais ?? 'Origen desconocido'} · ${formatoFecha(p.created_at)}</p>
+      ${comentario}
+    `);
+  }
+
+  async function cargarPines() {
+    try {
+      const res = await fetch('/api/pins');
+      if (!res.ok) throw new Error('respuesta no ok');
+      const pins: Pin[] = await res.json();
+      actualizarContadores(pins);
+      if (pins.length === 0 && vacio) vacio.hidden = false;
+      pins.forEach(pintarPin);
+    } catch {
+      actualizarContadores([]);
+      if (vacio) {
+        vacio.hidden = false;
+        vacio.textContent = 'No se ha podido cargar el mapa de visitantes. Inténtalo de nuevo más tarde.';
+      }
+    }
+  }
+
+  cargarPines();
+
+  window.addEventListener('arcusa:pin-creado', ((e: CustomEvent<Pin>) => {
+    if (vacio) vacio.hidden = true;
+    pintarPin(e.detail);
+    map.flyTo([e.detail.lat, e.detail.lng], Math.max(map.getZoom(), 5));
+    fetch('/api/pins')
+      .then((r) => r.json())
+      .then(actualizarContadores)
+      .catch(() => {});
+  }) as EventListener);
+</script>

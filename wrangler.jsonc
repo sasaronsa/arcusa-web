@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "arcusa-web",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-07-03",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "arcusa-visitantes",
+      "database_id": "069873c6-e152-48c6-946c-2460cc38c71e"
+    }
+  ]
+}

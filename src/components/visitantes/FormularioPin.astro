@@ -1,0 +1,236 @@
+---
+import Icon from '../Icon.astro';
+---
+
+<div id="fp-root" class="fp-card">
+  <h3 class="fp-title">Deja tu huella en el mapa</h3>
+  <p class="fp-subtitle">Toca el mapa para marcar de dónde vienes, escribe tu nombre y, si quieres, un comentario.</p>
+
+  <div id="fp-picker" class="fp-picker"></div>
+  <p id="fp-picker-hint" class="fp-picker-hint">
+    <Icon name="map-pin" size={13} />
+    Toca el mapa para elegir tu ubicación
+  </p>
+
+  <form id="fp-form" class="fp-form">
+    <label class="fp-label">
+      Tu nombre
+      <input id="fp-nombre" name="nombre" type="text" maxlength="30" required placeholder="Ej. Marta" class="fp-input" />
+      <span class="fp-counter"><span id="fp-nombre-count">0</span>/30</span>
+    </label>
+
+    <label class="fp-label">
+      Comentario <span class="fp-opcional">(opcional)</span>
+      <textarea id="fp-comentario" name="comentario" maxlength="150" rows="3" placeholder="¿Qué te ha traído hasta Arcusa?" class="fp-input fp-textarea"></textarea>
+      <span class="fp-counter"><span id="fp-comentario-count">0</span>/150</span>
+    </label>
+
+    <label id="fp-dorado-wrap" class="fp-dorado" hidden>
+      <input id="fp-dorado" type="checkbox" />
+      <span>
+        <strong>Dejar mi huella dorada</strong> — has encontrado los 6 secretos de Arcusa, ¡tu pin puede brillar de forma especial!
+      </span>
+    </label>
+
+    <button id="fp-submit" type="submit" class="btn-primary" disabled>
+      <Icon name="map-pin" size={15} />
+      Dejar mi huella
+    </button>
+
+    <p id="fp-mensaje" class="fp-mensaje" role="status" hidden></p>
+  </form>
+</div>
+
+<style>
+  .fp-card {
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(156,133,103,0.25);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: 0 12px 30px rgba(46,42,36,0.1);
+  }
+  .fp-title { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700; color: var(--color-carbon); margin-bottom: 0.35rem; }
+  .fp-subtitle { font-size: 0.9rem; color: var(--color-piedra-media); margin-bottom: 1rem; }
+
+  .fp-picker {
+    width: 100%;
+    height: 220px;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(156,133,103,0.3);
+    cursor: crosshair;
+  }
+  .fp-picker-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.5rem 0 1.25rem;
+    font-size: 0.78rem;
+    color: var(--color-piedra-media);
+  }
+
+  .fp-form { display: flex; flex-direction: column; gap: 1.1rem; }
+  .fp-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-carbon);
+    position: relative;
+  }
+  .fp-opcional { font-weight: 400; color: var(--color-piedra-media); }
+  .fp-input {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 0.95rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(156,133,103,0.35);
+    background: white;
+    color: var(--color-carbon);
+  }
+  .fp-input:focus { outline: 2px solid var(--color-azul-pirineo); outline-offset: 1px; }
+  .fp-textarea { resize: vertical; min-height: 4.5rem; }
+  .fp-counter {
+    position: absolute;
+    right: 0.2rem;
+    top: 0;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--color-piedra-media);
+  }
+
+  .fp-dorado {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.9rem;
+    background: rgba(232,169,106,0.14);
+    border: 1px solid rgba(196,119,61,0.3);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--color-carbon-suave);
+    cursor: pointer;
+  }
+  .fp-dorado input { margin-top: 0.2rem; flex-shrink: 0; }
+
+  #fp-submit { justify-content: center; }
+  #fp-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  .fp-mensaje {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.7rem 1rem;
+    border-radius: 0.75rem;
+  }
+  .fp-mensaje.ok { background: rgba(62,92,58,0.1); color: var(--color-verde-pino); }
+  .fp-mensaje.error { background: rgba(196,87,61,0.1); color: #A5432B; }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import { leerEstadoTrivial, tokenParaEncontrados } from '../../data/trivial';
+
+  const pickerEl = document.getElementById('fp-picker')!;
+  const hint = document.getElementById('fp-picker-hint')!;
+  const form = document.getElementById('fp-form') as HTMLFormElement;
+  const nombreInput = document.getElementById('fp-nombre') as HTMLInputElement;
+  const comentarioInput = document.getElementById('fp-comentario') as HTMLTextAreaElement;
+  const nombreCount = document.getElementById('fp-nombre-count')!;
+  const comentarioCount = document.getElementById('fp-comentario-count')!;
+  const doradoWrap = document.getElementById('fp-dorado-wrap') as HTMLLabelElement;
+  const doradoCheck = document.getElementById('fp-dorado') as HTMLInputElement;
+  const submitBtn = document.getElementById('fp-submit') as HTMLButtonElement;
+  const mensaje = document.getElementById('fp-mensaje')!;
+
+  let seleccion: { lat: number; lng: number } | null = null;
+  let marker: L.Marker | null = null;
+
+  const picker = L.map(pickerEl, { worldCopyJump: true }).setView([30, 10], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 18,
+  }).addTo(picker);
+
+  function actualizarSubmit() {
+    submitBtn.disabled = !seleccion || nombreInput.value.trim().length === 0;
+  }
+
+  picker.on('click', (e: L.LeafletMouseEvent) => {
+    seleccion = { lat: e.latlng.lat, lng: e.latlng.lng };
+    if (marker) marker.setLatLng(e.latlng);
+    else marker = L.marker(e.latlng).addTo(picker);
+    hint.textContent = '';
+    hint.style.display = 'none';
+    actualizarSubmit();
+  });
+
+  nombreInput.addEventListener('input', () => {
+    nombreCount.textContent = String(nombreInput.value.length);
+    actualizarSubmit();
+  });
+  comentarioInput.addEventListener('input', () => {
+    comentarioCount.textContent = String(comentarioInput.value.length);
+  });
+
+  const estadoTrivial = leerEstadoTrivial();
+  if (estadoTrivial.encontrados.length >= 6) {
+    doradoWrap.hidden = false;
+  }
+
+  function mostrarMensaje(texto: string, tipo: 'ok' | 'error') {
+    mensaje.textContent = texto;
+    mensaje.className = `fp-mensaje ${tipo}`;
+    mensaje.hidden = false;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!seleccion) return;
+    submitBtn.disabled = true;
+    mensaje.hidden = true;
+
+    const quiereDorado = doradoCheck.checked && estadoTrivial.encontrados.length >= 6;
+    const token = quiereDorado ? await tokenParaEncontrados(estadoTrivial.encontrados) : undefined;
+
+    try {
+      const res = await fetch('/api/pins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: nombreInput.value.trim(),
+          comentario: comentarioInput.value.trim(),
+          lat: seleccion.lat,
+          lng: seleccion.lng,
+          tipo: quiereDorado ? 'dorado' : 'normal',
+          token,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        mostrarMensaje(data.error ?? 'No se ha podido guardar tu huella. Inténtalo de nuevo.', 'error');
+        actualizarSubmit();
+        return;
+      }
+
+      mostrarMensaje('¡Gracias por dejar tu huella en Arcusa!', 'ok');
+      window.dispatchEvent(new CustomEvent('arcusa:pin-creado', { detail: data }));
+      form.reset();
+      nombreCount.textContent = '0';
+      comentarioCount.textContent = '0';
+      if (marker) { picker.removeLayer(marker); marker = null; }
+      seleccion = null;
+      doradoWrap.hidden = estadoTrivial.encontrados.length < 6;
+      hint.style.display = 'flex';
+      actualizarSubmit();
+    } catch {
+      mostrarMensaje('No se ha podido conectar. Comprueba tu conexión e inténtalo de nuevo.', 'error');
+      actualizarSubmit();
+    }
+  });
+</script>

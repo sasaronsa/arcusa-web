@@ -18,5 +18,8 @@
     "leaflet": "^1.9.4",
     "panzoom": "^9.4.4",
     "tailwindcss": "^4.3.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.107.0"
   }
 }

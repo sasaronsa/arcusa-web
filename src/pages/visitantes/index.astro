@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import Icon from '../../components/Icon.astro';
+import MapaVisitantes from '../../components/visitantes/MapaVisitantes.astro';
+import FormularioPin from '../../components/visitantes/FormularioPin.astro';
+import ProgresoTrivial from '../../components/visitantes/ProgresoTrivial.astro';
+---
+
+<Layout
+  title="Visitantes – Deja tu huella en el mapa de Arcusa"
+  description="Marca en el mapa de dónde vienes a visitar Arcusa y descubre los 6 secretos escondidos por el pueblo en este trivial con QR."
+>
+  <div class="visitantes">
+    <Navigation />
+
+    <!-- ══════ CABECERA · libro de visitas ══════ -->
+    <section class="v-hero">
+      <div class="v-stamp" aria-hidden="true">
+        <Icon name="stamp" size={22} />
+      </div>
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+        <p class="v-eyebrow">Libro de visitas · Arcusa</p>
+        <h1 class="v-title">Visitantes de <em>todo el mundo</em></h1>
+        <p class="v-lead">
+          Cada persona que pasa por Arcusa deja una huella. Marca en el mapa de dónde vienes
+          y, si te atreves, busca los 6 secretos escondidos por el pueblo.
+        </p>
+      </div>
+    </section>
+
+    <!-- ══════ MAPA + FORMULARIO ══════ -->
+    <section class="v-body">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="reveal">
+          <MapaVisitantes />
+        </div>
+
+        <div class="v-grid">
+          <div class="reveal">
+            <FormularioPin />
+          </div>
+          <div class="reveal">
+            <ProgresoTrivial />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <Footer />
+  </div>
+</Layout>
+
+<style>
+  .visitantes {
+    background:
+      radial-gradient(ellipse 70% 50% at 100% 0%, rgba(91,127,166,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(196,119,61,0.06) 0%, transparent 50%),
+      var(--color-pergamino);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(107,88,66,0.06) 1px, transparent 0),
+      radial-gradient(ellipse 70% 50% at 100% 0%, rgba(91,127,166,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(196,119,61,0.06) 0%, transparent 50%),
+      linear-gradient(var(--color-pergamino), var(--color-pergamino));
+    background-size: 22px 22px, 100%, 100%, 100%;
+  }
+
+  .v-hero {
+    position: relative;
+    padding: 9rem 0 4rem;
+    overflow: hidden;
+  }
+  .v-stamp {
+    position: absolute;
+    top: 6.5rem;
+    right: 8%;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 2px dashed rgba(91,127,166,0.4);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-azul-pirineo);
+    transform: rotate(12deg);
+  }
+  .v-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+    margin-bottom: 1.1rem;
+  }
+  .v-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    line-height: 1.08;
+    color: var(--color-carbon);
+  }
+  .v-title em {
+    font-style: italic;
+    color: var(--color-azul-pirineo);
+  }
+  .v-lead {
+    max-width: 34rem;
+    margin: 1.4rem auto 0;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--color-carbon-suave);
+  }
+
+  .v-body { padding-bottom: 6rem; }
+
+  .v-grid {
+    margin-top: 1.75rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    .v-grid { grid-template-columns: 1.1fr 0.9fr; align-items: start; }
+  }
+</style>

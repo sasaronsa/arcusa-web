@@ -1,0 +1,125 @@
+---
+import Icon from '../Icon.astro';
+import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
+---
+
+<div id="pt-root" class="pt-card">
+  <div class="pt-header">
+    <Icon name="sparkles" size={20} style="color: var(--color-ocre);" />
+    <div>
+      <h3 class="pt-title">Los 6 secretos de Arcusa</h3>
+      <p class="pt-subtitle">
+        ¿Te atreves a encontrarlos? Busca los QR repartidos por el pueblo. Quien los encuentre todos
+        deja una huella especial —dorada— en el mapa.
+      </p>
+    </div>
+  </div>
+
+  <p class="pt-progreso">
+    <span id="pt-contador">0</span>/6 encontrados
+  </p>
+
+  <div class="pt-grid">
+    {LOCALIZACIONES_TRIVIAL.map((loc) => (
+      <div class="pt-slot" data-slug={loc.slug}>
+        <div class="pt-slot-icon">
+          <Icon name={loc.icon} size={18} />
+        </div>
+        <p class="pt-slot-nombre" data-nombre={loc.nombre}>?</p>
+        <p class="pt-slot-pista">{loc.pista}</p>
+      </div>
+    ))}
+  </div>
+
+  <p id="pt-completo" class="pt-completo" hidden>
+    <Icon name="star" size={16} />
+    ¡Has encontrado los 6 secretos! Marca la casilla dorada en el formulario para dejar tu huella especial.
+  </p>
+</div>
+
+<style>
+  .pt-card {
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(156,133,103,0.25);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: 0 12px 30px rgba(46,42,36,0.1);
+  }
+  .pt-header { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+  .pt-title { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; color: var(--color-carbon); }
+  .pt-subtitle { font-size: 0.86rem; color: var(--color-piedra-media); margin-top: 0.25rem; line-height: 1.5; }
+
+  .pt-progreso {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-ocre);
+    margin-bottom: 1rem;
+  }
+
+  .pt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+  }
+  .pt-slot {
+    padding: 0.85rem;
+    border-radius: 0.9rem;
+    background: rgba(244,239,230,0.6);
+    border: 1px dashed rgba(156,133,103,0.4);
+    text-align: center;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .pt-slot-icon {
+    width: 34px; height: 34px;
+    margin: 0 auto 0.5rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(156,133,103,0.18);
+    color: var(--color-piedra-oscura);
+  }
+  .pt-slot-nombre { font-weight: 700; font-size: 0.85rem; color: var(--color-piedra-media); margin-bottom: 0.2rem; }
+  .pt-slot-pista { font-size: 0.74rem; color: var(--color-piedra-media); line-height: 1.4; }
+
+  .pt-slot.encontrado {
+    background: rgba(62,92,58,0.09);
+    border: 1px solid rgba(62,92,58,0.3);
+  }
+  .pt-slot.encontrado .pt-slot-icon { background: var(--color-verde-pino); color: white; }
+  .pt-slot.encontrado .pt-slot-nombre { color: var(--color-verde-pino); }
+  .pt-slot.encontrado .pt-slot-pista { display: none; }
+
+  .pt-completo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 0.9rem;
+    background: rgba(232,169,106,0.16);
+    border: 1px solid rgba(196,119,61,0.35);
+    color: #9C6B1F;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  import { leerEstadoTrivial } from '../../data/trivial';
+
+  const estado = leerEstadoTrivial();
+  const contador = document.getElementById('pt-contador')!;
+  const completo = document.getElementById('pt-completo')!;
+
+  contador.textContent = String(estado.encontrados.length);
+  if (estado.encontrados.length >= 6) completo.hidden = false;
+
+  document.querySelectorAll<HTMLElement>('.pt-slot').forEach((slot) => {
+    const slug = slot.dataset.slug!;
+    if (estado.encontrados.includes(slug)) {
+      slot.classList.add('encontrado');
+      const nombreEl = slot.querySelector<HTMLElement>('.pt-slot-nombre');
+      if (nombreEl) nombreEl.textContent = nombreEl.dataset.nombre ?? '✓';
+    }
+  });
+</script>

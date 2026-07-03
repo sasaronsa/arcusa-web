@@ -1,0 +1,97 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navigation from '../../../components/Navigation.astro';
+import Footer from '../../../components/Footer.astro';
+import Icon from '../../../components/Icon.astro';
+import { LOCALIZACIONES_TRIVIAL } from '../../../data/trivial';
+
+export async function getStaticPaths() {
+  return LOCALIZACIONES_TRIVIAL.map((loc) => ({
+    params: { localizacion: loc.slug },
+    props: { loc },
+  }));
+}
+
+const { loc } = Astro.props;
+---
+
+<Layout
+  title={`${loc.nombre} – Secreto encontrado | Visitantes de Arcusa`}
+  description="Has encontrado uno de los 6 secretos del trivial de Arcusa."
+>
+  <div class="visitantes">
+    <Navigation />
+
+    <section class="ct-hero">
+      <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="ct-icon">
+          <Icon name={loc.icon} size={30} />
+        </div>
+        <p class="ct-eyebrow">Secreto encontrado</p>
+        <h1 class="ct-title">{loc.nombre}</h1>
+        <p id="ct-mensaje" class="ct-mensaje" data-slug={loc.slug}>Guardando tu hallazgo…</p>
+        <p id="ct-progreso" class="ct-progreso"></p>
+        <a href="/visitantes" class="btn-primary ct-cta">
+          <Icon name="map-pin" size={15} />
+          Volver al mapa de visitantes
+        </a>
+      </div>
+    </section>
+
+    <Footer />
+  </div>
+</Layout>
+
+<style>
+  .ct-hero { padding: 10rem 0 6rem; }
+  .ct-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto 1.25rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-verde-pino);
+    color: white;
+  }
+  .ct-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+    margin-bottom: 0.6rem;
+  }
+  .ct-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 700;
+    color: var(--color-carbon);
+    margin-bottom: 0.9rem;
+  }
+  .ct-mensaje { font-size: 1.02rem; color: var(--color-carbon-suave); margin-bottom: 0.5rem; }
+  .ct-progreso { font-family: var(--font-serif); font-weight: 700; color: var(--color-ocre); margin-bottom: 1.75rem; }
+  .ct-cta { display: inline-flex; }
+</style>
+
+<script>
+  import { leerEstadoTrivial, guardarEstadoTrivial } from '../../../data/trivial';
+
+  const mensaje = document.getElementById('ct-mensaje')!;
+  const progreso = document.getElementById('ct-progreso')!;
+  const slug = mensaje.dataset.slug!;
+
+  const estado = leerEstadoTrivial();
+  const yaEstaba = estado.encontrados.includes(slug);
+  if (!yaEstaba) {
+    estado.encontrados.push(slug);
+    guardarEstadoTrivial(estado);
+  }
+
+  mensaje.textContent = yaEstaba
+    ? 'Ya tenías este secreto guardado. ¡Sigue buscando!'
+    : '¡Añadido a tu colección de secretos!';
+
+  progreso.textContent = `${estado.encontrados.length}/6 encontrados`;
+  if (estado.encontrados.length >= 6) {
+    progreso.textContent += ' · ¡Ya puedes dejar tu huella dorada!';
+  }
+</script>
