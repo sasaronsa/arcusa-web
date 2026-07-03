@@ -45,6 +45,16 @@ async function postPin(request, env) {
     return json({ error: 'Revisa el texto: contiene palabras no permitidas.' }, { status: 400 });
   }
 
+  const coincidente = await env.DB.prepare(
+    `SELECT id FROM pins WHERE lat = ? AND lng = ? LIMIT 1`
+  ).bind(lat, lng).first();
+  if (coincidente) {
+    return json(
+      { error: 'Ya hay un pin justo en ese punto. Elige un lugar ligeramente distinto para que no se solapen.' },
+      { status: 409 }
+    );
+  }
+
   const ip = request.headers.get('CF-Connecting-IP') ?? 'sin-ip';
   const ipHash = await hashIp(ip, env.IP_SALT ?? '');
 

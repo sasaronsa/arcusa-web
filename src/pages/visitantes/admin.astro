@@ -17,8 +17,17 @@ import Layout from '../../layouts/Layout.astro';
       </form>
 
       <div id="ad-panel" class="ad-panel" hidden>
-        <p id="ad-total" class="ad-total"></p>
+        <div class="ad-toolbar">
+          <input
+            id="ad-buscar"
+            type="search"
+            class="ad-input ad-buscar"
+            placeholder="Buscar por nombre, comentario, país o #id…"
+          />
+          <p id="ad-total" class="ad-total"></p>
+        </div>
         <div id="ad-lista" class="ad-lista"></div>
+        <p id="ad-sin-resultados" class="ad-sin-resultados" hidden>No hay pines que coincidan con la búsqueda.</p>
       </div>
     </div>
   </main>
@@ -35,7 +44,17 @@ import Layout from '../../layouts/Layout.astro';
   .ad-error { color: #A5432B; font-size: 0.85rem; font-weight: 600; }
 
   .ad-panel { margin-top: 2rem; }
-  .ad-total { font-size: 0.9rem; color: var(--color-piedra-media); margin-bottom: 1rem; }
+  .ad-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .ad-buscar { flex: 1 1 260px; max-width: 400px; }
+  .ad-total { font-size: 0.85rem; font-weight: 600; color: var(--color-piedra-media); white-space: nowrap; }
+  .ad-sin-resultados { margin-top: 1rem; font-size: 0.9rem; color: var(--color-piedra-media); text-align: center; }
   .ad-lista { display: flex; flex-direction: column; gap: 0.75rem; }
   .ad-row {
     display: flex;
@@ -85,11 +104,30 @@ import Layout from '../../layouts/Layout.astro';
   const panel = document.getElementById('ad-panel')!;
   const total = document.getElementById('ad-total')!;
   const lista = document.getElementById('ad-lista')!;
+  const buscarInput = document.getElementById('ad-buscar') as HTMLInputElement;
+  const sinResultados = document.getElementById('ad-sin-resultados')!;
 
   let password = '';
+  let todosPines: PinAdmin[] = [];
 
-  function renderPines(pines: PinAdmin[]) {
-    total.textContent = `${pines.length} pines`;
+  function normaliza(texto: string) {
+    return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  function pinesFiltrados(): PinAdmin[] {
+    const q = normaliza(buscarInput.value.trim());
+    if (!q) return todosPines;
+    return todosPines.filter((p) =>
+      normaliza(`${p.nombre} ${p.comentario ?? ''} ${p.pais ?? ''} ${p.id}`).includes(q)
+    );
+  }
+
+  function renderPines() {
+    const pines = pinesFiltrados();
+    total.textContent = buscarInput.value.trim()
+      ? `${pines.length} de ${todosPines.length} pines`
+      : `${todosPines.length} pines`;
+    sinResultados.hidden = pines.length > 0;
     lista.innerHTML = '';
     pines.forEach((p) => {
       const row = document.createElement('div');
@@ -97,7 +135,7 @@ import Layout from '../../layouts/Layout.astro';
       row.innerHTML = `
         <div class="ad-row-info">
           <p class="ad-row-nombre">${p.nombre.replace(/</g, '&lt;')} ${p.tipo === 'dorado' ? '<span class="ad-tag-dorado">★ dorado</span>' : ''}</p>
-          <p class="ad-row-meta">#${p.id} · ${p.pais ?? 'país desconocido'} · ip ${p.ip_prefix}… · ${new Date(p.created_at).toLocaleString('es-ES')}</p>
+          <p class="ad-row-meta">#${p.id} · ${p.pais ?? 'país desconocido'} · ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)} · ip ${p.ip_prefix}… · ${new Date(p.created_at).toLocaleString('es-ES')}</p>
           ${p.comentario ? `<p class="ad-row-comentario">"${p.comentario.replace(/</g, '&lt;')}"</p>` : ''}
         </div>
         <button class="ad-row-borrar" data-id="${p.id}" type="button">Borrar</button>
@@ -126,10 +164,10 @@ import Layout from '../../layouts/Layout.astro';
       panel.hidden = true;
       return;
     }
-    const pines: PinAdmin[] = await res.json();
+    todosPines = await res.json();
     loginForm.hidden = true;
     panel.hidden = false;
-    renderPines(pines);
+    renderPines();
   }
 
   loginForm.addEventListener('submit', (e) => {
@@ -138,4 +176,6 @@ import Layout from '../../layouts/Layout.astro';
     loginError.hidden = true;
     cargarPines();
   });
+
+  buscarInput.addEventListener('input', () => renderPines());
 </script>
