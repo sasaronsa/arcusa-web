@@ -5,6 +5,9 @@ export interface LocalizacionTrivial {
   nombre: string;
   pista: string;
   icon: string;
+  // Foto del sitio, mostrada en su tarjeta una vez encontrado. Opcional:
+  // sin foto todavía, la tarjeta cae al icono como marcador de posición.
+  foto?: string;
 }
 
 export const LOCALIZACIONES_TRIVIAL: LocalizacionTrivial[] = [
@@ -88,3 +91,34 @@ export function leerEstadoTrivial(): EstadoTrivial {
 export function guardarEstadoTrivial(estado: EstadoTrivial) {
   localStorage.setItem(TRIVIAL_STORAGE_KEY, JSON.stringify(estado));
 }
+
+export interface ResultadoHallazgo {
+  estado: EstadoTrivial;
+  yaEstaba: boolean;
+  completadoAhora: boolean;
+}
+
+// Registra un slug como encontrado (si es válido) y devuelve el estado
+// resultante. Usado tanto por la página /caza/[slug] como por el escáner
+// QR en la propia página, para no duplicar la lógica en dos sitios.
+export function marcarEncontrado(slug: string): ResultadoHallazgo {
+  const estado = leerEstadoTrivial();
+  const yaEstaba = estado.encontrados.includes(slug);
+  const completoAntes = estado.encontrados.length >= ALL_SLUGS.length;
+  if (!yaEstaba && ALL_SLUGS.includes(slug)) {
+    estado.encontrados.push(slug);
+    guardarEstadoTrivial(estado);
+  }
+  const completoAhora = estado.encontrados.length >= ALL_SLUGS.length;
+  return { estado, yaEstaba, completadoAhora: completoAhora && !completoAntes };
+}
+
+// Extrae el slug de un código QR escaneado: puede contener la URL completa
+// (lo que también abriría un lector de cámara normal) o el slug a secas.
+export function extraerSlugDeQR(texto: string): string | null {
+  const limpio = texto.trim();
+  const candidato = limpio.includes('/') ? limpio.split('/').filter(Boolean).pop() ?? '' : limpio;
+  return ALL_SLUGS.includes(candidato) ? candidato : null;
+}
+
+export const EVENTO_SECRETO_ENCONTRADO = 'arcusa:secreto-encontrado';

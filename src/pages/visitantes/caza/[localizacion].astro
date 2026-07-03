@@ -31,6 +31,10 @@ const { loc } = Astro.props;
         <h1 class="ct-title">{loc.nombre}</h1>
         <p id="ct-mensaje" class="ct-mensaje" data-slug={loc.slug}>Guardando tu hallazgo…</p>
         <p id="ct-progreso" class="ct-progreso"></p>
+        <p id="ct-completo" class="ct-completo" hidden>
+          <Icon name="party-popper" size={16} />
+          ¡Enhorabuena, has encontrado los 6 secretos! Ya puedes dejar tu huella dorada.
+        </p>
         <a href="/visitantes" class="btn-primary ct-cta">
           <Icon name="map-pin" size={15} />
           Volver al mapa de visitantes
@@ -68,30 +72,39 @@ const { loc } = Astro.props;
     margin-bottom: 0.9rem;
   }
   .ct-mensaje { font-size: 1.02rem; color: var(--color-carbon-suave); margin-bottom: 0.5rem; }
-  .ct-progreso { font-family: var(--font-serif); font-weight: 700; color: var(--color-ocre); margin-bottom: 1.75rem; }
+  .ct-progreso { font-family: var(--font-serif); font-weight: 700; color: var(--color-ocre); margin-bottom: 1rem; }
+  .ct-completo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 auto 1.75rem;
+    padding: 0.7rem 1rem;
+    border-radius: 0.9rem;
+    max-width: 26rem;
+    background: rgba(232,169,106,0.16);
+    border: 1px solid rgba(196,119,61,0.35);
+    color: #9C6B1F;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
   .ct-cta { display: inline-flex; }
 </style>
 
 <script>
-  import { leerEstadoTrivial, guardarEstadoTrivial } from '../../../data/trivial';
+  import { marcarEncontrado } from '../../../data/trivial';
 
   const mensaje = document.getElementById('ct-mensaje')!;
   const progreso = document.getElementById('ct-progreso')!;
+  const completo = document.getElementById('ct-completo')!;
   const slug = mensaje.dataset.slug!;
 
-  const estado = leerEstadoTrivial();
-  const yaEstaba = estado.encontrados.includes(slug);
-  if (!yaEstaba) {
-    estado.encontrados.push(slug);
-    guardarEstadoTrivial(estado);
-  }
+  const { estado, yaEstaba, completadoAhora } = marcarEncontrado(slug);
 
   mensaje.textContent = yaEstaba
     ? 'Ya tenías este secreto guardado. ¡Sigue buscando!'
     : '¡Añadido a tu colección de secretos!';
 
   progreso.textContent = `${estado.encontrados.length}/6 encontrados`;
-  if (estado.encontrados.length >= 6) {
-    progreso.textContent += ' · ¡Ya puedes dejar tu huella dorada!';
-  }
+  if (completadoAhora) completo.hidden = false;
 </script>

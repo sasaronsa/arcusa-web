@@ -136,7 +136,7 @@ import Icon from '../Icon.astro';
 <script>
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
-  import { leerEstadoTrivial, tokenParaEncontrados } from '../../data/trivial';
+  import { leerEstadoTrivial, tokenParaEncontrados, EVENTO_SECRETO_ENCONTRADO } from '../../data/trivial';
 
   const pickerEl = document.getElementById('fp-picker')!;
   const hint = document.getElementById('fp-picker-hint')!;
@@ -187,10 +187,15 @@ import Icon from '../Icon.astro';
     comentarioCount.textContent = String(comentarioInput.value.length);
   });
 
-  const estadoTrivial = leerEstadoTrivial();
+  let estadoTrivial = leerEstadoTrivial();
   if (estadoTrivial.encontrados.length >= 6) {
     doradoWrap.hidden = false;
   }
+
+  window.addEventListener(EVENTO_SECRETO_ENCONTRADO, ((e: CustomEvent) => {
+    estadoTrivial = e.detail.estado;
+    if (estadoTrivial.encontrados.length >= 6) doradoWrap.hidden = false;
+  }) as EventListener);
 
   function mostrarMensaje(texto: string, tipo: 'ok' | 'error') {
     mensaje.textContent = texto;

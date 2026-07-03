@@ -1,0 +1,198 @@
+---
+import Icon from '../Icon.astro';
+---
+
+<button id="qr-abrir-btn" type="button" class="qr-boton btn-primary">
+  <Icon name="scan" size={16} />
+  Escanear un código QR
+</button>
+
+<div id="qr-modal" class="qr-modal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="qr-backdrop"></div>
+  <div class="qr-card">
+    <button id="qr-cerrar" class="qr-cerrar" type="button" aria-label="Cerrar">
+      <Icon name="x" size={18} />
+    </button>
+
+    <div class="qr-video-wrap">
+      <video id="qr-video" playsinline muted></video>
+      <div class="qr-marco" aria-hidden="true"></div>
+    </div>
+
+    <p id="qr-estado" class="qr-estado">Apunta con la cámara al código QR del secreto.</p>
+  </div>
+</div>
+
+<style>
+  .qr-boton { justify-content: center; }
+
+  .qr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .qr-modal.open { opacity: 1; visibility: visible; }
+  .qr-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20,18,15,0.82);
+  }
+  .qr-card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    background: #14120f;
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  .qr-cerrar {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  .qr-video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: #000;
+  }
+  #qr-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .qr-marco {
+    position: absolute;
+    inset: 12%;
+    border: 3px solid rgba(255,255,255,0.85);
+    border-radius: 1rem;
+    box-shadow: 0 0 0 999px rgba(0,0,0,0.35);
+  }
+  .qr-estado {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.82);
+    min-height: 2.6em;
+  }
+  .qr-estado.error { color: #E8A96A; }
+  .qr-estado.ok { color: #8FC093; }
+</style>
+
+<script>
+  import jsQR from 'jsqr';
+  import { extraerSlugDeQR, marcarEncontrado, EVENTO_SECRETO_ENCONTRADO } from '../../data/trivial';
+
+  const abrirBtn = document.getElementById('qr-abrir-btn') as HTMLButtonElement;
+  const modal = document.getElementById('qr-modal')!;
+  const cerrarBtn = document.getElementById('qr-cerrar')!;
+  const video = document.getElementById('qr-video') as HTMLVideoElement;
+  const estado = document.getElementById('qr-estado')!;
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  let stream: MediaStream | null = null;
+  let rafId = 0;
+  let cerrandoTimeout = 0;
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    abrirBtn.hidden = true;
+  }
+
+  function fijarEstado(texto: string, tipo: 'normal' | 'error' | 'ok' = 'normal') {
+    estado.textContent = texto;
+    estado.className = `qr-estado ${tipo === 'normal' ? '' : tipo}`.trim();
+  }
+
+  function detenerCamara() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+    stream?.getTracks().forEach((t) => t.stop());
+    stream = null;
+  }
+
+  function cerrar() {
+    clearTimeout(cerrandoTimeout);
+    detenerCamara();
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function tick() {
+    if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) {
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+    const escala = Math.min(1, 480 / video.videoWidth);
+    canvas.width = video.videoWidth * escala;
+    canvas.height = video.videoHeight * escala;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imagen = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const resultado = jsQR(imagen.data, imagen.width, imagen.height);
+
+    if (resultado) {
+      const slug = extraerSlugDeQR(resultado.data);
+      if (slug) {
+        const { estado: estadoTrivial, yaEstaba, completadoAhora } = marcarEncontrado(slug);
+        fijarEstado(
+          yaEstaba ? 'Ya tenías este secreto guardado.' : '¡Secreto encontrado!',
+          'ok'
+        );
+        window.dispatchEvent(
+          new CustomEvent(EVENTO_SECRETO_ENCONTRADO, { detail: { slug, yaEstaba, completadoAhora, estado: estadoTrivial } })
+        );
+        cerrandoTimeout = window.setTimeout(cerrar, 1100);
+        return;
+      }
+      fijarEstado('Este código no pertenece a los secretos de Arcusa. Sigue intentando.', 'error');
+    }
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  async function abrir() {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    fijarEstado('Apunta con la cámara al código QR del secreto.');
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = stream;
+      await video.play();
+      rafId = requestAnimationFrame(tick);
+    } catch {
+      fijarEstado(
+        'No hemos podido acceder a la cámara. Revisa los permisos o escanea el QR con la cámara de tu móvil.',
+        'error'
+      );
+    }
+  }
+
+  abrirBtn.addEventListener('click', abrir);
+  cerrarBtn.addEventListener('click', cerrar);
+  modal.querySelector('.qr-backdrop')!.addEventListener('click', cerrar);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) cerrar();
+  });
+</script>
