@@ -127,6 +127,20 @@ import Icon from '../Icon.astro';
   }
   .fp-mensaje.ok { background: rgba(62,92,58,0.1); color: var(--color-verde-pino); }
   .fp-mensaje.error { background: rgba(196,87,61,0.1); color: #A5432B; }
+
+  :global(.fp-pin) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: #C4573D;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
+  :global(.fp-pin svg) { transform: rotate(45deg); color: white; width: 13px; height: 13px; }
 </style>
 
 <script>
@@ -149,6 +163,15 @@ import Icon from '../Icon.astro';
   let seleccion: { lat: number; lng: number } | null = null;
   let marker: L.Marker | null = null;
 
+  // Icono propio (SVG inline): el icono por defecto de Leaflet depende de
+  // imágenes que Vite no resuelve bien, así que evitamos L.marker() sin icon.
+  const iconoSeleccion = L.divIcon({
+    className: 'fp-pin',
+    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/></svg>',
+    iconSize: [26, 26],
+    iconAnchor: [13, 26],
+  });
+
   const picker = L.map(pickerEl, { worldCopyJump: true }).setView([30, 10], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
@@ -162,7 +185,7 @@ import Icon from '../Icon.astro';
   picker.on('click', (e: L.LeafletMouseEvent) => {
     seleccion = { lat: e.latlng.lat, lng: e.latlng.lng };
     if (marker) marker.setLatLng(e.latlng);
-    else marker = L.marker(e.latlng).addTo(picker);
+    else marker = L.marker(e.latlng, { icon: iconoSeleccion }).addTo(picker);
     hint.textContent = '';
     hint.style.display = 'none';
     actualizarSubmit();
