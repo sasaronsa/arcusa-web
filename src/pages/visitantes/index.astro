@@ -33,9 +33,11 @@ import ProgresoTrivial from '../../components/visitantes/ProgresoTrivial.astro';
     <!-- ══════ MAPA + FORMULARIO ══════ -->
     <section class="v-body">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="reveal">
-          <MapaVisitantes />
-        </div>
+        <!-- Sin envoltorio `.reveal` aquí: su `transform` crea un nuevo
+             contenedor de referencia y rompe el `position: fixed` del modal
+             de estadísticas de MapaVisitantes (deja de posicionarse respecto
+             a la pantalla). El propio componente aplica `.reveal` a su raíz. -->
+        <MapaVisitantes />
 
         <div class="v-grid">
           <div class="reveal">

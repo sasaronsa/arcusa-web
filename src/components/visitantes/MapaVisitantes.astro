@@ -2,7 +2,10 @@
 import Icon from '../Icon.astro';
 ---
 
-<div id="mapa-visitantes-root">
+<!-- `.reveal` va en esta raíz, no en un `<div>` externo: su `transform`
+     crearía un contenedor de referencia para `#mv-modal` (más abajo, ya
+     fuera de este div) y le rompería el `position: fixed`. -->
+<div id="mapa-visitantes-root" class="reveal">
   <div class="mv-stats" role="group" aria-label="Estadísticas de visitantes; pulsa cada una para ver el detalle">
     <button type="button" class="mv-stat" data-stat="visitantes" aria-haspopup="dialog">
       <Icon name="users" size={16} />
@@ -100,7 +103,10 @@ import Icon from '../Icon.astro';
   .mv-modal {
     position: fixed;
     inset: 0;
-    z-index: 140;
+    /* Muy por encima de los controles y paneles de Leaflet (hasta z-index
+       1000 en su CSS): al no crear `.leaflet-container` un contexto de
+       apilamiento propio, esos z-index compiten directamente con este. */
+    z-index: 2000;
     display: flex;
     justify-content: center;
     padding: clamp(1rem, 6vh, 4rem) 1rem;
