@@ -9,6 +9,9 @@ import CardEvento from '../components/CardEvento.astro';
 import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
 import { pueblo } from '../data/pueblo';
+import { LOCALIZACIONES_TRIVIAL } from '../data/trivial';
+
+const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
 
 const proximosEventos = (await getCollection('eventos'))
   .filter(e => new Date(e.data.fecha) >= new Date())
@@ -260,8 +263,8 @@ const lugaresDestacados = (await getCollection('lugares'))
           />
           <p class="leading-relaxed mb-6" style="color: var(--color-carbon-suave); font-size: 1.0625rem; max-width: 46ch;">
             Marca en el mapa de dónde vienes a visitar el pueblo y, si te atreves, busca los
-            6 secretos escondidos por sus calles: cada uno tiene un código QR esperando a que
-            lo encuentres.
+            {totalSecretos} secretos escondidos por sus calles: cada uno tiene un código QR
+            esperando a que lo encuentres.
           </p>
 
           <div class="flex flex-wrap gap-3 mb-8">
@@ -271,7 +274,7 @@ const lugaresDestacados = (await getCollection('lugares'))
             </span>
             <span class="lv-chip lv-chip-dorado">
               <Icon name="star" size={14} />
-              6 secretos por descubrir
+              {totalSecretos} secretos por descubrir
             </span>
           </div>
 

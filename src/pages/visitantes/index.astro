@@ -6,11 +6,14 @@ import Icon from '../../components/Icon.astro';
 import MapaVisitantes from '../../components/visitantes/MapaVisitantes.astro';
 import FormularioPin from '../../components/visitantes/FormularioPin.astro';
 import ProgresoTrivial from '../../components/visitantes/ProgresoTrivial.astro';
+import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
+
+const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
 ---
 
 <Layout
   title="Visitantes – Deja tu huella en el mapa de Arcusa"
-  description="Marca en el mapa de dónde vienes a visitar Arcusa y descubre los 6 secretos escondidos por el pueblo en este trivial con QR."
+  description={`Marca en el mapa de dónde vienes a visitar Arcusa y descubre los ${totalSecretos} secretos escondidos por el pueblo en este trivial con QR.`}
 >
   <div class="visitantes">
     <Navigation light />
@@ -25,7 +28,7 @@ import ProgresoTrivial from '../../components/visitantes/ProgresoTrivial.astro';
         <h1 class="v-title">Visitantes de <em>todo el mundo</em></h1>
         <p class="v-lead">
           Cada persona que pasa por Arcusa deja una huella. Marca en el mapa de dónde vienes
-          y, si te atreves, busca los 6 secretos escondidos por el pueblo.
+          y, si te atreves, busca los {totalSecretos} secretos escondidos por el pueblo.
         </p>
       </div>
     </section>

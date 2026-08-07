@@ -13,11 +13,12 @@ export async function getStaticPaths() {
 }
 
 const { loc } = Astro.props;
+const total = LOCALIZACIONES_TRIVIAL.length;
 ---
 
 <Layout
   title={`${loc.nombre} – Secreto encontrado | Visitantes de Arcusa`}
-  description="Has encontrado uno de los 6 secretos del trivial de Arcusa."
+  description={`Has encontrado uno de los ${total} secretos del trivial de Arcusa.`}
 >
   <div class="visitantes">
     <Navigation light />
@@ -33,7 +34,7 @@ const { loc } = Astro.props;
         <p id="ct-progreso" class="ct-progreso"></p>
         <p id="ct-completo" class="ct-completo" hidden>
           <Icon name="party-popper" size={16} />
-          ¡Enhorabuena, has encontrado los 6 secretos! Ya puedes dejar tu huella dorada.
+          ¡Enhorabuena, has encontrado los {total} secretos! Ya puedes dejar tu huella dorada.
         </p>
         <a href="/visitantes" class="btn-primary ct-cta">
           <Icon name="map-pin" size={15} />
@@ -92,7 +93,7 @@ const { loc } = Astro.props;
 </style>
 
 <script>
-  import { marcarEncontrado } from '../../../data/trivial';
+  import { marcarEncontrado, ALL_SLUGS } from '../../../data/trivial';
 
   const mensaje = document.getElementById('ct-mensaje')!;
   const progreso = document.getElementById('ct-progreso')!;
@@ -105,6 +106,6 @@ const { loc } = Astro.props;
     ? 'Ya tenías este secreto guardado. ¡Sigue buscando!'
     : '¡Añadido a tu colección de secretos!';
 
-  progreso.textContent = `${estado.encontrados.length}/6 encontrados`;
+  progreso.textContent = `${estado.encontrados.length}/${ALL_SLUGS.length} encontrados`;
   if (completadoAhora) completo.hidden = false;
 </script>

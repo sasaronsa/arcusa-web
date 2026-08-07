@@ -1,5 +1,7 @@
 ---
 import Icon from '../Icon.astro';
+import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
+const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
 ---
 
 <div id="fp-root" class="fp-card">
@@ -28,7 +30,7 @@ import Icon from '../Icon.astro';
     <label id="fp-dorado-wrap" class="fp-dorado" hidden>
       <input id="fp-dorado" type="checkbox" />
       <span>
-        <strong>Dejar mi huella dorada</strong> — has encontrado los 6 secretos de Arcusa, ¡tu pin puede brillar de forma especial!
+        <strong>Dejar mi huella dorada</strong> — has encontrado los {totalSecretos} secretos de Arcusa, ¡tu pin puede brillar de forma especial!
       </span>
     </label>
 

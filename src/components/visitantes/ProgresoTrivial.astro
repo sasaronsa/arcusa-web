@@ -2,13 +2,14 @@
 import Icon from '../Icon.astro';
 import EscanerQR from './EscanerQR.astro';
 import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
+const total = LOCALIZACIONES_TRIVIAL.length;
 ---
 
 <div id="pt-root" class="pt-card">
   <div class="pt-header">
     <Icon name="sparkles" size={20} style="color: var(--color-ocre);" />
     <div>
-      <h3 class="pt-title">Los 6 secretos de Arcusa</h3>
+      <h3 class="pt-title">Los {total} secretos de Arcusa</h3>
       <p class="pt-subtitle">
         ¿Te atreves a encontrarlos? Busca los QR repartidos por el pueblo y escanéalos aquí mismo.
         Quien los encuentre todos deja una huella especial —dorada— en el mapa.
@@ -19,7 +20,7 @@ import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
   <EscanerQR />
 
   <p class="pt-progreso">
-    <span id="pt-contador">0</span>/6 encontrados
+    <span id="pt-contador">0</span>/{total} encontrados
   </p>
 
   <p id="pt-toast" class="pt-toast" hidden></p>
@@ -38,7 +39,7 @@ import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
 
   <p id="pt-completo" class="pt-completo" hidden>
     <Icon name="star" size={16} />
-    ¡Has encontrado los 6 secretos! Marca la casilla dorada en el formulario para dejar tu huella especial.
+    ¡Has encontrado los {total} secretos! Marca la casilla dorada en el formulario para dejar tu huella especial.
   </p>
 </div>
 
@@ -46,7 +47,7 @@ import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
   <div class="pt-celebracion-confeti" aria-hidden="true"></div>
   <div class="pt-celebracion-card">
     <div class="pt-celebracion-icon"><Icon name="party-popper" size={30} /></div>
-    <h3>¡Enhorabuena, has encontrado los 6 secretos de Arcusa!</h3>
+    <h3>¡Enhorabuena, has encontrado los {total} secretos de Arcusa!</h3>
     <p>Ya puedes dejar tu huella dorada en el mapa de visitantes.</p>
     <button id="pt-celebracion-cerrar" type="button" class="btn-primary">
       Dejar mi huella dorada
@@ -146,7 +147,7 @@ import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
     font-weight: 600;
   }
 
-  /* ── Celebración 6/6 ── */
+  /* ── Celebración al completarlos todos ── */
   .pt-celebracion {
     position: fixed;
     inset: 0;

@@ -1,5 +1,7 @@
-// Las 6 localizaciones físicas del trivial "Los secretos de Arcusa".
+// Las localizaciones físicas del trivial "Los secretos de Arcusa".
 // Cada una tiene un QR in situ que enlaza a /visitantes/caza/[slug].
+// `pista` va en modo adivinanza: describe el sitio sin nombrarlo, con
+// frases sencillas para que sea accesible también para niños.
 export interface LocalizacionTrivial {
   slug: string;
   nombre: string;
@@ -12,40 +14,28 @@ export interface LocalizacionTrivial {
 
 export const LOCALIZACIONES_TRIVIAL: LocalizacionTrivial[] = [
   {
-    slug: 'torreon',
-    nombre: 'El torreón',
-    pista: 'Lleva casi mil años vigilando el valle desde lo más alto del pueblo.',
-    icon: 'castle',
+    slug: 'autobus',
+    nombre: 'El autobús de antes',
+    pista: 'Antes de que casi todos tuvieran coche, esto traía y llevaba al pueblo entero.',
+    icon: 'bus',
   },
   {
-    slug: 'mural-pintor',
-    nombre: 'Un mural del Rincón del Pintor',
-    pista: 'Busca una fachada donde un oficio de siempre quedó pintado para no olvidarse.',
-    icon: 'palette',
+    slug: 'herrero',
+    nombre: 'El oficio del herrero',
+    pista: 'A golpe de martillo y fuego, aquí se hacía antes lo que el pueblo necesitaba.',
+    icon: 'hammer',
   },
   {
-    slug: 'mirador-starlight',
-    nombre: 'El mirador Starlight',
-    pista: 'De día mira al valle; de noche, a las estrellas del Sobrarbe.',
-    icon: 'telescope',
+    slug: 'campana',
+    nombre: 'La campana restaurada',
+    pista: 'Después de años en silencio, hoy vuelve a marcar las horas del pueblo.',
+    icon: 'bell',
   },
   {
-    slug: 'iglesia',
-    nombre: 'La iglesia',
-    pista: 'Sus campanas han marcado las horas del pueblo durante generaciones.',
-    icon: 'church',
-  },
-  {
-    slug: 'escudo-dintel',
-    nombre: 'Un dintel con fecha',
-    pista: 'Una piedra tallada guarda, en números, el año en que se levantó la casa.',
-    icon: 'landmark',
-  },
-  {
-    slug: 'sexto-secreto',
-    nombre: 'El sexto secreto',
-    pista: 'El último rincón, el que solo encuentran quienes ya han visto los otros cinco.',
-    icon: 'sparkles',
+    slug: 'bicicleta',
+    nombre: 'La bicicleta de siempre',
+    pista: 'Jóvenes y no tan jóvenes: casi todo el pueblo se ha movido alguna vez sobre dos ruedas.',
+    icon: 'bike',
   },
 ];
 
@@ -53,7 +43,7 @@ export const ALL_SLUGS = LOCALIZACIONES_TRIVIAL.map((l) => l.slug).sort();
 
 // Frase compartida por cliente y backend para derivar el token del pin dorado.
 // No es un secreto de verdad (viaja en el bundle del cliente): su único fin es
-// que forjar el token desde la consola exija conocer los 6 slugs exactos.
+// que forjar el token desde la consola exija conocer los slugs exactos.
 export const FRASE_TRIVIAL = 'los-secretos-de-arcusa-2026';
 
 export function payloadToken(slugsEncontrados: string[]): string {

@@ -2,12 +2,10 @@ import { sha256Hex } from './hash.js';
 
 // Debe coincidir exactamente con src/data/trivial.ts (mismos slugs y frase).
 const ALL_SLUGS = [
-  'escudo-dintel',
-  'iglesia',
-  'mirador-starlight',
-  'mural-pintor',
-  'sexto-secreto',
-  'torreon',
+  'autobus',
+  'bicicleta',
+  'campana',
+  'herrero',
 ].sort();
 
 const FRASE_TRIVIAL = 'los-secretos-de-arcusa-2026';
