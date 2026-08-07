@@ -5,9 +5,14 @@ import Footer from '../../components/Footer.astro';
 import { getCollection, render } from 'astro:content';
 import Icon from '../../components/Icon.astro';
 import InfoBlock from '../../components/InfoBlock.astro';
+import { esVisible } from '../../utils/contenido';
 
 export async function getStaticPaths() {
-  const puntos = await getCollection('puntos');
+  const puntos = (await getCollection('puntos'))
+    .filter(esVisible)
+    // Las obras del museo NO tienen página propia aquí: se leen en su modal
+    // dentro de /museo. Ver src/pages/museo.astro.
+    .filter(p => p.data.tipo !== 'cuadro');
   return puntos.map(p => ({ params: { slug: p.id.split('/').pop()! }, props: { entry: p } }));
 }
 
@@ -27,7 +32,7 @@ const tipoLabel: Record<string, string> = {
   title={`${entry.data.nombre} – Historia de Arcusa`}
   description={entry.data.resumen}
 >
-  <Navigation />
+  <Navigation light />
 
   <div class="bg-page-header-warm pt-28 pb-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
@@ -131,27 +136,6 @@ const tipoLabel: Record<string, string> = {
       </div>
     )}
 
-    <!-- Ver en el mapa -->
-    <div class="mt-12 p-5 rounded-2xl flex items-center gap-4"
-         style="background: var(--color-cielo-palido); border: 1px solid rgba(91,127,166,0.2);">
-      <div
-        class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-        style="background: rgba(91,127,166,0.15); color: var(--color-azul-pirineo);"
-      >
-        <Icon name="compass" size={22} />
-      </div>
-      <div>
-        <p class="text-sm font-semibold" style="color: var(--color-carbon);">Ver en el mapa del pueblo</p>
-        <a
-          href="/explora"
-          class="inline-flex items-center gap-1 text-xs font-semibold mt-0.5 underline underline-offset-2"
-          style="color: var(--color-azul-pirineo);"
-        >
-          Explorar Arcusa
-          <Icon name="arrow-right" size={11} />
-        </a>
-      </div>
-    </div>
   </article>
 
   <Footer />

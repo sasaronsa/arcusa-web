@@ -6,53 +6,138 @@ import SectionHeader from '../components/SectionHeader.astro';
 import Icon from '../components/Icon.astro';
 import InfoBlock from '../components/InfoBlock.astro';
 import { getCollection } from 'astro:content';
+import { esVisible } from '../utils/contenido';
 
-const puntos = await getCollection('puntos');
+const puntos = (await getCollection('puntos')).filter(esVisible);
 const casas = puntos.filter(p => p.data.tipo === 'casa').sort((a, b) => a.data.nombre.localeCompare(b.data.nombre));
 const edificios = puntos.filter(p => p.data.tipo === 'edificio');
 
-const hitos = [
-  { anio: 'Prehistoria', texto: 'Antes de que existiera el pueblo, este territorio ya era lugar de paso, vida y memoria: el Dolmen de Pueyoril recuerda una ocupación milenaria.', icon: 'landmark' },
-  { anio: 'h. 1024', texto: 'El valle aparece documentado como Ballis de Arcusa. El nombre del lugar empieza a entrar en la historia escrita.', icon: 'scroll' },
-  { anio: 'h. 1050', texto: 'Se levanta la torre defensiva, una atalaya de frontera pensada para vigilar caminos, valles y señales de otras fortalezas del Sobrarbe.', icon: 'castle' },
-  { anio: '1086–1087', texto: 'Arcusa aparece citada en documentos medievales. El pequeño núcleo ya forma parte de un territorio estratégico para el joven Reino de Aragón.', icon: 'scroll' },
-  { anio: '1137', texto: 'Ramiro II concede posesiones en la villa a García Sanz de Arcusa. El pueblo queda vinculado a linajes y poderes señoriales.', icon: 'scroll' },
-  { anio: 's. XVI–XVII', texto: 'Arcusa gana la imagen que todavía conserva: iglesia, casas fuertes, portadas de piedra, torres familiares y arquitectura tradicional del Sobrarbe.', icon: 'church' },
-  { anio: '1967', texto: 'Arcusa se convierte en capital del municipio de Alto Sobrarbe, agrupando varios núcleos de esta zona histórica.', icon: 'landmark' },
-  { anio: '1976', texto: 'Alto Sobrarbe se integra en Aínsa y nace el actual municipio de Aínsa-Sobrarbe.', icon: 'landmark' },
-  { anio: '2020', texto: 'El artista y vecino Luis Moreno inicia el Museo de Pintura al Aire Libre. Las fachadas empiezan a contar la memoria del pueblo.', icon: 'palette' },
-  { anio: '2024–26', texto: 'La recuperación de la campana y la rehabilitación del lavadero muestran que Arcusa no solo conserva su pasado: lo cuida.', icon: 'sparkles' },
+// ── Los 5 capítulos ───────────────────────────────
+// Sustituyen al antiguo muro de prosa: el texto largo se reparte aquí, y
+// cada capítulo se lee por separado en el panel interactivo.
+const capitulos = [
+  {
+    id: 'origenes',
+    imagen: '/images/puntos/dolmen.webp',
+    pie: 'El Dolmen de Pueyoril, junto al Mesón de Arcusa.',
+    etiqueta: 'Antes del pueblo',
+    periodo: 'Prehistoria',
+    icon: 'landmark',
+    color: '#7C8A5C',
+    titular: 'Un territorio con memoria milenaria',
+    dato: { valor: '~5.000', label: 'años de ocupación humana' },
+    texto: [
+      'La historia de Arcusa no empieza con un castillo ni con un documento medieval. Empieza mucho antes, cuando estas sierras ya eran recorridas por comunidades que dejaron huella en el paisaje. El <strong>Dolmen de Pueyoril</strong>, junto al Mesón, lo recuerda.',
+      'Arcusa no aparece de repente en la Edad Media: nace sobre un territorio antiguo, usado durante siglos como paso natural entre montañas, barrancos y valles.',
+    ],
+    bloque: {
+      tipo: 'dato' as const,
+      texto: 'El nombre del valle aparece documentado hacia <strong>1024</strong> como <em>Ballis de Arcusa</em>: el momento en que este lugar entra en la historia escrita.',
+    },
+  },
+  {
+    id: 'frontera',
+    imagen: '/images/puntos/torre-arcusa.webp',
+    pie: 'La torre defensiva, en pie desde mediados del siglo XI.',
+    etiqueta: 'La frontera',
+    periodo: 'Siglo XI',
+    icon: 'castle',
+    color: '#5B7FA6',
+    titular: 'Una torre para vigilar una frontera',
+    dato: { valor: 'h. 1050', label: 'se levanta la torre' },
+    texto: [
+      'El Sobrarbe del siglo XI era territorio de frontera: cada valle, cada paso y cada altura tenían valor estratégico. En ese contexto se levantó la torre que todavía identifica al pueblo.',
+      'No era un castillo pensado para impresionar. Era una construcción práctica y defensiva: vigilaba la cabecera del valle del Susía y mantenía contacto visual con otras fortalezas del Alto Sobrarbe. De día el humo avisaba del peligro; de noche, una hoguera transmitía la alarma.',
+    ],
+    bloque: {
+      tipo: 'fijate' as const,
+      texto: 'La puerta original de la torre <strong>no estaba a ras de suelo</strong>. Se accedía por una escalera de madera que podía retirarse en caso de ataque. Si te acercas, intenta localizar dónde debió estar ese acceso elevado.',
+    },
+  },
+  {
+    id: 'casas',
+    imagen: '/images/puntos/juste.webp',
+    pie: 'Casa Juste: vivienda, torre y capilla en un mismo conjunto.',
+    etiqueta: 'Las casas fuertes',
+    periodo: 'Siglos XVI–XVII',
+    icon: 'home',
+    color: '#9C8567',
+    titular: 'Casas que hablan de poder y de familia',
+    dato: { valor: 'Casa Juste', label: 'vivienda, torre y capilla' },
+    texto: [
+      'La imagen que hoy conserva Arcusa se consolidó entre los siglos XVI y XVII, cuando algunas familias levantaron grandes casas de piedra con portadas nobles, torres y capillas privadas. En el Sobrarbe una casa no era solo una vivienda: era el apellido de una familia y su forma de permanecer en el tiempo.',
+      'También hay detalles pequeños pero muy reveladores: chimeneas, muros gruesos, tejados de losa y elementos protectores como los <em>espantabrujas</em>. No todo lo que cuenta un pueblo está escrito en documentos.',
+    ],
+    bloque: {
+      tipo: 'mito' as const,
+      cuenta: 'La tradición popular asegura que Felipe II pasó una noche en Casa Juste durante uno de sus viajes por Aragón.',
+      sabemos: 'No existen documentos que lo confirmen, pero la historia sigue viva entre los vecinos y forma parte del patrimonio oral del pueblo.',
+    },
+  },
+  {
+    id: 'capital',
+    imagen: '/images/puntos/lavadero.webp',
+    pie: 'El lavadero rehabilitado, memoria de la vida comunal del pueblo.',
+    etiqueta: 'La capitalidad',
+    periodo: '1967 – 1976',
+    icon: 'scroll',
+    color: '#C4773D',
+    titular: 'Cuando Arcusa fue capital del Alto Sobrarbe',
+    dato: { valor: '9 años', label: 'de capital municipal' },
+    texto: [
+      'En <strong>1967</strong> varios núcleos de la zona se agruparon para formar el municipio de <strong>Alto Sobrarbe</strong>, y la capitalidad quedó en Arcusa. Durante unos años, este pequeño pueblo fue el centro administrativo de todo un territorio.',
+      'La etapa fue breve: en <strong>1976</strong> Alto Sobrarbe se integró en Aínsa para formar el actual Aínsa-Sobrarbe. Pero el dato importa, porque recuerda que Arcusa tuvo un peso mucho mayor del que su tamaño actual sugiere.',
+    ],
+    bloque: {
+      tipo: 'sabias' as const,
+      texto: 'Aunque hoy viven aquí unas decenas de personas, Arcusa llegó a ser <strong>capital de municipio</strong> antes de integrarse en Aínsa-Sobrarbe.',
+    },
+  },
+  {
+    id: 'memoria',
+    imagen: '/images/puntos/Museo/test1.webp',
+    pie: 'Una de las obras del Museo de Pintura al Aire Libre.',
+    etiqueta: 'La memoria pintada',
+    periodo: '2020 – hoy',
+    icon: 'palette',
+    color: '#4F6E45',
+    titular: 'Del silencio a la memoria pintada',
+    dato: { valor: '36+', label: 'obras por las fachadas' },
+    texto: [
+      'Como tantos pueblos del Pirineo, Arcusa vivió décadas marcadas por la despoblación. Pero lejos de resignarse, encontró otra forma de mantener viva su identidad: en <strong>2020</strong> el vecino y artista <strong>Luis Moreno</strong> sacó la pintura a la calle.',
+      'Aquel primer cuadro creció hasta convertirse en el <strong>Museo de Pintura al Aire Libre</strong>. Y el arte no acabó ahí: esculturas de madera, piedras talladas y pequeñas intervenciones creadas por los propios vecinos. Su historia no terminó hace siglos: sigue escribiéndose.',
+    ],
+    bloque: {
+      tipo: 'consejo' as const,
+      texto: 'Recorre el pueblo sin prisa y, si puedes, a primera hora o al atardecer. La luz rasante sobre la piedra cambia por completo cómo se ven las fachadas, las portadas y la torre.',
+    },
+  },
 ];
 
-const capasHistoria = [
-  {
-    icon: 'landmark',
-    titulo: 'Antes del pueblo',
-    texto: 'El dolmen y el paisaje recuerdan que estas montañas fueron habitadas y recorridas mucho antes de que Arcusa tuviera nombre.',
-  },
-  {
-    icon: 'castle',
-    titulo: 'La frontera medieval',
-    texto: 'La torre no nació como adorno: nació para vigilar. Arcusa fue una pieza pequeña, pero importante, en la defensa del Sobrarbe.',
-  },
-  {
-    icon: 'palette',
-    titulo: 'La memoria pintada',
-    texto: 'Hoy el pueblo vuelve a contar su historia en las fachadas, convirtiendo la vida cotidiana en patrimonio visible para quien pasea.',
-  },
-];
----
+// ── Todas las fechas ──────────────────────────────
+// `color` enlaza cada hito con el capítulo al que pertenece, para que la
+// rejilla y la crónica de arriba se lean como una sola pieza.
+const hitos = [
+  { anio: 'Prehistoria', texto: 'El Dolmen de Pueyoril marca el territorio milenios antes del pueblo.', icon: 'landmark', color: '#7C8A5C' },
+  { anio: 'h. 1024',     texto: 'El valle aparece documentado como Ballis de Arcusa.',                    icon: 'scroll',   color: '#7C8A5C' },
+  { anio: 'h. 1050',     texto: 'Se levanta la torre defensiva sobre el valle del Susía.',                icon: 'castle',   color: '#5B7FA6' },
+  { anio: '1086',        texto: 'Arcusa se cita en documentos del joven Reino de Aragón.',                icon: 'scroll',   color: '#5B7FA6' },
+  { anio: '1137',        texto: 'Ramiro II concede posesiones en la villa a García Sanz de Arcusa.',      icon: 'scroll',   color: '#5B7FA6' },
+  { anio: 's. XVI–XVII', texto: 'Iglesia, casas fuertes y portadas dan al pueblo su imagen actual.',      icon: 'church',   color: '#9C8567' },
+  { anio: '1967',        texto: 'Arcusa se convierte en capital del municipio de Alto Sobrarbe.',         icon: 'landmark', color: '#C4773D' },
+  { anio: '1976',        texto: 'Alto Sobrarbe se integra en Aínsa: nace Aínsa-Sobrarbe.',                icon: 'landmark', color: '#C4773D' },
+  { anio: '2020',        texto: 'Luis Moreno inicia el Museo de Pintura al Aire Libre.',                  icon: 'palette',  color: '#4F6E45' },
+  { anio: '2024–26',     texto: 'Se recupera la campana de la iglesia y se rehabilita el lavadero.',      icon: 'sparkles', color: '#4F6E45' },
+];---
 
 <Layout
   title="Historia de Arcusa – Mil años de frontera, piedra y memoria"
   description="Historia de Arcusa, en el Biello Sobrarbe: la torre medieval, las casas fuertes, la iglesia de San Esteban, el antiguo Alto Sobrarbe y el museo de pintura al aire libre."
 >
-  <Navigation />
+  <Navigation light />
 
-  <!-- Cabecera de página -->
-  <div
-    class="bg-page-header-warm pt-28 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-  >
+  <!-- ══════════ Cabecera ══════════ -->
+  <div class="bg-page-header-warm pt-28 pb-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
     <div
       class="absolute inset-0 opacity-5 pointer-events-none"
       style="background-image: radial-gradient(circle at 1px 1px, var(--color-carbon) 1px, transparent 0); background-size: 28px 28px;"
@@ -61,236 +146,92 @@ const capasHistoria = [
       <SectionHeader
         eyebrow="Historia de Arcusa"
         title="Un pueblo pequeño con una historia enorme"
-        subtitle="Arcusa no se entiende mirando solo sus fechas. Hay que recorrer sus calles, subir la vista hacia su torre, detenerse ante sus casas y escuchar lo que cuentan sus piedras. Esta es la historia de un pueblo que fue frontera, capital, refugio y memoria viva del Biello Sobrarbe."
+        subtitle="Mil años de frontera, piedra y memoria, contados en cinco capítulos. Baja y recórrelos."
       />
     </div>
   </div>
 
-  <!-- Introducción narrativa -->
-  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="prose-arcusa reveal">
-      <p class="text-lg leading-relaxed">
-        Hay lugares que parecen pequeños hasta que empiezas a mirarlos con atención. Arcusa es uno de ellos.
-        A primera vista puede parecer un pueblo tranquilo del Sobrarbe, rodeado de campos, piedra y silencio.
-        Pero bajo esa calma se esconde una historia larguísima: un territorio habitado desde la Prehistoria,
-        una torre levantada en plena frontera medieval, casas que hablan de antiguos linajes y una comunidad
-        que hoy ha decidido contar su memoria en las fachadas.
-      </p>
-      <p>
-        Esta página no pretende convertir Arcusa en una lista de datos. Quiere contar por qué este lugar importa:
-        porque aquí la historia no está encerrada en un museo, sino repartida por el paisaje, en los caminos,
-        en las piedras de las casas, en la iglesia, en el lavadero y en los cuadros que aparecen mientras paseas.
-      </p>
-    </div>
+  <!-- ══════════ 1 · LA CRÓNICA (narrativa por scroll) ══════════ -->
+  <section class="cronica-seccion px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+    <div class="max-w-6xl mx-auto">
+      <div class="cronica">
+        <!-- Hilo conductor: se rellena a medida que bajas -->
+        <div class="cronica-hilo" aria-hidden="true">
+          <div class="cronica-progreso"></div>
+        </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-12">
-      {capasHistoria.map((capa, i) => (
-        <article
-          class={`reveal reveal-d${i + 1} rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1`}
-          style="background: white; border: 1px solid rgba(156,133,103,0.12); box-shadow: 0 2px 8px rgba(46,42,36,0.04);"
-        >
-          <div
-            class="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-            style="background: var(--color-pergamino); color: var(--color-piedra-oscura);"
-          >
-            <Icon name={capa.icon} size={22} />
-          </div>
-          <h3 class="font-serif text-lg font-semibold mb-2" style="color: var(--color-carbon);">
-            {capa.titulo}
-          </h3>
-          <p class="text-sm leading-relaxed" style="color: var(--color-carbon-suave);">
-            {capa.texto}
-          </p>
-        </article>
-      ))}
-    </div>
-  </section>
+        {capitulos.map((c, i) => (
+          <article class="cap" style={`--cap-color: ${c.color};`}>
+            <span class="cap-fantasma" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
 
-  <!-- Historia del pueblo (texto largo) -->
-  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-    <div class="prose-arcusa reveal">
-      <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
-        Antes de Arcusa: un territorio con memoria milenaria
-      </h2>
-      <p>
-        La historia de Arcusa no comienza con un castillo ni con un documento medieval. Empieza mucho antes,
-        cuando estas sierras ya eran recorridas por comunidades que dejaron huellas en el paisaje. El
-        <strong> Dolmen de Pueyoril</strong>, situado junto al Mesón, recuerda que este territorio fue habitado,
-        utilizado o ritualizado desde tiempos prehistóricos.
-      </p>
-      <p>
-        Ese detalle cambia la forma de mirar el pueblo. Arcusa no aparece de repente en la Edad Media: nace sobre
-        un territorio antiguo, usado durante siglos como paso natural entre montañas, barrancos, campos y valles.
-        Antes de que hubiera calles, casas o campanas, ya existía un paisaje cargado de memoria.
-      </p>
-    </div>
-
-    <InfoBlock type="dato">
-      El nombre del valle aparece documentado hacia <strong>1024</strong> como <em>Ballis de Arcusa</em>:
-      el momento en que este lugar empieza a entrar en la historia escrita.
-    </InfoBlock>
-
-    <div class="prose-arcusa mt-12 reveal reveal-d1">
-      <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
-        Una torre para vigilar una frontera
-      </h2>
-      <p>
-        El nombre de Arcusa empieza a aparecer en la documentación medieval a partir del siglo XI. No era una época
-        tranquila. El Sobrarbe formaba parte de un territorio de frontera, donde cada valle, cada paso y cada altura
-        tenían valor estratégico. En ese contexto se levantó, hacia <strong> 1050</strong>, la torre que todavía hoy
-        identifica al pueblo.
-      </p>
-      <p>
-        No era un castillo pensado para impresionar al visitante. Era una construcción práctica, dura y defensiva.
-        Su misión era vigilar la cabecera del valle del Susía y mantener contacto visual con otras fortalezas del
-        Alto Sobrarbe. De día, el humo podía avisar de un peligro. De noche, una hoguera podía transmitir la alarma.
-        La torre de Arcusa formaba parte de una red de señales mucho antes de que existieran carreteras, teléfonos o mapas modernos.
-      </p>
-      <p>
-        Por eso la torre no debe verse como una ruina aislada. Es el recuerdo de un tiempo en el que Arcusa miraba
-        al horizonte porque de esa vigilancia dependía la seguridad del territorio.
-      </p>
-    </div>
-
-    <InfoBlock type="fijate">
-      La puerta original de la torre <strong>no estaba a ras de suelo</strong>. Se accedía por una
-      escalera de madera que podía retirarse en caso de ataque: una defensa tan sencilla como eficaz.
-      Si te acercas, intenta localizar dónde debió estar ese acceso elevado.
-    </InfoBlock>
-
-    <div class="prose-arcusa mt-12 reveal reveal-d2">
-      <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
-        Casas que hablan de poder, familia y supervivencia
-      </h2>
-      <p>
-        Buena parte de la imagen que hoy conserva Arcusa se consolidó siglos después, especialmente entre los siglos
-        XVI y XVII. Fue entonces cuando algunas familias levantaron grandes casas de piedra, con portadas nobles,
-        torres, capillas privadas y detalles defensivos. En el Sobrarbe, una casa no era solo una vivienda: era el
-        nombre de una familia, su memoria, su prestigio y su forma de permanecer en el tiempo.
-      </p>
-      <p>
-        <strong> Casa Juste</strong> es uno de los mejores ejemplos de esa arquitectura señorial: vivienda, torre y
-        capilla en un mismo conjunto. <strong> Casa Solano</strong>, con sus elementos de piedra y su presencia en el
-        pueblo, recuerda la importancia de estas casas fuertes. Y la <strong> iglesia de San Esteban</strong>, con su
-        pila bautismal procedente del despoblado de Morcat, conecta Arcusa con otros lugares desaparecidos del entorno.
-      </p>
-      <p>
-        También hay detalles más pequeños, pero muy reveladores: chimeneas, portadas, balcones, muros gruesos,
-        tejados de losa y elementos protectores como los <em>espantabrujas</em>. No todo lo que cuenta un pueblo está
-        escrito en documentos. A veces está escondido en la forma de construir una casa.
-      </p>
-    </div>
-
-    <InfoBlock type="mito"
-      cuenta="La tradición popular asegura que Felipe II pasó una noche en Casa Juste durante uno de sus viajes por Aragón."
-      sabemos="No existen documentos que lo confirmen, pero la historia sigue viva entre los vecinos y forma parte del patrimonio oral del pueblo."
-    />
-
-    <div class="prose-arcusa mt-12 reveal reveal-d3">
-      <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
-        Cuando Arcusa fue capital del Alto Sobrarbe
-      </h2>
-      <p>
-        Uno de los datos más sorprendentes de la historia reciente del pueblo es que Arcusa fue capital municipal.
-        En <strong> 1967</strong>, varios núcleos de la zona se agruparon para formar el municipio de
-        <strong> Alto Sobrarbe</strong>, y la capitalidad quedó en Arcusa. Durante unos años, este pequeño pueblo fue
-        el centro administrativo de un territorio que llevaba el nombre de una de las zonas históricas más reconocibles
-        del Sobrarbe.
-      </p>
-      <p>
-        Aquella etapa fue breve. En <strong> 1976</strong>, Alto Sobrarbe se integró en Aínsa para formar el actual
-        municipio de <strong> Aínsa-Sobrarbe</strong>. Pero el dato sigue siendo importante: recuerda que Arcusa tuvo
-        un peso territorial mucho mayor del que su tamaño actual podría hacer imaginar.
-      </p>
-    </div>
-
-    <InfoBlock type="sabias">
-      Aunque hoy es un pueblo pequeño, Arcusa llegó a ser <strong>capital del municipio de Alto
-      Sobrarbe</strong> entre 1967 y 1976, antes de integrarse en el actual Aínsa-Sobrarbe.
-    </InfoBlock>
-
-    <div class="prose-arcusa mt-12 reveal reveal-d4">
-      <h2 class="font-serif text-2xl font-bold mb-5" style="color: var(--color-carbon);">
-        Del silencio a la memoria pintada
-      </h2>
-      <p>
-        Como tantos pueblos del Pirineo y del Prepirineo, Arcusa vivió décadas marcadas por la despoblación. Muchas casas quedaron en silencio, los oficios cambiaron y la vida cotidiana se transformó. Pero, lejos de resignarse, el pueblo encontró una forma diferente de mantener viva su identidad.
-      </p>
-      <p> 
-        En <strong> 2020</strong>, el artista y vecino <strong> Luis Moreno</strong> comenzó a sacar la pintura a la calle. Lo que empezó con un único cuadro sobre la fachada de una casa fue creciendo hasta convertirse en el <strong> Museo de Pintura al Aire Libre</strong>, un recorrido que hoy forma parte de la identidad de Arcusa y que retrata a sus vecinos, sus oficios, sus recuerdos y la vida cotidiana de generaciones enteras. 
-      </p>
-      <p> 
-        Pero el arte en Arcusa va mucho más allá de sus pinturas. Paseando por sus calles aparecen esculturas de madera, piedras talladas, pequeñas intervenciones artísticas y detalles creados por los propios vecinos. No responden a un proyecto turístico ni a un museo convencional; son la expresión de un pueblo que ha decidido cuidar sus calles y contar su historia a través de la creatividad de quienes viven en él. 
-      </p>
-      <p> 
-        Esa es quizá la mejor forma de entender Arcusa hoy. Su historia no terminó hace siglos con la construcción de la torre o de sus casas señoriales. Sigue escribiéndose cada día. La restauración del lavadero, la recuperación de la campana de la iglesia, el cuidado del patrimonio y las numerosas obras repartidas por el pueblo muestran una comunidad que mira al futuro sin olvidar el camino recorrido. 
-      </p>
-    </div>
-
-    <InfoBlock type="resumen">
-      Arcusa fue un núcleo importante del Biello Sobrarbe: una torre defensiva medieval, casas
-      señoriales de piedra y un museo de pintura al aire libre que une memoria, arte y territorio.
-      En sus alrededores, un dolmen recuerda que estas montañas se habitan desde la Prehistoria.
-      Pequeño en tamaño, enorme en historia.
-    </InfoBlock>
-
-    <InfoBlock type="consejo">
-      Recorre el pueblo sin prisa y, si puedes, a primera hora o al atardecer. La luz rasante sobre
-      la piedra cambia por completo cómo se ven las fachadas, las portadas y la torre.
-    </InfoBlock>
-  </section>
-
-  <!-- Línea de tiempo visual -->
-  <section class="bg-section-white-warm py-14 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-4xl mx-auto">
-      <SectionHeader
-        eyebrow="Cronología"
-        title="Hitos que explican Arcusa"
-        subtitle="No son solo fechas: son momentos que ayudan a entender cómo un pequeño núcleo del Sobrarbe ha ido cambiando sin perder su identidad."
-        centered
-      />
-      <div class="relative">
-        <!-- Línea central -->
-        <div
-          class="absolute left-5 top-2 bottom-2 w-px hidden sm:block"
-          style="background: linear-gradient(to bottom, var(--color-ocre), var(--color-azul-pirineo));"
-        />
-        <div class="flex flex-col gap-6">
-          {hitos.map((item, i) => (
-            <div class={`reveal reveal-d${Math.min(i % 4 + 1, 4)} flex items-start gap-4 sm:pl-14 relative`}>
-              <!-- Nodo en la línea -->
-              <div
-                class="hidden sm:flex absolute left-0 w-10 h-10 rounded-full items-center justify-center flex-shrink-0"
-                style="background: var(--color-pergamino); border: 2px solid var(--color-piedra-clara); color: var(--color-piedra-oscura);"
-              >
-                <Icon name={item.icon} size={15} />
-              </div>
-              <!-- Icono móvil -->
-              <div
-                class="sm:hidden w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                style="background: var(--color-pergamino); border: 1.5px solid var(--color-piedra-clara); color: var(--color-piedra-oscura);"
-              >
-                <Icon name={item.icon} size={14} />
-              </div>
-              <div class="py-1">
-                <span
-                  class="inline-block text-xs font-bold uppercase tracking-wide mb-1 px-2 py-0.5 rounded"
-                  style="background: var(--color-pergamino); color: var(--color-ocre);"
-                >
-                  {item.anio}
-                </span>
-                <p class="text-sm leading-relaxed" style="color: var(--color-carbon-suave);">
-                  {item.texto}
+            <header class="cap-cabecera reveal">
+              <span class="cap-nodo">
+                <Icon name={c.icon} size={20} />
+              </span>
+              <div class="cap-cabecera-txt">
+                <p class="cap-periodo">
+                  Capítulo {i + 1}
+                  <span class="cap-sep">·</span>
+                  {c.periodo}
                 </p>
+                <h2 class="cap-titular">{c.titular}</h2>
+              </div>
+            </header>
+
+            <div class="cap-cuerpo">
+              <figure class="cap-media reveal">
+                <div class="cap-marco">
+                  <img src={c.imagen} alt={c.pie} loading="lazy" decoding="async" />
+                  <span class="cap-dato">
+                    <span class="cap-dato-valor">{c.dato.valor}</span>
+                    <span class="cap-dato-label">{c.dato.label}</span>
+                  </span>
+                </div>
+                <figcaption class="cap-pie">{c.pie}</figcaption>
+              </figure>
+
+              <div class="cap-texto reveal reveal-d1">
+                {c.texto.map(p => (
+                  <p class="cap-p" set:html={p} />
+                ))}
+                {c.bloque.tipo === 'mito' ? (
+                  <InfoBlock type="mito" cuenta={c.bloque.cuenta} sabemos={c.bloque.sabemos} />
+                ) : (
+                  <InfoBlock type={c.bloque.tipo}>
+                    <p set:html={c.bloque.texto} />
+                  </InfoBlock>
+                )}
               </div>
             </div>
-          ))}
-        </div>
+          </article>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- Casas con historia -->
+  <!-- ══════════ 2 · TODAS LAS FECHAS (rejilla) ══════════ -->
+  <section class="bg-section-white-warm py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+      <SectionHeader
+        eyebrow="Cronología"
+        title="Todas las fechas"
+        subtitle="Los diez momentos que explican el pueblo, de la Prehistoria a hoy. El color de cada uno indica a qué capítulo pertenece."
+        centered
+      />
+
+      <ol class="hitos">
+        {hitos.map((h, i) => (
+          <li class={`hito reveal reveal-d${(i % 4) + 1}`} style={`--hito-color: ${h.color};`}>
+            <span class="hito-icono"><Icon name={h.icon} size={17} /></span>
+            <span class="hito-anio">{h.anio}</span>
+            <p class="hito-texto">{h.texto}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ══════════ 3 · CASAS CON HISTORIA ══════════ -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <SectionHeader
       eyebrow="Casas con nombre propio"
@@ -303,7 +244,6 @@ const capasHistoria = [
           class={`reveal reveal-d${(i % 3) + 1} rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1`}
           style="background: white; border: 1px solid rgba(156,133,103,0.12); box-shadow: 0 2px 8px rgba(46,42,36,0.04);"
         >
-          <!-- Área imagen / icono decorativo -->
           <div
             class="h-36 flex items-center justify-center relative overflow-hidden"
             style="background: linear-gradient(135deg, var(--color-pergamino) 0%, var(--color-cielo-palido) 100%);"
@@ -356,7 +296,7 @@ const capasHistoria = [
     </div>
   </section>
 
-  <!-- Edificios emblemáticos -->
+  <!-- ══════════ 4 · EDIFICIOS EMBLEMÁTICOS ══════════ -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
     <SectionHeader
       eyebrow="Patrimonio que se puede recorrer"
@@ -405,7 +345,7 @@ const capasHistoria = [
     </div>
   </section>
 
-  <!-- Museo cuadros -->
+  <!-- ══════════ 5 · MUSEO ══════════ -->
   <section class="bg-page-header-cool py-16">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <SectionHeader
@@ -423,3 +363,349 @@ const capasHistoria = [
 
   <Footer />
 </Layout>
+
+<style>
+  /* ════════ 1 · La crónica ════════ */
+  .cronica-seccion {
+    position: relative;
+    /* El número gigante de fondo asoma por el borde derecho: lo recortamos
+       para que nunca genere scroll horizontal. */
+    overflow-x: clip;
+    background:
+      radial-gradient(ellipse 55% 40% at 100% 0%, rgba(91, 127, 166, 0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 0% 100%, rgba(196, 119, 61, 0.06) 0%, transparent 55%),
+      var(--color-pergamino);
+  }
+  /* Trama de puntos muy sutil, como el papel de la cabecera */
+  .cronica-seccion::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: radial-gradient(circle at 1px 1px, var(--color-carbon) 1px, transparent 0);
+    background-size: 30px 30px;
+  }
+
+  .cronica { position: relative; }
+
+  /* ── Hilo conductor ── */
+  .cronica-hilo { display: none; }
+  @media (min-width: 900px) {
+    .cronica { padding-left: 5.5rem; }
+    .cronica-hilo {
+      display: block;
+      position: absolute;
+      left: 1.85rem;
+      top: 1.6rem;
+      bottom: 4rem;
+      width: 2px;
+      border-radius: 2px;
+      background: rgba(156, 133, 103, 0.22);
+      overflow: hidden;
+    }
+    .cronica-progreso {
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 0;
+      border-radius: 2px;
+      background: linear-gradient(to bottom, var(--color-ocre), var(--color-verde-medio));
+    }
+  }
+
+  /* ── Capítulo ── */
+  .cap {
+    position: relative;
+    padding-bottom: 4.5rem;
+  }
+  .cap:last-of-type { padding-bottom: 0; }
+  @media (min-width: 900px) {
+    .cap { padding-bottom: 6.5rem; }
+  }
+
+  /* Número gigante de fondo */
+  .cap-fantasma {
+    position: absolute;
+    top: -1.6rem;
+    right: -0.4rem;
+    z-index: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(6rem, 16vw, 12rem);
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    color: var(--cap-color);
+    opacity: 0.07;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* ── Cabecera del capítulo ── */
+  .cap-cabecera {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .cap-nodo {
+    flex: 0 0 auto;
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--cap-color);
+    border: 2px solid var(--cap-color);
+    box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--cap-color) 70%, transparent);
+  }
+  /* En escritorio el nodo salta al hilo conductor */
+  @media (min-width: 900px) {
+    .cap-nodo {
+      position: absolute;
+      left: -5.5rem;
+      top: 0.15rem;
+      width: 3.7rem;
+      height: 3.7rem;
+    }
+    .cap-cabecera { display: block; }
+  }
+
+  .cap-periodo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cap-color);
+    margin-bottom: 0.5rem;
+  }
+  .cap-sep { opacity: 0.5; }
+
+  .cap-titular {
+    font-family: var(--font-serif);
+    font-size: clamp(1.65rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--color-carbon);
+    text-wrap: balance;
+  }
+
+  /* ── Cuerpo: foto + texto, alternando ── */
+  .cap-cuerpo {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+  @media (min-width: 900px) {
+    .cap-cuerpo {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 3.25rem;
+      align-items: start;
+    }
+    /* Zigzag: en los capítulos pares la foto se va a la derecha */
+    .cap:nth-of-type(even) .cap-media { grid-column: 2; grid-row: 1; }
+    .cap:nth-of-type(even) .cap-texto { grid-column: 1; grid-row: 1; }
+  }
+
+  /* ── Foto ── */
+  .cap-marco {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(135deg, var(--color-pergamino), var(--color-piedra-clara));
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 24px 48px -24px rgba(46, 42, 36, 0.5);
+  }
+  .cap-marco img {
+    width: 100%;
+    /* Más alta que el marco: deja recorrido al parallax sin descubrir bordes. */
+    height: 116%;
+    position: absolute;
+    top: -8%;
+    left: 0;
+    object-fit: cover;
+    will-change: transform;
+  }
+
+  /* Dato destacado, sobre la foto */
+  .cap-dato {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.7rem 1.05rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border-left: 3px solid var(--cap-color);
+    box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.55);
+  }
+  .cap-dato-valor {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-carbon);
+  }
+  .cap-dato-label {
+    font-size: 0.7rem;
+    line-height: 1.3;
+    max-width: 15ch;
+    color: var(--color-piedra-media);
+  }
+
+  .cap-pie {
+    margin-top: 0.7rem;
+    padding-left: 0.15rem;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--color-piedra-media);
+  }
+
+  /* ── Texto ── */
+  .cap-p {
+    line-height: 1.78;
+    color: var(--color-carbon-suave);
+  }
+  .cap-p + .cap-p { margin-top: 1rem; }
+  .cap-p :global(strong) { color: var(--color-carbon); font-weight: 600; }
+  .cap-p :global(em) { color: var(--color-piedra-oscura); }
+
+  /* La primera línea del capítulo, algo mayor: marca el arranque de la lectura. */
+  .cap-texto .cap-p:first-child {
+    font-size: 1.06rem;
+    line-height: 1.72;
+    color: var(--color-carbon);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cap-marco img { transform: none !important; }
+  }
+
+
+  /* ════════ 2 · Todas las fechas ════════ */
+  .hitos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    /* Sin scroll: los diez hitos caben siempre en pantalla.
+       2 columnas en móvil · 4 en tablet · 5×2 en escritorio. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+  @media (min-width: 640px) {
+    .hitos { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+  }
+  @media (min-width: 1024px) {
+    .hitos { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  }
+
+  .hito {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.15rem 1.1rem 1.25rem;
+    border-radius: 1rem;
+    background: #fff;
+    border: 1px solid rgba(156, 133, 103, 0.14);
+    border-top: 3px solid var(--hito-color);
+    box-shadow: 0 2px 10px rgba(46, 42, 36, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .hito:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px -16px rgba(46, 42, 36, 0.35);
+  }
+
+  .hito-icono {
+    width: 34px;
+    height: 34px;
+    border-radius: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--hito-color) 13%, transparent);
+    color: var(--hito-color);
+  }
+  .hito-anio {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-carbon);
+    text-wrap: balance;
+  }
+  .hito-texto {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--color-carbon-suave);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hito { transition: none; }
+    .hito:hover { transform: none; }
+  }
+
+</style>
+
+<script>
+  /* ── La crónica: hilo conductor + parallax de las fotos ──
+     Un único listener de scroll, con rAF, para las dos cosas. */
+  function initCronica() {
+    const cronica = document.querySelector<HTMLElement>('.cronica');
+    if (!cronica) return;
+
+    const progreso = cronica.querySelector<HTMLElement>('.cronica-progreso');
+    const fotos = Array.from(cronica.querySelectorAll<HTMLImageElement>('.cap-marco img'));
+    const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let raf = 0;
+
+    const pintar = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+
+      // Hilo: se rellena según cuánto del bloque ha pasado por el centro.
+      if (progreso) {
+        const r = cronica.getBoundingClientRect();
+        const avance = (vh * 0.5 - r.top) / r.height;
+        progreso.style.height = `${Math.min(Math.max(avance, 0), 1) * 100}%`;
+      }
+
+      // Parallax: solo en las fotos que están (casi) en pantalla.
+      if (!sinMovimiento) {
+        for (const img of fotos) {
+          const marco = img.parentElement!;
+          const r = marco.getBoundingClientRect();
+          if (r.bottom < -200 || r.top > vh + 200) continue;
+          const desvio = r.top + r.height / 2 - vh / 2;
+          img.style.transform = `translate3d(0, ${(-desvio * 0.045).toFixed(1)}px, 0)`;
+        }
+      }
+    };
+
+    const pedirPintado = () => { if (!raf) raf = requestAnimationFrame(pintar); };
+
+    window.addEventListener('scroll', pedirPintado, { passive: true });
+    window.addEventListener('resize', pedirPintado);
+    pintar();
+  }
+
+  initCronica();
+</script>
