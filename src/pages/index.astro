@@ -39,27 +39,21 @@ const lugaresDestacados = (await getCollection('lugares'))
         />
         <div class="prose-arcusa">
           <p>
-            En el corazón del Biello Sobrarbe, rodeado por el silencio de las montañas y los paisajes que anuncian la Sierra de Guara, Arcusa conserva una historia que comenzó hace casi mil años y que todavía puede recorrerse a pie, calle a calle.
+            En el corazón del Biello Sobrarbe, entre montañas que anuncian la Sierra de Guara, Arcusa conserva
+            una historia que empezó hace casi mil años y que todavía se recorre a pie, calle a calle.
           </p>
           <p>
             Hay pueblos que se visitan por un monumento concreto. Arcusa se descubre por todo lo que es capaz de contar.
           </p>
           <p>
-            Aquí, una pequeña torre levantada en plena Edad Media recuerda el nacimiento del Reino de Aragón.
-            Las antiguas casas señoriales hablan de las familias que dieron forma al pueblo. Las calles conservan
-            la arquitectura tradicional del Sobrarbe y, sobre sus fachadas, un museo de pintura al aire libre mantiene
-            viva la memoria de quienes siempre han llamado hogar a este rincón de la montaña.
-          </p>
-          <p>
-            Después de décadas marcadas por la despoblación, Arcusa ha sabido reinventarse sin perder su esencia.
-            Hoy tradición, patrimonio y cultura conviven en un entorno donde cada paseo es un viaje por casi mil años
-            de historia.
+            Una torre medieval que vio nacer el Reino de Aragón. Casas señoriales que llevan el nombre de quienes
+            las levantaron. Y, sobre las fachadas, un museo de pintura al aire libre que mantiene viva la memoria del pueblo.
           </p>
         </div>
         <div class="mt-8 flex flex-wrap gap-3">
-          <a href="/explora" class="btn-primary">
-            <Icon name="compass" size={15} />
-            Explorar el mapa
+          <a href="/museo" class="btn-primary">
+            <Icon name="palette" size={15} />
+            Ver el museo al aire libre
           </a>
           <a href="/historia" class="btn-outline">
             <Icon name="scroll" size={15} />
@@ -156,16 +150,8 @@ const lugaresDestacados = (await getCollection('lugares'))
   <!-- Accesos rápidos 3D ────────────────────────── -->
   <section class="bg-section-dark py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          {
-            href: '/explora',
-            titulo: 'Mapa del pueblo',
-            desc: 'Descubre cada rincón, cada casa y cada mural',
-            icon: 'compass',
-            iconColor: '#7F9BBE',
-            grad: 'from-[#1A2B3C] to-[#2A3B4C]',
-          },
           {
             href: '/historia',
             titulo: 'Historia y casas',
@@ -244,35 +230,97 @@ const lugaresDestacados = (await getCollection('lugares'))
     </div>
   </section>
 
+  <!-- Libro de visitantes ───────────────────────── -->
+  <section class="bg-section-warm py-20 md:py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+
+        <!-- Panel decorativo: los mismos pines del mapa real -->
+        <div class="lg:col-span-5 reveal">
+          <div class="lv-panel">
+            <img src="/images/icons/chicheta-roja.png" alt="" class="lv-pin" style="top: 12%; left: 16%; width: 34px; transform: rotate(-14deg);" />
+            <img src="/images/icons/chicheta-roja.png" alt="" class="lv-pin" style="top: 66%; left: 10%; width: 26px; transform: rotate(9deg);" />
+            <img src="/images/icons/chicheta-roja.png" alt="" class="lv-pin" style="top: 20%; left: 78%; width: 30px; transform: rotate(16deg);" />
+            <img src="/images/icons/chicheta-roja.png" alt="" class="lv-pin" style="top: 74%; left: 70%; width: 22px; transform: rotate(-8deg);" />
+            <img src="/images/icons/chicheta-roja.png" alt="" class="lv-pin" style="top: 44%; left: 88%; width: 24px; transform: rotate(4deg);" />
+            <img src="/images/icons/chincheta-dorada.png" alt="" class="lv-pin" style="top: 8%; left: 52%; width: 30px; transform: rotate(-6deg);" />
+
+            <div class="lv-panel-stat">
+              <span class="lv-panel-val" id="lv-total">–</span>
+              <span class="lv-panel-label">huellas en el mapa</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Texto + CTAs -->
+        <div class="lg:col-span-7 reveal reveal-d1">
+          <SectionHeader
+            eyebrow="Libro de visitantes"
+            title="Deja tu huella en Arcusa"
+          />
+          <p class="leading-relaxed mb-6" style="color: var(--color-carbon-suave); font-size: 1.0625rem; max-width: 46ch;">
+            Marca en el mapa de dónde vienes a visitar el pueblo y, si te atreves, busca los
+            6 secretos escondidos por sus calles: cada uno tiene un código QR esperando a que
+            lo encuentres.
+          </p>
+
+          <div class="flex flex-wrap gap-3 mb-8">
+            <span class="lv-chip">
+              <Icon name="globe" size={14} />
+              <span id="lv-paises">–</span> países representados
+            </span>
+            <span class="lv-chip lv-chip-dorado">
+              <Icon name="star" size={14} />
+              6 secretos por descubrir
+            </span>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <a href="/visitantes" class="btn-primary">
+              <Icon name="map-pin" size={15} />
+              Dejar mi huella
+            </a>
+            <a href="/visitantes#trivial" class="btn-outline">
+              <Icon name="sparkles" size={15} />
+              Buscar los secretos
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Próximos eventos ──────────────────────────── -->
   {proximosEventos.length > 0 && (
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <SectionHeader
-        eyebrow="Agenda"
-        title="Próximos eventos"
-        subtitle="Encuentros, fiestas y actividades que mantienen viva la vida del pueblo."
-      />
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {proximosEventos.map((evento, i) => (
-          <div class={`reveal reveal-d${i + 1}`}>
-            <CardEvento
-              titulo={evento.data.titulo}
-              fecha={evento.data.fecha}
-              hora={evento.data.hora}
-              lugar={evento.data.lugar}
-              descripcion={evento.data.descripcion}
-              imagen={evento.data.imagen}
-              categoria={evento.data.categoria}
-              slug={evento.id}
-            />
-          </div>
-        ))}
-      </div>
-      <div class="mt-8 text-center">
-        <a href="/eventos" class="btn-outline">
-          <Icon name="calendar" size={15} />
-          Ver todos los eventos
-        </a>
+    <section class="bg-section-white-warm px-4 sm:px-6 lg:px-8 py-20">
+      <div class="max-w-7xl mx-auto">
+        <SectionHeader
+          eyebrow="Agenda"
+          title="Próximos eventos"
+          subtitle="Encuentros, fiestas y actividades que mantienen viva la vida del pueblo."
+        />
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {proximosEventos.map((evento, i) => (
+            <div class={`reveal reveal-d${i + 1}`}>
+              <CardEvento
+                titulo={evento.data.titulo}
+                fecha={evento.data.fecha}
+                hora={evento.data.hora}
+                lugar={evento.data.lugar}
+                descripcion={evento.data.descripcion}
+                imagen={evento.data.imagen}
+                categoria={evento.data.categoria}
+                slug={evento.id}
+              />
+            </div>
+          ))}
+        </div>
+        <div class="mt-8 text-center">
+          <a href="/eventos" class="btn-outline">
+            <Icon name="calendar" size={15} />
+            Ver todos los eventos
+          </a>
+        </div>
       </div>
     </section>
   )}
@@ -300,14 +348,23 @@ const lugaresDestacados = (await getCollection('lugares'))
             No es un museo encerrado entre cuatro paredes. Es el propio pueblo quien cuenta su historia mientras paseas
             por sus calles.
           </p>
-          <a href="/explora" class="btn-ghost">
-            Ver los cuadros en el mapa
+          <a href="/museo" class="btn-ghost">
+            Ver el museo completo
             <Icon name="arrow-right" size={14} />
           </a>
         </div>
 
-        <!-- Stats verticales -->
-        <div class="lg:col-span-2 grid grid-cols-1 gap-4 reveal reveal-d2">
+        <!-- Foto + stats verticales -->
+        <div class="lg:col-span-2 flex flex-col gap-4 reveal reveal-d2">
+          <div class="rounded-2xl overflow-hidden" style="aspect-ratio: 4/3; border: 1px solid rgba(255,255,255,0.14);">
+            <img
+              src="/images/puntos/Museo/test1.webp"
+              alt="Uno de los murales del Museo de Pintura al Aire Libre de Arcusa"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
           {[
             { valor: '36+', label: 'obras por el pueblo', icon: 'brush' },
             { valor: '2020', label: 'año de inicio', icon: 'calendar' },
@@ -368,3 +425,94 @@ const lugaresDestacados = (await getCollection('lugares'))
 
   <Footer completo />
 </Layout>
+
+<style>
+  /* ── Libro de visitantes: panel decorativo con los pines reales del mapa ── */
+  .lv-panel {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(107, 88, 66, 0.1) 1px, transparent 0),
+      radial-gradient(ellipse 70% 60% at 20% 15%, rgba(91, 127, 166, 0.1) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 55% at 85% 85%, rgba(196, 119, 61, 0.08) 0%, transparent 55%),
+      #fff;
+    background-size: 22px 22px, 100%, 100%, 100%;
+    border: 1px solid rgba(156, 133, 103, 0.18);
+    box-shadow: 0 20px 45px -20px rgba(46, 42, 36, 0.3);
+  }
+  .lv-pin {
+    position: absolute;
+    filter: drop-shadow(0 6px 10px rgba(46, 42, 36, 0.35));
+    pointer-events: none;
+  }
+  .lv-panel-stat {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 1.4rem 1.8rem;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(156, 133, 103, 0.2);
+    box-shadow: 0 10px 26px -10px rgba(46, 42, 36, 0.3);
+    text-align: center;
+  }
+  .lv-panel-val {
+    font-family: var(--font-serif);
+    font-size: 2.3rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-carbon);
+  }
+  .lv-panel-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-piedra-media);
+    max-width: 14ch;
+  }
+
+  .lv-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-carbon-suave);
+    background: #fff;
+    border: 1px solid rgba(156, 133, 103, 0.22);
+  }
+  .lv-chip-dorado {
+    color: #9C6B1F;
+    background: rgba(232, 169, 106, 0.14);
+    border-color: rgba(196, 119, 61, 0.35);
+  }
+</style>
+
+<script>
+  /* Contador en vivo del libro de visitantes: mismo endpoint que usa el
+     mapa real en /visitantes (src/components/visitantes/MapaVisitantes.astro).
+     Si el worker no responde (p. ej. en local sin API), se deja en '–'. */
+  (async () => {
+    const total = document.getElementById('lv-total');
+    const paises = document.getElementById('lv-paises');
+    if (!total || !paises) return;
+    try {
+      const res = await fetch('/api/pins');
+      if (!res.ok) throw new Error('respuesta no ok');
+      const pins: { pais?: string }[] = await res.json();
+      total.textContent = String(pins.length);
+      paises.textContent = String(new Set(pins.map(p => p.pais).filter(Boolean)).size);
+    } catch {
+      // silencioso: los chips se quedan con el guion de partida
+    }
+  })();
+</script>
