@@ -274,14 +274,20 @@ const stats = [
   }
 
   .museo-carousel-wrap { margin-top: 4rem; }
+  /* `text-align` en vez de flex: con flex, al partirse en dos líneas en
+     móvil solo el icono quedaba centrado y el texto se leía pegado a la
+     izquierda. Así cada línea envuelta se centra por su cuenta. */
   .museo-hint {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
     margin-top: 2rem;
+    padding: 0 1rem;
     font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
     color: rgba(243, 233, 216, 0.55);
+  }
+  .museo-hint :global(svg) {
+    vertical-align: -2px;
+    margin-right: 0.4rem;
   }
 
   /* ════════ SALA 2 · El origen (claro, aire y contraste) ════════ */
