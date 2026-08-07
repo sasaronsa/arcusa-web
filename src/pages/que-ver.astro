@@ -3,40 +3,25 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionHeader from '../components/SectionHeader.astro';
-import MapaArcusa from '../components/MapaArcusa.astro';
 import CardLugar from '../components/CardLugar.astro';
 import Icon from '../components/Icon.astro';
 import { getCollection } from 'astro:content';
+import { esVisible } from '../utils/contenido';
+
+const todosLosPuntos = (await getCollection('puntos')).filter(esVisible);
 
 // Servicios del pueblo (puntos tipo "servicio"), agrupados por categoría
 // para los modales de Dormir y Comer.
-const servicios = (await getCollection('puntos')).filter(p => p.data.tipo === 'servicio');
+const servicios = todosLosPuntos.filter(p => p.data.tipo === 'servicio');
 const alojamientosZona = servicios.filter(p => p.data.categoria === 'dormir');
 const restaurantesZona = servicios.filter(p => p.data.categoria === 'comer');
 
-// Mapa del pueblo (se mantiene el mapa interactivo actual)
-const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== false).map(p => ({
-  slug: p.id.split('/').pop()!,
-  nombre: p.data.nombre,
-  tipo: p.data.tipo,
-  x: p.data.x,
-  y: p.data.y,
-  resumen: p.data.resumen,
-  imagenes: p.data.imagenes,
-  anio: p.data.anio,
-  autor: p.data.autor,
-}));
-
 // ── Navegación interna de la página ───────────────
+// El mapa interactivo (antes 'Explora') está desactivado por ahora.
 const indice = [
   { label: 'Imprescindibles', href: '#imprescindibles' },
-  { label: 'Qué visitar',     href: '#visitar' },
-  { label: 'Actividades',     href: '#actividades' },
-  { label: 'Experiencias',    href: '#experiencias' },
   { label: 'Gastronomía',     href: '#gastronomia' },
   { label: 'Dormir',          href: '#dormir' },
-  //{ label: 'Itinerarios',     href: '#itinerarios' },
-  { label: 'Mapa',            href: '#mapa' },
 ];
 
 // ── Por qué alojarte en Arcusa ────────────────────
@@ -87,101 +72,6 @@ const imprescindibles = [
   },
 ];
 
-// ── Qué visitar (por categorías) ──────────────────
-const visitar = [
-  {
-    titulo: 'Pueblos',
-    eyebrow: 'Para perderse a pie',
-    icon: 'home',
-    items: [
-      { n: 'Aínsa',       d: 'La plaza medieval más bonita de Aragón. Sin discusión.' },
-      { n: 'Alquézar',    d: 'Calles que cuelgan sobre el cañón del Vero.' },
-      { n: 'Boltaña',     d: 'Casco antiguo y castillo junto al río Ara.' },
-      { n: 'Abizanda',    d: 'Su torre del siglo XI vigila el embalse de Mediano.' },
-      { n: 'Lecina',      d: 'Piedra y leña, a la sombra de una carrasca milenaria.' },
-      { n: 'Samitier',    d: 'Cuatro casas, una ermita en la roca y vistas que no acaban.' },
-      { n: 'Escanilla',   d: 'El Sobrarbe tranquilo, entre campos y montaña.' },
-      { n: 'Morcat',      d: 'Casi deshabitado. Aquí empezó la historia de Arcusa.' },
-      { n: 'Muro de Roda', d: 'Un pueblo fortificado entero, hoy en silencio.' },
-    ],
-  },
-  {
-    titulo: 'Patrimonio',
-    eyebrow: 'Mil años de piedra',
-    icon: 'landmark',
-    items: [
-      { n: 'Torre de Arcusa',          d: 'La atalaya pentagonal del pueblo, en pie desde el siglo XI.' },
-      { n: 'Dolmen de Pueyoril',       d: 'Cinco mil años de memoria, a un paseo de Arcusa.' },
-      { n: 'Castillo de Samitier',     d: 'Castillo y ermita románica asomados al embalse.' },
-      { n: 'Castillo de Abizanda',     d: 'Torre del siglo XI con el horizonte entero a sus pies.' },
-      { n: 'Monasterio de San Victorián', d: 'De los más antiguos de España, al pie de la Peña Montañesa.' },
-      { n: 'Muro de Roda',             d: 'Murallas, iglesia y torreones que resistieron mil años.' },
-    ],
-  },
-  {
-    titulo: 'Naturaleza',
-    eyebrow: 'Paisaje en estado puro',
-    icon: 'mountain',
-    items: [
-      { n: 'P. N. de Ordesa y Monte Perdido', d: 'El gran parque nacional del Pirineo. Palabras mayores.' },
-      { n: 'Sierra de Guara',          d: 'Donde el agua decidió cortar la roca.' },
-      { n: 'Cañón del Vero',           d: 'Arte rupestre Patrimonio Mundial y pasarelas sobre el agua.' },
-      { n: 'Congosto de Entremón',     d: 'Un tajo vertical sobre el embalse que casi nadie conoce.' },
-      { n: 'Peña Montañesa',           d: 'La mole que se ve desde cualquier rincón del Sobrarbe.' },
-      { n: 'Miradores',                d: 'Balcones naturales con los Pirineos de fondo.' },
-    ],
-  },
-];
-
-// ── Actividades ───────────────────────────────────
-const actividades = [
-  {
-    titulo: 'Senderismo',
-    icon: 'footprints',
-    items: [
-      { n: 'GR-1, Sendero Histórico', d: 'La gran ruta que cruza el Prepirineo de lado a lado.' },
-      { n: 'Ruta del Dolmen',         d: 'Un paseo corto desde Arcusa hasta la Prehistoria.' },
-      { n: 'Subida a Samitier',       d: 'Castillo, ermita y un balcón sobre el embalse.' },
-      { n: 'Peña Montañesa',          d: 'Dura de subir. Imposible de olvidar desde arriba.' },
-    ],
-  },
-  {
-    titulo: 'Aventura',
-    icon: 'waves',
-    items: [
-      { n: 'Barranquismo', d: 'En Guara, donde se inventó casi todo esto.' },
-      { n: 'Kayak',        d: 'Remar en silencio por los embalses del Sobrarbe.' },
-      { n: 'Rafting',      d: 'Aguas bravas en el Ara y el Cinca.' },
-      { n: 'Escalada',     d: 'Paredes para empezar y paredes para respetar.' },
-      { n: 'Vías ferratas', d: 'Verticalidad y vértigo, con la seguridad puesta.' },
-      { n: 'BTT',          d: 'Kilómetros de pistas entre pueblos y bosques.' },
-    ],
-  },
-  {
-    titulo: 'Naturaleza',
-    icon: 'tree-pine',
-    items: [
-      { n: 'Observación de aves', d: 'Uno de los mejores cielos de España para mirar arriba.' },
-      { n: 'Quebrantahuesos',     d: 'El rey del Pirineo, planeando sobre tu cabeza.' },
-      { n: 'Astrofotografía',     d: 'Cielos Starlight para llevarte la Vía Láctea a casa.' },
-      { n: 'La berrea',           d: 'El bramido de los ciervos rompiendo el otoño.' },
-      { n: 'Micología',           d: 'Cuando llega el frío, el bosque se llena de setas.' },
-    ],
-  },
-];
-
-// ── Experiencias ──────────────────────────────────
-const experiencias = [
-  { icon: 'sunrise',  texto: 'Ver amanecer desde un mirador, con el valle todavía dormido bajo la niebla.' },
-  { icon: 'waves',    texto: 'Meterte en una poza de agua turquesa cuando aprieta el calor de agosto.' },
-  { icon: 'castle',   texto: 'Perderte por un pueblo medieval sin mapa, sin prisa y sin rumbo.' },
-  { icon: 'palette',  texto: 'Ir cazando los murales de Arcusa, de fachada en fachada.' },
-  { icon: 'star',     texto: 'Quedarte callado mirando un cielo con más estrellas de las que recordabas.' },
-  { icon: 'mountain', texto: 'Ver planear un quebrantahuesos sobre los cañones de Guara.' },
-  { icon: 'tree-pine', texto: 'Escuchar la berrea de los ciervos en un atardecer de octubre.' },
-  { icon: 'footprints', texto: 'Cruzar las pasarelas del Vero, suspendido sobre el río.' },
-];
-
 // ── Gastronomía ───────────────────────────────────
 const gastronomiaImg = '/images/que-ver/gastronomia.webp'
 const productos = [
@@ -202,40 +92,6 @@ const alojamiento = [
   { icon: 'bed',      titulo: 'Apartamentos',   texto: 'Tu espacio y tu ritmo, ideales para estancias largas o viajes en familia.' },
 ];
 
-// ── Itinerarios ───────────────────────────────────
-const itinerarios = [
-  { tiempo: 'Medio día',   icon: 'clock',    titulo: 'Aínsa al atardecer',     plan: 'Piérdete por el casco medieval, sube al castillo y quédate a ver caer el sol sobre los Pirineos. Cena con calma de vuelta en Arcusa.' },
-  { tiempo: 'Un día',      icon: 'sunrise',  titulo: 'Alquézar y el Vero',     plan: 'Madruga hacia Alquézar, cruza las pasarelas del cañón y come en el pueblo. Por la tarde, un baño en una poza si el calor lo pide.' },
-  { tiempo: 'Fin de semana', icon: 'calendar', titulo: 'Ordesa + Sobrarbe',   plan: 'Un día entero en Ordesa para la naturaleza grande. Otro, sin reloj, entre Aínsa, los pueblos cercanos y la historia de Arcusa.' },
-  { tiempo: '3 días',      icon: 'star',     titulo: 'La inmersión total',     plan: 'Súmale una jornada de aventura en Guara —barranco o ferrata— y tiempo para los rincones que no salen en las guías.' },
-];
-
-// ── Según la época ────────────────────────────────
-const estaciones = [
-  { estacion: 'Primavera', icon: 'tree-pine', texto: 'Con el deshielo, cascadas y barrancos van a tope. Todo verde y los pueblos aún para ti solo.' },
-  { estacion: 'Verano',    icon: 'waves',     texto: 'Tiempo de pozas, barrancos y noches templadas para tumbarse a mirar las estrellas.' },
-  { estacion: 'Otoño',     icon: 'star',      texto: 'El bosque se vuelve de oro, brama la berrea y salen las setas. Para muchos, la mejor época.' },
-  { estacion: 'Invierno',  icon: 'sparkles',  texto: 'Nieve en las cumbres, silencio abajo y un Sobrarbe en calma para desconectar de todo.' },
-];
-
-// ── Familia ───────────────────────────────────────
-const familia = [
-  'Las pasarelas del Vero: aventura de verdad, pero segura. A los niños les encanta.',
-  'Pozas y orillas tranquilas para chapotear todo el verano.',
-  'El museo al aire libre de Arcusa, que se convierte en un juego de buscar murales.',
-  'Buitres, quebrantahuesos y ciervos: fauna que se ve sin ser un experto.',
-  'Pueblos medievales para explorar como si fueran castillos de cuento.',
-];
-
-// ── Rincones poco conocidos ───────────────────────
-const rincones = [
-  { n: 'Muro de Roda',          d: 'Una fortaleza olvidada entre montañas. Aquí solo se oye el viento, y la subida se paga con las vistas.' },
-  { n: 'La Carrasca de Lecina', d: 'Mil años llevando contemplando el Sobrarbe. Una encina tan grande que te hace sentir pequeño.' },
-  { n: 'Congosto de Entremón',  d: 'Un desfiladero donde el agua partió la montaña en dos. Y casi nadie lo conoce.' },
-  { n: 'Castillo de Samitier',  d: 'Un castillo y una ermita colgados sobre el vacío. Súbete y entenderás por qué los pusieron ahí.' },
-  { n: 'Peña Montañesa',        d: 'Hay montañas que se escalan. La Peña Montañesa se admira.' },
-  { n: 'Aldeas despobladas',    d: 'Morcat, Bagüeste y otros núcleos donde el tiempo se paró hace años.' },
-];
 ---
 
 <Layout
@@ -306,10 +162,6 @@ const rincones = [
         <a href="#imprescindibles" class="btn-primary">
           Empezar a descubrir
           <Icon name="arrow-right" size={14} />
-        </a>
-        <a href="#mapa" class="btn-ghost">
-          <Icon name="compass" size={15} />
-          Ver el mapa
         </a>
       </div>
     </div>
@@ -419,115 +271,9 @@ const rincones = [
     </div>
   </section>
 
-  <!-- ══════════ 4 · QUÉ VISITAR ══════════ -->
-  <section id="visitar" style="background: white;" class="py-20 md:py-28 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <SectionHeader
-        eyebrow="Para todos los planes"
-        title="Qué visitar"
-        subtitle="Pueblos con siglos a la espalda, piedra que ha visto de todo y naturaleza de la grande. Tú eliges por dónde empezar hoy."
-      />
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {visitar.map((cat, ci) => (
-          <div class={`reveal reveal-d${ci + 1}`}>
-            <div class="flex items-center gap-3 mb-5">
-              <div
-                class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                style="background: var(--color-pergamino); color: var(--color-piedra-oscura);"
-              >
-                <Icon name={cat.icon} size={20} />
-              </div>
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.18em]" style="color: var(--color-ocre);">{cat.eyebrow}</p>
-                <h3 class="font-serif text-xl font-semibold" style="color: var(--color-carbon);">{cat.titulo}</h3>
-              </div>
-            </div>
-            <ul class="flex flex-col">
-              {cat.items.map(item => (
-                <li class="py-3 flex gap-3" style="border-top: 1px solid rgba(156,133,103,0.12);">
-                  <Icon name="chevron-right" size={14} class="flex-shrink-0 mt-1" style="color: var(--color-piedra-clara);" />
-                  <div>
-                    <p class="font-semibold text-sm" style="color: var(--color-carbon);">{item.n}</p>
-                    <p class="text-sm leading-snug mt-0.5" style="color: var(--color-carbon-suave);">{item.d}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ 5 · ACTIVIDADES ══════════ -->
-  <section id="actividades" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-    <SectionHeader
-      eyebrow="Para los que no paran quietos"
-      title="Actividades"
-      subtitle="El Sobrarbe es uno de los grandes patios de juego de Europa. El único problema es que no te va a dar tiempo a todo."
-    />
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {actividades.map((cat, ci) => (
-        <div
-          class={`reveal reveal-d${ci + 1} rounded-2xl p-6 md:p-7`}
-          style="background: white; border: 1px solid rgba(156,133,103,0.12); box-shadow: 0 2px 8px rgba(46,42,36,0.04);"
-        >
-          <div class="flex items-center gap-3 mb-5">
-            <div
-              class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-              style="background: var(--color-cielo-palido); color: var(--color-azul-pirineo);"
-            >
-              <Icon name={cat.icon} size={20} />
-            </div>
-            <h3 class="font-serif text-xl font-semibold" style="color: var(--color-carbon);">{cat.titulo}</h3>
-          </div>
-          <ul class="flex flex-col gap-3.5">
-            {cat.items.map(item => (
-              <li class="flex gap-2.5">
-                <Icon name="check" size={15} class="flex-shrink-0 mt-0.5" style="color: var(--color-verde-medio);" />
-                <div>
-                  <span class="font-semibold text-sm" style="color: var(--color-carbon);">{item.n}.</span>
-                  <span class="text-sm" style="color: var(--color-carbon-suave);"> {item.d}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <!-- ══════════ 6 · EXPERIENCIAS ══════════ -->
-  <section id="experiencias" class="bg-section-dark py-20 md:py-28 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-6xl mx-auto">
-      <SectionHeader
-        eyebrow="No coleccionas sitios, coleccionas momentos"
-        title="Experiencias para recordar"
-        subtitle="Olvídate un momento de la lista de lugares. Esto es lo que vas a seguir contando meses después de volver a casa."
-        dark
-      />
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-2">
-        {experiencias.map((e, i) => (
-          <div
-            class={`reveal reveal-d${(i % 4) + 1} flex items-center gap-4 py-4`}
-            style="border-bottom: 1px solid rgba(255,255,255,0.1);"
-          >
-            <div
-              class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
-              style="background: rgba(255,255,255,0.08); color: var(--color-ocre-suave);"
-            >
-              <Icon name={e.icon} size={19} />
-            </div>
-            <p class="leading-relaxed" style="color: rgba(255,255,255,0.82);">{e.texto}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ 7 · GASTRONOMÍA ══════════ -->
-  <section id="gastronomia" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+  <!-- ══════════ 4 · GASTRONOMÍA ══════════ -->
+  <section id="gastronomia" style="background: white;" class="py-20 md:py-28 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
       <div>
         <SectionHeader
           eyebrow="Sabor de montaña"
@@ -550,7 +296,7 @@ const rincones = [
           {productos.map(p => (
             <span
               class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
-              style="background: white; border: 1px solid rgba(156,133,103,0.2); color: var(--color-carbon-suave);"
+              style="background: var(--color-pergamino); border: 1px solid rgba(156,133,103,0.2); color: var(--color-carbon-suave);"
             >
               <Icon name={p.icon} size={13} style="color: var(--color-piedra-media);" />
               {p.n}
@@ -582,7 +328,7 @@ const rincones = [
     </div>
   </section>
 
-  <!-- ══════════ 8 · DORMIR ══════════ -->
+  <!-- ══════════ 5 · DORMIR ══════════ -->
   <section id="dormir" class="bg-section-white-warm py-20 md:py-28 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <SectionHeader
@@ -618,110 +364,6 @@ const rincones = [
     </div>
   </section>
 
-  <!-- ══════════ 9 · ITINERARIOS ══════════ -->
-  <!--
-  <section id="itinerarios" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-    <SectionHeader
-      eyebrow="¿Cuánto tiempo tienes?"
-      title="Itinerarios a tu medida"
-      subtitle="Vengas una tarde o una semana entera, aquí tienes por dónde empezar."
-    />
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {itinerarios.map((it, i) => (
-        <article
-          class={`reveal reveal-d${(i % 2) + 1} rounded-2xl p-7 flex gap-5`}
-          style="background: white; border: 1px solid rgba(156,133,103,0.12); box-shadow: 0 2px 8px rgba(46,42,36,0.04);"
-        >
-          <div
-            class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-            style="background: var(--color-cielo-palido); color: var(--color-azul-pirineo);"
-          >
-            <Icon name={it.icon} size={24} />
-          </div>
-          <div>
-            <span
-              class="inline-block text-xs font-bold uppercase tracking-wide mb-2 px-2.5 py-0.5 rounded-full"
-              style="background: var(--color-pergamino); color: var(--color-ocre);"
-            >
-              {it.tiempo}
-            </span>
-            <h3 class="font-serif text-xl font-semibold mb-2" style="color: var(--color-carbon);">{it.titulo}</h3>
-            <p class="text-sm leading-relaxed" style="color: var(--color-carbon-suave);">{it.plan}</p>
-          </div>
-        </article>
-      ))}
-    </div>
-  </section>
-  -->
-  
-  <!-- ══════════ 10 · SEGÚN LA ÉPOCA ══════════ -->
-  <!--
-  <section style="background: white;" class="py-20 md:py-28 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <SectionHeader
-        eyebrow="El Sobrarbe cambia con el calendario"
-        title="Según la época del año"
-        subtitle="No hay una mala estación para venir. Solo planes distintos."
-      />
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {estaciones.map((e, i) => (
-          <div
-            class={`reveal reveal-d${i + 1} rounded-2xl p-6 h-full`}
-            style="background: var(--color-pergamino); border: 1px solid rgba(156,133,103,0.12);"
-          >
-            <div
-              class="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-              style="background: white; color: var(--color-verde-medio);"
-            >
-              <Icon name={e.icon} size={22} />
-            </div>
-            <h3 class="font-serif text-lg font-semibold mb-2" style="color: var(--color-carbon);">{e.estacion}</h3>
-            <p class="text-sm leading-relaxed" style="color: var(--color-carbon-suave);">{e.texto}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-  -->
-
-  <!-- ══════════ 11 · FAMILIA · 12 · RINCONES ══════════ -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-      <!-- Familia -->
-      <div class="reveal">
-        <SectionHeader eyebrow="Para los más pequeños" title="Viaje en familia" />
-        <ul class="flex flex-col gap-4">
-          {familia.map(f => (
-            <li class="flex gap-3.5 items-start">
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                style="background: var(--color-cielo-palido); color: var(--color-azul-pirineo);"
-              >
-                <Icon name="check" size={15} />
-              </div>
-              <p class="leading-relaxed pt-1" style="color: var(--color-carbon-suave);">{f}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <!-- Rincones -->
-      <div class="reveal reveal-d1">
-        <SectionHeader eyebrow="Lejos del mapa turístico" title="Rincones poco conocidos" />
-        <ul class="flex flex-col">
-          {rincones.map(r => (
-            <li class="py-4 flex gap-3" style="border-top: 1px solid rgba(156,133,103,0.12);">
-              <Icon name="compass" size={16} class="flex-shrink-0 mt-1" style="color: var(--color-ocre);" />
-              <div>
-                <p class="font-semibold" style="color: var(--color-carbon);">{r.n}</p>
-                <p class="text-sm leading-snug mt-0.5" style="color: var(--color-carbon-suave);">{r.d}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  </section>
-
   <!-- ══════════ Enlace a Arcusa de noche ══════════ -->
   <section class="bg-section-dark py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-left">
@@ -740,20 +382,7 @@ const rincones = [
     </div>
   </section>
 
-  <!-- ══════════ 13 · MAPA ══════════ -->
-  <section id="mapa" class="bg-section-warm py-20 md:py-24 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <SectionHeader
-        eyebrow="Sobre el terreno"
-        title="Explora Arcusa en el mapa"
-        subtitle="Antes de salir a recorrer la comarca, conoce el pueblo desde dentro: las casas con historia, los cuadros pintados en las fachadas y dónde encontrar cada cosa."
-        centered
-      />
-      <MapaArcusa puntos={puntos} />
-    </div>
-  </section>
-
-  <!-- ══════════ 14 · CTA FINAL ══════════ -->
+  <!-- ══════════ 6 · CTA FINAL ══════════ -->
   <section class="bg-section-blue py-24 px-4">
     <div class="max-w-2xl mx-auto text-center text-white">
       <p class="text-xs font-semibold uppercase tracking-[0.25em] mb-5" style="color: rgba(255,255,255,0.6);">
@@ -769,11 +398,11 @@ const rincones = [
       </p>
       <div class="flex flex-wrap gap-3 justify-center">
         <a
-          href="/explora"
+          href="/museo"
           class="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all hover:scale-105"
           style="background: white; color: var(--color-azul-pirineo);"
         >
-          <Icon name="compass" size={15} />
+          <Icon name="palette" size={15} />
           Explorar el pueblo
         </a>
         <a
