@@ -3,22 +3,22 @@ import Icon from '../Icon.astro';
 ---
 
 <div id="mapa-visitantes-root">
-  <div class="mv-stats" role="list">
-    <div class="mv-stat" role="listitem">
+  <div class="mv-stats" role="group" aria-label="Estadísticas de visitantes; pulsa cada una para ver el detalle">
+    <button type="button" class="mv-stat" data-stat="visitantes" aria-haspopup="dialog">
       <Icon name="users" size={16} />
       <span class="mv-stat-val" id="mv-stat-total">–</span>
       <span class="mv-stat-label">Visitantes</span>
-    </div>
-    <div class="mv-stat" role="listitem">
+    </button>
+    <button type="button" class="mv-stat" data-stat="paises" aria-haspopup="dialog">
       <Icon name="globe" size={16} />
       <span class="mv-stat-val" id="mv-stat-paises">–</span>
       <span class="mv-stat-label">Países</span>
-    </div>
-    <div class="mv-stat mv-stat-dorado" role="listitem">
+    </button>
+    <button type="button" class="mv-stat mv-stat-dorado" data-stat="dorados" aria-haspopup="dialog">
       <Icon name="star" size={16} />
       <span class="mv-stat-val" id="mv-stat-dorados">–</span>
       <span class="mv-stat-label">Huellas doradas</span>
-    </div>
+    </button>
   </div>
 
   <div id="mv-canvas" class="mv-canvas"></div>
@@ -26,6 +26,19 @@ import Icon from '../Icon.astro';
   <p id="mv-vacio" class="mv-vacio" hidden>
     Aún no hay pines en el mapa. ¡Sé la primera persona en dejar tu huella!
   </p>
+</div>
+
+<!-- Modal de detalle de las estadísticas (visitantes / países / dorados) -->
+<div id="mv-modal" class="mv-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="mv-modal-titulo">
+  <div class="mv-modal-backdrop" data-cerrar-mv></div>
+  <div class="mv-modal-card" role="document">
+    <button type="button" class="mv-modal-close" data-cerrar-mv aria-label="Cerrar">
+      <Icon name="x" size={18} />
+    </button>
+    <p class="mv-modal-eyebrow">Libro de visitantes</p>
+    <h3 class="mv-modal-titulo" id="mv-modal-titulo">&nbsp;</h3>
+    <div id="mv-modal-body" class="mv-modal-body"></div>
+  </div>
 </div>
 
 <style>
@@ -44,8 +57,13 @@ import Icon from '../Icon.astro';
     background: rgba(255,255,255,0.7);
     border: 1px solid rgba(156,133,103,0.25);
     color: var(--color-piedra-oscura);
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
   }
+  .mv-stat:hover { background: #fff; border-color: rgba(156,133,103,0.4); transform: translateY(-1px); }
   .mv-stat-dorado { color: #9C6B1F; border-color: rgba(196,119,61,0.35); background: rgba(232,169,106,0.14); }
+  .mv-stat-dorado:hover { background: rgba(232,169,106,0.22); border-color: rgba(196,119,61,0.5); }
   .mv-stat-val { font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--color-carbon); }
   .mv-stat-dorado .mv-stat-val { color: #9C6B1F; }
   .mv-stat-label { font-size: 0.75rem; font-weight: 600; }
@@ -77,6 +95,165 @@ import Icon from '../Icon.astro';
   :global(.mv-popup-nombre) { font-family: var(--font-serif); font-weight: 700; margin: 0 0 0.15rem; }
   :global(.mv-popup-meta) { font-size: 0.72rem; color: var(--color-piedra-media); margin: 0 0 0.35rem; }
   :global(.mv-popup-comentario) { font-size: 0.85rem; color: var(--color-carbon-suave); margin: 0; }
+
+  /* ── Modal de detalle de estadísticas ── */
+  .mv-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 140;
+    display: flex;
+    justify-content: center;
+    padding: clamp(1rem, 6vh, 4rem) 1rem;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+  }
+  .mv-modal.open { opacity: 1; visibility: visible; pointer-events: auto; }
+  .mv-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(46, 42, 36, 0.55);
+    backdrop-filter: blur(3px);
+  }
+  .mv-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: auto;
+    background: var(--color-pergamino);
+    border-radius: 1.25rem;
+    box-shadow: 0 24px 60px rgba(46, 42, 36, 0.35);
+    padding: 1.75rem 1.5rem 1.5rem;
+    transform: translateY(16px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+  }
+  .mv-modal.open .mv-modal-card { transform: translateY(0) scale(1); opacity: 1; }
+  .mv-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--color-carbon);
+    border: 1px solid rgba(156, 133, 103, 0.25);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .mv-modal-close:hover { transform: scale(1.08); }
+  .mv-modal-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--color-ocre);
+    margin-bottom: 0.3rem;
+    padding-right: 2.5rem;
+  }
+  .mv-modal-titulo {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-carbon);
+    margin-bottom: 1.1rem;
+    padding-right: 2.5rem;
+  }
+  .mv-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  /* Fila de la lista de visitantes / dorados */
+  .mv-fila {
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(156, 133, 103, 0.15);
+  }
+  .mv-fila-cabecera {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+  .mv-fila-nombre {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--color-carbon);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .mv-fila-nombre :global(svg) { color: #C4773D; flex-shrink: 0; }
+  .mv-fila-fecha { font-size: 0.7rem; color: var(--color-piedra-media); white-space: nowrap; flex-shrink: 0; }
+  .mv-fila-pais { font-size: 0.78rem; color: var(--color-piedra-media); margin-top: 0.15rem; }
+  .mv-fila-comentario {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--color-carbon-suave);
+  }
+
+  /* Ranking de países */
+  .mv-rank-fila {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .mv-rank-pos {
+    flex-shrink: 0;
+    width: 1.6rem;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-piedra-media);
+    text-align: right;
+  }
+  .mv-rank-info { flex: 1; min-width: 0; }
+  .mv-rank-cabecera {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    margin-bottom: 0.3rem;
+  }
+  .mv-rank-pais { font-weight: 600; color: var(--color-carbon); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mv-rank-cuenta { flex-shrink: 0; font-weight: 700; color: var(--color-ocre); font-size: 0.8rem; }
+  .mv-rank-barra {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgba(156, 133, 103, 0.15);
+    overflow: hidden;
+  }
+  .mv-rank-barra-relleno {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, var(--color-ocre), var(--color-ocre-suave));
+  }
+
+  .mv-modal-vacio {
+    text-align: center;
+    padding: 1.5rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-piedra-media);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mv-modal, .mv-modal-card { transition: none; }
+  }
 </style>
 
 <script>
@@ -97,6 +274,10 @@ import Icon from '../Icon.astro';
   const canvas = document.getElementById('mv-canvas');
   const vacio = document.getElementById('mv-vacio');
   if (!canvas) throw new Error('mv-canvas no encontrado');
+
+  // Última respuesta de /api/pins, para que el modal de estadísticas no
+  // tenga que volver a pedirla: se refresca cada vez que se pintan pines.
+  let pinesCache: Pin[] = [];
 
   const map = L.map(canvas, { worldCopyJump: true }).setView([30, 10], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -128,6 +309,7 @@ import Icon from '../Icon.astro';
   }
 
   function actualizarContadores(pins: Pin[]) {
+    pinesCache = pins;
     const paises = new Set(pins.map((p) => p.pais).filter(Boolean));
     const dorados = pins.filter((p) => p.tipo === 'dorado').length;
     const total = document.getElementById('mv-stat-total');
@@ -149,6 +331,170 @@ import Icon from '../Icon.astro';
       ${comentario}
     `);
   }
+
+  // ── Modal de estadísticas (visitantes / países / dorados) ──
+  // Construido con el DOM (createElement + textContent), no innerHTML con
+  // texto interpolado: nombre/comentario/país los escribe cualquier
+  // visitante y no queremos depender de un escape manual incompleto.
+  const STAR_PATH =
+    '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>';
+
+  function svgEstrella(): SVGSVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '12');
+    svg.setAttribute('height', '12');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML = STAR_PATH;
+    return svg;
+  }
+
+  function filaVisitante(p: Pin): HTMLElement {
+    const fila = document.createElement('div');
+    fila.className = 'mv-fila';
+
+    const cabecera = document.createElement('div');
+    cabecera.className = 'mv-fila-cabecera';
+
+    const nombre = document.createElement('p');
+    nombre.className = 'mv-fila-nombre';
+    nombre.append(document.createTextNode(p.nombre));
+    if (p.tipo === 'dorado') nombre.append(svgEstrella());
+    cabecera.append(nombre);
+
+    const fecha = document.createElement('span');
+    fecha.className = 'mv-fila-fecha';
+    fecha.textContent = formatoFecha(p.created_at);
+    cabecera.append(fecha);
+
+    fila.append(cabecera);
+
+    const pais = document.createElement('p');
+    pais.className = 'mv-fila-pais';
+    pais.textContent = p.pais ?? 'Origen desconocido';
+    fila.append(pais);
+
+    if (p.comentario) {
+      const comentario = document.createElement('p');
+      comentario.className = 'mv-fila-comentario';
+      comentario.textContent = `"${p.comentario}"`;
+      fila.append(comentario);
+    }
+
+    return fila;
+  }
+
+  function vacioModal(texto: string): HTMLElement {
+    const p = document.createElement('p');
+    p.className = 'mv-modal-vacio';
+    p.textContent = texto;
+    return p;
+  }
+
+  function construirVisitantes(pins: Pin[]): HTMLElement[] {
+    if (pins.length === 0) return [vacioModal('Todavía no hay ninguna huella en el mapa.')];
+    return [...pins].sort((a, b) => b.created_at - a.created_at).map(filaVisitante);
+  }
+
+  function construirDorados(pins: Pin[]): HTMLElement[] {
+    const dorados = pins.filter((p) => p.tipo === 'dorado');
+    if (dorados.length === 0) {
+      return [vacioModal('Nadie ha encontrado todavía los 6 secretos. ¡Sé la primera persona!')];
+    }
+    return [...dorados].sort((a, b) => b.created_at - a.created_at).map(filaVisitante);
+  }
+
+  function construirRankingPaises(pins: Pin[]): HTMLElement[] {
+    const conteo = new Map<string, number>();
+    for (const p of pins) {
+      if (!p.pais) continue;
+      conteo.set(p.pais, (conteo.get(p.pais) ?? 0) + 1);
+    }
+    if (conteo.size === 0) return [vacioModal('Todavía no hay países registrados.')];
+
+    const ranking = [...conteo.entries()].sort((a, b) => b[1] - a[1]);
+    const maximo = ranking[0][1];
+
+    return ranking.map(([pais, cuenta], i) => {
+      const fila = document.createElement('div');
+      fila.className = 'mv-rank-fila';
+
+      const pos = document.createElement('span');
+      pos.className = 'mv-rank-pos';
+      pos.textContent = `${i + 1}.`;
+      fila.append(pos);
+
+      const info = document.createElement('div');
+      info.className = 'mv-rank-info';
+
+      const cab = document.createElement('div');
+      cab.className = 'mv-rank-cabecera';
+      const nombrePais = document.createElement('span');
+      nombrePais.className = 'mv-rank-pais';
+      nombrePais.textContent = pais;
+      const cuentaEl = document.createElement('span');
+      cuentaEl.className = 'mv-rank-cuenta';
+      cuentaEl.textContent = cuenta === 1 ? '1 huella' : `${cuenta} huellas`;
+      cab.append(nombrePais, cuentaEl);
+      info.append(cab);
+
+      const barra = document.createElement('div');
+      barra.className = 'mv-rank-barra';
+      const relleno = document.createElement('div');
+      relleno.className = 'mv-rank-barra-relleno';
+      relleno.style.width = `${Math.max(6, (cuenta / maximo) * 100)}%`;
+      barra.append(relleno);
+      info.append(barra);
+
+      fila.append(info);
+      return fila;
+    });
+  }
+
+  const CONFIG_MODAL: Record<string, { titulo: string; construir: (pins: Pin[]) => HTMLElement[] }> = {
+    visitantes: { titulo: 'Todos los visitantes', construir: construirVisitantes },
+    paises: { titulo: 'Ranking de países', construir: construirRankingPaises },
+    dorados: { titulo: 'Huellas doradas · los 6 secretos', construir: construirDorados },
+  };
+
+  const mvModal = document.getElementById('mv-modal');
+  const mvModalTitulo = document.getElementById('mv-modal-titulo');
+  const mvModalBody = document.getElementById('mv-modal-body');
+  let mvUltimoFoco: HTMLElement | null = null;
+
+  function abrirModalStat(clave: string, disparador: HTMLElement) {
+    const cfg = CONFIG_MODAL[clave];
+    if (!cfg || !mvModal || !mvModalTitulo || !mvModalBody) return;
+
+    mvModalTitulo.textContent = cfg.titulo;
+    mvModalBody.replaceChildren(...cfg.construir(pinesCache));
+
+    mvUltimoFoco = disparador;
+    mvModal.classList.add('open');
+    mvModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    mvModal.querySelector<HTMLElement>('.mv-modal-close')?.focus();
+  }
+
+  function cerrarModalStat() {
+    if (!mvModal) return;
+    mvModal.classList.remove('open');
+    mvModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    mvUltimoFoco?.focus();
+    mvUltimoFoco = null;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.mv-stat[data-stat]').forEach((btn) => {
+    btn.addEventListener('click', () => abrirModalStat(btn.dataset.stat!, btn));
+  });
+  mvModal?.querySelectorAll<HTMLElement>('[data-cerrar-mv]').forEach((el) => {
+    el.addEventListener('click', cerrarModalStat);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mvModal?.classList.contains('open')) cerrarModalStat();
+  });
 
   async function cargarPines() {
     try {
