@@ -69,14 +69,17 @@ const multiple = cuadros.length > 1;
               </div>
               <div class="cf-back-rule"></div>
               <p class="cf-back-quote">{c.resumen}</p>
-              <a
-                href={`/historia/${c.slug}`}
+              <!-- `data-nav-link` evita que el clic gire la tarjeta (ver endDrag).
+                   El modal lo abre museo.astro a partir de `data-obra`. -->
+              <button
+                type="button"
                 class="cf-back-link"
                 data-nav-link
+                data-obra={c.slug}
               >
-                Ver la historia completa
+                Más información
                 <Icon name="arrow-right" size={12} />
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -168,10 +171,12 @@ const multiple = cuadros.length > 1;
       transform 0.75s cubic-bezier(0.65, 0, 0.35, 1),
       opacity 0s linear 0.37s;
   }
+  /* `opacity: 0` NO desactiva los clics: sin `pointer-events` se podría pulsar
+     el botón "Más información" del reverso con la tarjeta sin girar. */
   .cf-front { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
-  .cf-back  { transform: perspective(1400px) rotateY(180deg); opacity: 0; }
-  .cf-card.is-flipped .cf-front { transform: perspective(1400px) rotateY(-180deg); opacity: 0; }
-  .cf-card.is-flipped .cf-back  { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+  .cf-back  { transform: perspective(1400px) rotateY(180deg); opacity: 0; pointer-events: none; }
+  .cf-card.is-flipped .cf-front { transform: perspective(1400px) rotateY(-180deg); opacity: 0; pointer-events: none; }
+  .cf-card.is-flipped .cf-back  { transform: perspective(1400px) rotateY(0deg); opacity: 1; pointer-events: auto; }
 
   /* ── Frente: la obra ── */
   .cf-front {
@@ -358,12 +363,22 @@ const multiple = cuadros.length > 1;
     align-items: center;
     gap: 0.4rem;
     margin-top: 1rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 9999px;
     font-size: 0.78rem;
     font-weight: 700;
     color: var(--color-azul-pirineo);
+    background: rgba(91, 127, 166, 0.1);
+    border: 1px solid rgba(91, 127, 166, 0.28);
+    cursor: pointer;
     text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
-  .cf-back-link:hover { color: var(--color-verde-medio); }
+  .cf-back-link:hover {
+    color: #fff;
+    background: var(--color-azul-pirineo);
+    border-color: var(--color-azul-pirineo);
+  }
 
   /* Las tarjetas laterales son rectángulos atenuados (mismo formato que la
      central). Cursor de "pulsable" para indicar que llevan al centro. */

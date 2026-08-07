@@ -15,6 +15,15 @@ const puntos = defineCollection({
     lng: z.number().optional(),
     // Si es false, el punto no se muestra en el mapa del pueblo (p. ej. está en el entorno, no dentro).
     enMapa: z.boolean().default(true),
+    // Solo para tipo "cuadro": marca la ficha como texto de presentación del
+    // museo, no como una obra concreta. No sale en el carrusel; su contenido se
+    // renderiza como contexto en /museo. Ver src/pages/museo.astro.
+    intro: z.boolean().default(false),
+    // Borrador: la ficha está a medias (p. ej. esperando la fotografía del mural).
+    // Se ve en `astro dev` para poder trabajarla, pero NO se publica: ni genera
+    // página en /historia/, ni aparece en el carrusel del museo, ni en el sitemap.
+    // Ver el helper `esVisible` en src/utils/contenido.ts.
+    borrador: z.boolean().default(false),
     resumen: z.string(),
     imagenes: z.array(z.string()).default([]),
     anio: z.string().optional(),

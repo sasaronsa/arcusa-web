@@ -8,30 +8,29 @@ imagenes: ["/images/puntos/Museo/test1.webp"]
 autor: Luis Moreno y vecinos
 anio: "2020"
 enMapa: false
+# No es una obra: es la presentación del museo. Se muestra como texto de
+# contexto en /museo, fuera del carrusel.
+intro: true
 ---
 
 # Un pueblo donde el arte salió a la calle
 
-Hay pueblos que conservan su historia entre las paredes de un museo.
+Hay pueblos que guardan su historia entre las paredes de un museo. En Arcusa pasa justo lo contrario: aquí las obras están fuera, a la intemperie, y aparecen donde menos te las esperas. En una fachada encalada, sobre una puerta de madera vieja, en un tronco convertido en escultura, en una piedra que alguien talló sin prisa una tarde de invierno.
 
-En Arcusa ocurre justo lo contrario.
+<!-- markdownlint-disable-next-line MD033 -- la frase destacada se marca a mano; ver .museo-intro en museo.astro -->
+<p class="destacado">Aquí el arte no está detrás de una vitrina. Está en el paisaje, en las casas y en la vida del pueblo.</p>
 
-Aquí el museo está al aire libre y el arte aparece donde menos lo esperas: en una fachada, sobre una antigua puerta de madera, en un tronco convertido en escultura o en una piedra trabajada con paciencia por las manos de un vecino.
+Todo empezó con las pinturas de **Luis Moreno**, que convirtieron las fachadas en un recorrido por la memoria de Arcusa: escenas del campo, oficios que ya nadie practica, vecinos, tradiciones, tardes cualquiera. Pero la cosa creció más allá de la pintura. Hoy el museo lo firman muchas manos.
 
-Todo comenzó con las pinturas de **Luis Moreno**, que transformaron las fachadas del pueblo en un recorrido por la memoria de Arcusa. Sus obras retratan escenas del campo, antiguos oficios, vecinos, tradiciones y momentos cotidianos que forman parte de la identidad del pueblo.
+## Qué vas a encontrar
 
-Pero el arte no termina ahí.
+- **Murales** — más de treinta pinturas repartidas por las fachadas del pueblo.
+- **Esculturas de madera** — troncos trabajados que asoman en rincones y jardines.
+- **Piedra tallada** — relieves y detalles labrados a mano.
+- **Obra de los vecinos** — piezas pequeñas que cada casa ha ido sumando por su cuenta.
 
-Mientras paseas descubrirás **esculturas de madera**, **piedras talladas**, pequeñas intervenciones artísticas y detalles que aparecen casi por sorpresa. Muchas de estas obras han sido creadas por los propios vecinos, convirtiendo el pueblo en un espacio vivo donde cada persona ha podido dejar una pequeña huella.
-
-No existe un recorrido obligatorio.
-
-La mejor forma de descubrir Arcusa es caminar despacio, levantar la vista y dejar que cada calle te sorprenda.
-
-Porque aquí el arte no se encuentra detrás de una vitrina.
-
-Forma parte del paisaje, de las casas y de la vida del pueblo.
+No hay recorrido obligatorio, ni flechas, ni orden correcto. La mejor forma de descubrirlo es caminar despacio, levantar la vista y dejar que cada calle te sorprenda.
 
 > **Un detalle que suele pasar desapercibido**
 >
-> Muchas de las obras no están señalizadas. Esa es precisamente la idea: descubrirlas poco a poco, como quien encuentra un pequeño secreto escondido entre las calles de Arcusa.
+> Muchas de las obras no están señalizadas. Esa es justo la idea: encontrarlas poco a poco, como quien descubre un pequeño secreto escondido entre las calles de Arcusa.

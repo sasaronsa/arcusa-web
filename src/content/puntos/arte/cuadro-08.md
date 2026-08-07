@@ -1,13 +1,14 @@
 ---
-nombre: "Museo al aire libre: la cárcel y Chaplin"
+nombre: "Mural pendiente · 08"
 tipo: cuadro
 x: 44
 y: 56
-resumen: Donde antes hubo una cárcel, hoy el arte invita a sonreír.
+resumen: Ficha en preparación, a la espera de la fotografía del mural.
 imagenes: []
 autor: Luis Moreno
 anio: "2020–2024"
 enMapa: false
+borrador: true
 ---
 
 # Cuando el pasado aprende a sonreír

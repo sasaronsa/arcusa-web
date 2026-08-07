@@ -4,19 +4,41 @@ import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import Icon from '../components/Icon.astro';
 import CarruselMuseo from '../components/CarruselMuseo.astro';
-import { getCollection } from 'astro:content';
+import InfoBlock from '../components/InfoBlock.astro';
+import { getCollection, render } from 'astro:content';
 import { pueblo } from '../data/pueblo';
+import { esVisible } from '../utils/contenido';
 
-const cuadros = (await getCollection('puntos'))
-  .filter(p => p.data.tipo === 'cuadro')
-  .map(p => ({
-    slug: p.id.split('/').pop()!,
-    nombre: p.data.nombre,
-    resumen: p.data.resumen,
-    imagen: p.data.imagenes[0],
-    anio: p.data.anio,
-    autor: p.data.autor,
-  }));
+// Las obras del museo viven ENTERAS aquí: el carrusel las muestra y el modal
+// de esta misma página abre su ficha completa. No generan página en /historia/
+// (ver el filtro por tipo en src/pages/historia/[slug].astro).
+const entradas = (await getCollection('puntos'))
+  .filter(esVisible)
+  .filter(p => p.data.tipo === 'cuadro');
+
+// La ficha marcada con `intro: true` no es una obra: presenta el museo. Se
+// saca del carrusel y su texto se renderiza como contexto en la sala 2.
+const entradaIntro = entradas.find(p => p.data.intro);
+const Intro = entradaIntro ? (await render(entradaIntro)).Content : null;
+
+const cuadros = await Promise.all(
+  entradas.filter(p => !p.data.intro).map(async p => {
+    // `Content` renderiza el cuerpo markdown de la ficha dentro del modal.
+    const { Content } = await render(p);
+    return {
+      slug: p.id.split('/').pop()!,
+      nombre: p.data.nombre,
+      resumen: p.data.resumen,
+      imagen: p.data.imagenes[0],
+      imagenes: p.data.imagenes,
+      anio: p.data.anio,
+      autor: p.data.autor,
+      en30s: p.data.en30s,
+      bloques: p.data.bloques,
+      Content,
+    };
+  })
+);
 
 const stats = [
   { valor: `${pueblo.murales}+`, label: 'Murales y obras' },
@@ -71,34 +93,19 @@ const stats = [
       </div>
     </section>
 
-    <!-- ══════ SALA 2 · El origen (claro, narrativo, contraste) ══════ -->
-    <section class="museo-origin">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="reveal">
-          <p class="museo-origin-eyebrow">El origen</p>
-          <h2 class="museo-origin-title">Cuando un pueblo decidió pintar su memoria</h2>
+    <!-- ══════ SALA 2 · Qué es el museo (claro, narrativo, contraste) ══════
+         El texto sale de la ficha marcada con `intro: true`, no está escrito
+         aquí: así se edita como cualquier otro contenido. -->
+    {Intro && (
+      <section class="museo-origin">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p class="museo-origin-eyebrow reveal">Qué es el museo</p>
+          <div class="prose-arcusa museo-intro reveal">
+            <Intro />
+          </div>
         </div>
-
-        <blockquote class="museo-pull reveal">
-          Primero existía el pueblo. Después llegaron las historias. Y finalmente
-          las pinturas, para que ninguna se perdiera con el tiempo.
-        </blockquote>
-
-        <div class="prose-arcusa reveal">
-          <p>
-            Todo comenzó en <strong>2020</strong>, cuando el vecino y artista{' '}
-            <strong>Luis Moreno</strong> sacó su pintura a la calle. Aquella primera obra fue
-            el inicio de un recorrido que hoy es una de las señas de identidad de Arcusa: cada
-            mural recuerda un oficio, un vecino, una tradición o una escena cotidiana.
-          </p>
-          <p>
-            Pero el arte no termina en las pinturas. Paseando aparecen esculturas de madera,
-            piedras talladas y pequeñas intervenciones creadas por los propios vecinos,
-            convirtiendo el pueblo en un espacio vivo donde cada persona ha dejado su huella.
-          </p>
-        </div>
-      </div>
-    </section>
+      </section>
+    )}
 
     <!-- ══════ CTA ══════ -->
     <section class="museo-cta">
@@ -109,12 +116,74 @@ const stats = [
           Muchas obras no están señalizadas a propósito: esa es la idea, encontrarlas
           poco a poco como pequeños secretos entre las calles.
         </p>
-        <a href="/explora" class="btn-ghost">
-          Ver el pueblo en el mapa
+        <a href="/historia" class="btn-ghost">
+          Conoce la historia del pueblo
           <Icon name="arrow-right" size={14} />
         </a>
       </div>
     </section>
+
+    <!-- ══════ Fichas completas de cada obra (modal) ══════ -->
+    {cuadros.map(c => (
+      <div
+        class="obra-modal"
+        id={`obra-${c.slug}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-labelledby={`obra-${c.slug}-titulo`}
+      >
+        <div class="obra-backdrop" data-cerrar-obra></div>
+        <div class="obra-card" role="document">
+          <button type="button" class="obra-close" data-cerrar-obra aria-label="Cerrar la ficha">
+            <Icon name="x" size={18} />
+          </button>
+
+          {c.imagen ? (
+            <img class="obra-img" src={c.imagen} alt={c.nombre} loading="lazy" decoding="async" />
+          ) : (
+            <div class="obra-img obra-img-vacia">
+              <Icon name="frame" size={30} />
+              <span>Obra sin fotografía todavía</span>
+            </div>
+          )}
+
+          <div class="obra-body">
+            <p class="obra-eyebrow">Museo al aire libre</p>
+            <h3 class="obra-titulo" id={`obra-${c.slug}-titulo`}>{c.nombre}</h3>
+
+            <div class="obra-meta">
+              {c.autor && <span><Icon name="brush" size={12} />{c.autor}</span>}
+              {c.anio && <span><Icon name="calendar" size={12} />{c.anio}</span>}
+            </div>
+
+            {c.en30s && <InfoBlock type="resumen" texto={c.en30s} />}
+
+            <div class="prose-arcusa obra-prosa">
+              <c.Content />
+            </div>
+
+            {c.bloques.map(b => (
+              <InfoBlock
+                type={b.tipo}
+                title={b.titulo}
+                texto={b.texto}
+                cuenta={b.cuenta}
+                sabemos={b.sabemos}
+              />
+            ))}
+
+            {c.imagenes.length > 1 && (
+              <div class="obra-galeria">
+                {c.imagenes.slice(1).map(img => (
+                  <img src={img} alt={c.nombre} loading="lazy" decoding="async" />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    ))}
 
     <Footer />
   </div>
@@ -231,23 +300,97 @@ const stats = [
     color: var(--color-ocre);
     margin-bottom: 0.9rem;
   }
-  .museo-origin-title {
-    font-family: var(--font-serif);
+  /* ── Maquetación del texto de presentación ──
+     Todo se controla desde el markdown de la ficha `intro`, sin clases:
+       · primer párrafo        → entradilla grande con capitular
+       · **párrafo en negrita** → frase destacada a gran tamaño
+       · ## título              → rótulo de apartado
+       · - lista                → rejilla de tarjetas
+       · > cita                 → recuadro del secreto (ya viene de global.css)
+     Así el texto sigue siendo markdown normal y editable. */
+
+  /* El h1 hace de título de sala: más grande que un h1 de ficha. */
+  .museo-intro :global(h1) {
     font-size: clamp(1.8rem, 4vw, 2.6rem);
     font-weight: 700;
     line-height: 1.12;
-    color: var(--color-carbon);
     letter-spacing: -0.01em;
   }
-  .museo-pull {
+
+  /* Entradilla: algo mayor que el cuerpo, para arrancar con fuerza.
+     OJO: el `>` va FUERA del :global(); si se mete dentro, Astro descarta
+     la regla entera sin avisar. */
+  .museo-intro > :global(p:first-of-type) {
+    font-size: 1.15rem;
+    line-height: 1.72;
+  }
+
+  /* Frase destacada. Se marca a mano con <p class="destacado"> en el markdown.
+     NO se puede detectar sola: `p > strong:only-child` parece que valdría,
+     pero `:only-child` ignora los nodos de texto, así que también captura
+     cualquier párrafo con una sola palabra en negrita dentro. */
+  .museo-intro :global(p.destacado) {
     margin: 2.4rem 0;
-    padding-left: 1.6rem;
+    padding: 0.2rem 0 0.2rem 1.6rem;
     border-left: 3px solid var(--color-ocre);
     font-family: var(--font-serif);
+    font-size: clamp(1.35rem, 3vw, 1.85rem);
+    font-weight: 600;
     font-style: italic;
-    font-size: clamp(1.3rem, 3vw, 1.8rem);
-    line-height: 1.4;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
     color: var(--color-piedra-oscura);
+  }
+
+  /* Rótulo de apartado: pequeño y en versalitas, no compite con el h1. */
+  .museo-intro :global(h2) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2.8rem 0 1.25rem;
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+  }
+  .museo-intro :global(h2)::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(196, 119, 61, 0.4), transparent);
+  }
+
+  /* La lista se convierte en rejilla de tarjetas. */
+  .museo-intro :global(ul) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin: 0 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+  @media (max-width: 560px) {
+    .museo-intro :global(ul) { grid-template-columns: minmax(0, 1fr); }
+  }
+  .museo-intro :global(li) {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(196, 119, 61, 0.18);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--color-carbon-suave);
+  }
+  /* Entradilla en línea: el guion del markdown sigue haciendo de separador,
+     así la lista se lee igual de bien sin estilos. */
+  .museo-intro :global(li > strong) {
+    font-family: var(--font-serif);
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--color-carbon);
   }
 
   /* ════════ CTA (vuelve a oscuro para cerrar la sala) ════════ */
@@ -268,4 +411,199 @@ const stats = [
     line-height: 1.7;
     color: rgba(243, 233, 216, 0.7);
   }
+
+  /* ════════ Ficha de obra (modal) ════════ */
+  .obra-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: flex;
+    justify-content: center;
+    padding: clamp(1rem, 5vh, 3.5rem) 1rem;
+    overflow-y: auto;              /* el scroll vive aquí, no en la tarjeta */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+  }
+  .obra-modal.open { opacity: 1; visibility: visible; pointer-events: auto; }
+
+  .obra-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 14, 11, 0.72);
+    backdrop-filter: blur(4px);
+  }
+
+  .obra-card {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    margin: auto;
+    background: #f7f1e7;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+    transform: translateY(18px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  }
+  .obra-modal.open .obra-card { transform: translateY(0) scale(1); opacity: 1; }
+
+  .obra-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-carbon);
+    border: 1px solid rgba(107, 88, 66, 0.2);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .obra-close:hover { transform: scale(1.08); background: #fff; }
+
+  .obra-img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    display: block;
+  }
+  .obra-img-vacia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: linear-gradient(150deg, #e9ddc8 0%, #d3c2a4 100%);
+    color: var(--color-piedra-oscura);
+  }
+  .obra-img-vacia span { font-size: 0.78rem; font-weight: 600; }
+
+  .obra-body { padding: 1.9rem clamp(1.25rem, 4vw, 2.5rem) 2.4rem; }
+
+  .obra-eyebrow {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+    margin-bottom: 0.5rem;
+  }
+  .obra-titulo {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.14;
+    color: var(--color-carbon);
+  }
+  .obra-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin: 0.85rem 0 1.5rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid rgba(107, 88, 66, 0.16);
+  }
+  .obra-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-piedra-oscura);
+  }
+  .obra-meta:empty { display: none; }
+
+  /* El cuerpo markdown ya trae su propio <h1>; aquí sobra porque el título
+     va en la cabecera del modal. */
+  .obra-prosa :global(h1) { display: none; }
+  .obra-prosa :global(h2) {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-carbon);
+    margin: 1.8rem 0 0.7rem;
+  }
+  .obra-prosa :global(img) {
+    width: 100%;
+    border-radius: 0.85rem;
+    margin: 1.4rem 0;
+  }
+
+  .obra-galeria {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.6rem;
+  }
+  .obra-galeria img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: 0.75rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .obra-modal, .obra-card { transition: none; }
+  }
 </style>
+
+<script>
+  /* Ficha de obra en modal: el carrusel expone botones `[data-obra="slug"]`
+     y aquí abrimos el `#obra-<slug>` correspondiente. Nunca se cambia de página. */
+  function initFichasObra() {
+    let ultimoFoco: HTMLElement | null = null;
+
+    const abrir = (slug: string, disparador: HTMLElement) => {
+      const modal = document.getElementById(`obra-${slug}`);
+      if (!modal) return;
+      ultimoFoco = disparador;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      modal.querySelector<HTMLElement>('.obra-close')?.focus();
+    };
+
+    const cerrar = (modal: Element) => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      // Devolvemos el foco al botón que abrió la ficha.
+      ultimoFoco?.focus();
+      ultimoFoco = null;
+    };
+
+    const cerrarTodo = () =>
+      document.querySelectorAll('.obra-modal.open').forEach(cerrar);
+
+    // Delegación: el botón vive dentro del carrusel, que se re-dibuja por JS.
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+
+      const abridor = target.closest<HTMLElement>('[data-obra]');
+      if (abridor) {
+        e.preventDefault();
+        abrir(abridor.dataset.obra!, abridor);
+        return;
+      }
+
+      if (target.closest('[data-cerrar-obra]')) {
+        const modal = target.closest('.obra-modal');
+        if (modal) cerrar(modal);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') cerrarTodo();
+    });
+  }
+
+  initFichasObra();
+</script>
