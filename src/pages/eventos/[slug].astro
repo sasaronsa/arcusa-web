@@ -30,7 +30,7 @@ const categoriaLabel: Record<string, string> = {
   title={`${entry.data.titulo} – Eventos en Arcusa`}
   description={entry.data.descripcion}
 >
-  <Navigation />
+  <Navigation light />
 
   <div class="bg-page-header-warm pt-28 pb-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
@@ -69,13 +69,6 @@ const categoriaLabel: Record<string, string> = {
         style="background: var(--color-cielo-palido); color: var(--color-azul-pirineo);"
       >
         ← Todos los eventos
-      </a>
-      <a
-        href="/explora"
-        class="px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all hover:scale-105"
-        style="background: var(--color-verde-pino);"
-      >
-        Ver mapa del pueblo
       </a>
     </div>
   </article>

@@ -406,7 +406,9 @@ const puntosConPos = puntos.map(p => ({
     fichaResumen.textContent = el.dataset.resumen ?? '';
     fichaAnio.textContent = el.dataset.anio ?? '';
     fichaAutor.textContent = el.dataset.autor ?? '';
-    fichaEnlace.href = `/historia/${el.dataset.slug}`;
+    // Las obras del museo no tienen página en /historia/: su ficha completa
+    // vive en el modal de /museo.
+    fichaEnlace.href = tipo === 'cuadro' ? '/museo' : `/historia/${el.dataset.slug}`;
     const img = el.dataset.img ?? '';
     if (img) { modalImg.src = img; modalImg.alt = el.dataset.nombre ?? ''; modalMedia.classList.add('has-img'); }
     else { modalMedia.classList.remove('has-img'); modalImg.removeAttribute('src'); }

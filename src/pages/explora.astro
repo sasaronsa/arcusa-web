@@ -5,8 +5,9 @@ import Footer from '../components/Footer.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import MapaArcusa from '../components/MapaArcusa.astro';
 import { getCollection } from 'astro:content';
+import { esVisible } from '../utils/contenido';
 
-const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== false).map(p => ({
+const puntos = (await getCollection('puntos')).filter(esVisible).filter(p => p.data.enMapa !== false).map(p => ({
   slug: p.id.split('/').pop()!,
   nombre: p.data.nombre,
   tipo: p.data.tipo,
@@ -23,7 +24,7 @@ const puntos = (await getCollection('puntos')).filter(p => p.data.enMapa !== fal
   title="Explora Arcusa – Mapa interactivo del pueblo"
   description="Mapa interactivo de Arcusa: casas con historia, edificios emblemáticos, cuadros del museo al aire libre y servicios del pueblo. Haz clic en cada punto para descubrir su historia."
 >
-  <Navigation />
+  <Navigation light />
 
   <!-- Cabecera de página -->
   <div class="bg-page-header-cool pt-28 pb-12 px-4 sm:px-6 lg:px-8">

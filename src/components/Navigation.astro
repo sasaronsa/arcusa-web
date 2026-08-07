@@ -1,8 +1,19 @@
 ---
+// `light`: la página bajo el nav tiene fondo claro (pergamino/pastel) en vez
+// de una foto oscura. Antes de hacer scroll el header es transparente, así
+// que en esas páginas el texto blanco desaparecía contra el fondo claro.
+// Con `light` el texto arranca oscuro y solo pasa a blanco al hacer scroll,
+// que es cuando el header adopta su fondo oscuro sólido.
+interface Props {
+  light?: boolean;
+}
+const { light = false } = Astro.props;
+
 const navItems = [
   { href: '/', label: 'Inicio' },
-  { href: '/explora', label: 'Explora' },
-  { href: '/historia', label: 'Patrimonio' },
+  // 'Explora' (mapa interactivo) está desactivado por ahora: fuera del menú
+  // hasta que se retome. La página y su ruta siguen existiendo.
+  { href: '/historia', label: 'Historia' },
   { href: '/que-ver', label: 'Experiencias' },
   { href: '/museo', label: 'Museo' },
   { href: '/arcusa-de-noche', label: 'Noches' },
@@ -15,8 +26,8 @@ const currentPath = Astro.url.pathname;
 
 <header
   id="nav"
+  class:list={['nav-header', light && 'nav-light']}
   class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-  style="background: transparent;"
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 md:h-20">
@@ -24,20 +35,16 @@ const currentPath = Astro.url.pathname;
       <!-- Logo: torre medieval + nombre -->
       <a
         href="/"
-        class="flex items-center gap-2.5 group"
+        class="nav-brand flex items-center gap-2.5 group"
         aria-label="Arcusa - Inicio"
         style="text-decoration: none;"
       >
-        <!-- SVG del torreón medieval de Arcusa -->
         <img
           src="/images/placeholder/castillo.webp"
           alt="Arcusa"
           class="w-8 h-10 object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-110"
         />
-        <span
-          class="font-serif font-semibold text-xl text-white drop-shadow-md leading-none"
-          style="letter-spacing: -0.01em;"
-        >
+        <span class="nav-brand-text font-serif font-semibold text-xl leading-none" style="letter-spacing: -0.01em;">
           Arcusa
         </span>
       </a>
@@ -50,23 +57,12 @@ const currentPath = Astro.url.pathname;
           return (
             <a
               href={item.href}
-              class="relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-lg"
-              style={isActive
-                ? 'color: white;'
-                : 'color: rgba(255,255,255,0.78);'}
+              class:list={['nav-link relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-lg', isActive && 'is-active']}
               aria-current={isActive ? 'page' : undefined}
             >
               {item.label}
-              {isActive && (
-                <span
-                  class="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
-                  style="background: white;"
-                />
-              )}
-              <span
-                class="absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200"
-                style="background: rgba(255,255,255,0.08);"
-              />
+              {isActive && <span class="nav-underline absolute bottom-0 left-3 right-3 h-0.5 rounded-full" />}
+              <span class="nav-link-glow absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200" />
             </a>
           );
         })}
@@ -75,7 +71,7 @@ const currentPath = Astro.url.pathname;
       <!-- Botón menú móvil -->
       <button
         id="menu-toggle"
-        class="md:hidden text-white p-2 rounded-lg transition-colors hover:bg-white/10"
+        class="nav-toggle md:hidden p-2 rounded-lg transition-colors"
         aria-label="Abrir menú"
         aria-expanded="false"
         aria-controls="mobile-menu"
@@ -92,7 +88,7 @@ const currentPath = Astro.url.pathname;
     </div>
   </div>
 
-  <!-- Menú móvil -->
+  <!-- Menú móvil: siempre fondo oscuro sólido, así que siempre texto claro -->
   <div
     id="mobile-menu"
     class="md:hidden hidden"
@@ -119,6 +115,44 @@ const currentPath = Astro.url.pathname;
   </div>
 </header>
 
+<style>
+  /* ── Colores del nav, centralizados en variables ──
+     Por defecto asumimos foto oscura detrás (hero): texto claro siempre.
+     `.nav-light` (prop `light`) los invierte SOLO mientras el header está
+     transparente; en cuanto hay scroll, `.is-scrolled` los devuelve a claro
+     porque el fondo del header pasa a ser sólido oscuro. */
+  .nav-header {
+    --nav-fg: #fff;
+    --nav-fg-dim: rgba(255, 255, 255, 0.78);
+    --nav-underline: #fff;
+    --nav-hover-bg: rgba(255, 255, 255, 0.08);
+    --nav-icon: #fff;
+    --nav-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    background: transparent;
+  }
+  .nav-header.nav-light:not(.is-scrolled) {
+    --nav-fg: var(--color-carbon);
+    --nav-fg-dim: var(--color-carbon-suave);
+    --nav-underline: var(--color-ocre);
+    --nav-hover-bg: rgba(46, 42, 36, 0.06);
+    --nav-icon: var(--color-carbon);
+    --nav-text-shadow: none;
+  }
+  .nav-header.is-scrolled {
+    background: rgba(36, 32, 28, 0.95);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .nav-brand-text { color: var(--nav-fg); text-shadow: var(--nav-text-shadow); }
+  .nav-link { color: var(--nav-fg-dim); text-shadow: var(--nav-text-shadow); }
+  .nav-link.is-active { color: var(--nav-fg); }
+  .nav-underline { background: var(--nav-underline); }
+  .nav-link-glow { background: var(--nav-hover-bg); }
+  .nav-toggle { color: var(--nav-icon); }
+  .nav-toggle:hover { background: var(--nav-hover-bg); }
+</style>
+
 <script>
   const nav = document.getElementById('nav')!;
   const toggle = document.getElementById('menu-toggle')!;
@@ -127,15 +161,7 @@ const currentPath = Astro.url.pathname;
   const iconClose = document.getElementById('icon-close')!;
 
   const updateNav = () => {
-    if (window.scrollY > 60) {
-      nav.style.background = 'rgba(36,32,28,0.95)';
-      nav.style.backdropFilter = 'blur(16px)';
-      nav.style.boxShadow = '0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.2)';
-    } else {
-      nav.style.background = 'transparent';
-      nav.style.backdropFilter = 'none';
-      nav.style.boxShadow = 'none';
-    }
+    nav.classList.toggle('is-scrolled', window.scrollY > 60);
   };
 
   window.addEventListener('scroll', updateNav, { passive: true });

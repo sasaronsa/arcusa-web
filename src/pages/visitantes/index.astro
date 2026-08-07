@@ -13,7 +13,7 @@ import ProgresoTrivial from '../../components/visitantes/ProgresoTrivial.astro';
   description="Marca en el mapa de dónde vienes a visitar Arcusa y descubre los 6 secretos escondidos por el pueblo en este trivial con QR."
 >
   <div class="visitantes">
-    <Navigation />
+    <Navigation light />
 
     <!-- ══════ CABECERA · libro de visitas ══════ -->
     <section class="v-hero">
@@ -41,7 +41,7 @@ import ProgresoTrivial from '../../components/visitantes/ProgresoTrivial.astro';
           <div class="reveal">
             <FormularioPin />
           </div>
-          <div class="reveal">
+          <div id="trivial" class="reveal" style="scroll-margin-top: 6rem;">
             <ProgresoTrivial />
           </div>
         </div>
