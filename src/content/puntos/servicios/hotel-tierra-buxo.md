@@ -5,7 +5,7 @@ categoria: dormir
 descripcion: Un exclusivo hotel boutique solo para adultos, donde el descanso, el diseño y la atención al detalle convierten cada estancia en una experiencia única.
 resumen: Hotel boutique Adults Only con cinco habitaciones, piscina, restaurante y un servicio cuidado al detalle para disfrutar del Sobrarbe con total tranquilidad.
 distancia: "En el pueblo"
-contacto: "+34 661 769 453"
+contacto: "+34 974 941 131"
 enlace: "https://hoteltierrabuxo.com/"
 x: 41
 y: 48
