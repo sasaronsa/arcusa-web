@@ -4,7 +4,7 @@ tipo: servicio
 categoria: dormir
 descripcion: Una casa rural con encanto donde descubrir el Sobrarbe al ritmo de la montaña y la tranquilidad de Arcusa.
 resumen: Una acogedora casa rural en Arcusa, perfecta para desconectar y explorar algunos de los rincones más espectaculares del Pirineo.
-contacto: "+34 661 769 453"
+contacto: "+34 607 879 446"
 enlace: "https://www.elrincondelnogal.com/"
 distancia: "En el pueblo"
 x: 36
