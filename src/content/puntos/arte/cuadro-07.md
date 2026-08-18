@@ -8,7 +8,6 @@ imagenes: ["/images/puntos/Museo/test1.webp"]
 autor: Luis Moreno
 anio: "2020–2024"
 enMapa: false
-borrador: true
 ---
 
 # Cuando el pasado aprende a sonreír
