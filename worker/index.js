@@ -103,6 +103,71 @@ async function adminListarPines(request, env) {
   return json(results ?? []);
 }
 
+async function adminActualizarPin(request, env) {
+  if (!autorizadoAdmin(request, env)) {
+    return json({ error: 'No autorizado.' }, { status: 401 });
+  }
+  const id = Number(new URL(request.url).searchParams.get('id'));
+  if (!Number.isInteger(id) || id <= 0) {
+    return json({ error: 'Id inválido.' }, { status: 400 });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: 'Cuerpo de la petición inválido.' }, { status: 400 });
+  }
+
+  const campos = [];
+  const valores = [];
+
+  if (typeof body.nombre === 'string') {
+    const nombre = body.nombre.trim();
+    if (!nombre || nombre.length > MAX_NOMBRE) {
+      return json({ error: `El nombre debe tener entre 1 y ${MAX_NOMBRE} caracteres.` }, { status: 400 });
+    }
+    campos.push('nombre = ?');
+    valores.push(nombre);
+  }
+
+  if (typeof body.comentario === 'string') {
+    const comentario = body.comentario.trim();
+    if (comentario.length > MAX_COMENTARIO) {
+      return json({ error: `El comentario no puede superar los ${MAX_COMENTARIO} caracteres.` }, { status: 400 });
+    }
+    campos.push('comentario = ?');
+    valores.push(comentario || null);
+  }
+
+  if (body.tipo === 'normal' || body.tipo === 'dorado') {
+    campos.push('tipo = ?');
+    valores.push(body.tipo);
+  }
+
+  if ((typeof body.nombre === 'string' || typeof body.comentario === 'string') &&
+      contieneLenguajeProhibido(body.nombre ?? '', body.comentario ?? '')) {
+    return json({ error: 'Revisa el texto: contiene palabras no permitidas.' }, { status: 400 });
+  }
+
+  if (campos.length === 0) {
+    return json({ error: 'No hay nada que actualizar.' }, { status: 400 });
+  }
+
+  await env.DB.prepare(`UPDATE pins SET ${campos.join(', ')} WHERE id = ?`).bind(...valores, id).run();
+
+  const actualizado = await env.DB.prepare(
+    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code,
+            substr(ip_hash, 1, 8) AS ip_prefix, created_at
+     FROM pins WHERE id = ?`
+  ).bind(id).first();
+
+  if (!actualizado) {
+    return json({ error: 'No se ha encontrado ese pin.' }, { status: 404 });
+  }
+  return json(actualizado);
+}
+
 async function adminBorrarPin(request, env) {
   if (!autorizadoAdmin(request, env)) {
     return json({ error: 'No autorizado.' }, { status: 401 });
@@ -128,6 +193,7 @@ export default {
 
     if (pathname === '/api/admin/pins') {
       if (method === 'GET') return adminListarPines(request, env);
+      if (method === 'PATCH') return adminActualizarPin(request, env);
       if (method === 'DELETE') return adminBorrarPin(request, env);
     }
 

@@ -42,13 +42,11 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
              a la pantalla). El propio componente aplica `.reveal` a su raíz. -->
         <MapaVisitantes />
 
+        <!-- Sin envoltorios `.reveal` aquí: cada componente se lo aplica a su
+             propia raíz (ver comentario junto a <MapaVisitantes /> arriba). -->
         <div class="v-grid">
-          <div class="reveal">
-            <FormularioPin />
-          </div>
-          <div id="trivial" class="reveal" style="scroll-margin-top: 6rem;">
-            <ProgresoTrivial />
-          </div>
+          <FormularioPin />
+          <ProgresoTrivial />
         </div>
       </div>
     </section>

@@ -1,11 +1,24 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon.astro';
 ---
 
 <Layout title="Administración de pines – Visitantes" noindex>
   <main class="ad-main">
     <div class="ad-wrap">
-      <h1 class="ad-title">Moderación de pines · Visitantes</h1>
+      <header class="ad-header">
+        <div>
+          <p class="ad-eyebrow">Panel de administración</p>
+          <h1 class="ad-title">Visitantes de Arcusa</h1>
+        </div>
+        <div class="ad-header-actions">
+          <a href="/visitantes" class="ad-link-volver">
+            <Icon name="arrow-right" size={13} style="transform: rotate(180deg);" />
+            Volver al sitio
+          </a>
+          <button id="ad-salir" type="button" class="ad-btn-salir" hidden>Salir</button>
+        </div>
+      </header>
 
       <form id="ad-login" class="ad-login">
         <label class="ad-label">
@@ -17,44 +30,219 @@ import Layout from '../../layouts/Layout.astro';
       </form>
 
       <div id="ad-panel" class="ad-panel" hidden>
+        <!-- ══════ Estadísticas ══════ -->
+        <div class="ad-stats" id="ad-stats"></div>
+
+        <!-- ══════ Barra de filtros ══════ -->
         <div class="ad-toolbar">
-          <input
-            id="ad-buscar"
-            type="search"
-            class="ad-input ad-buscar"
-            placeholder="Buscar por nombre, comentario, país o #id…"
-          />
+          <div class="ad-toolbar-fila">
+            <div class="ad-buscar-wrap">
+              <Icon name="eye" size={15} class="ad-buscar-icon" />
+              <input
+                id="ad-buscar"
+                type="search"
+                class="ad-input ad-buscar"
+                placeholder="Buscar por nombre, comentario, país o #id…"
+              />
+            </div>
+            <button id="ad-refrescar" type="button" class="ad-btn-refrescar" title="Recargar datos">
+              <Icon name="navigation" size={14} />
+              Actualizar
+            </button>
+          </div>
+          <div class="ad-filtros">
+            <span class="ad-filtros-icono"><Icon name="filter" size={13} /></span>
+            <label class="ad-filtro">
+              Tipo
+              <select id="ad-filtro-tipo" class="ad-select">
+                <option value="">Todos</option>
+                <option value="normal">Normal</option>
+                <option value="dorado">Dorado ★</option>
+              </select>
+            </label>
+            <label class="ad-filtro">
+              País
+              <select id="ad-filtro-pais" class="ad-select">
+                <option value="">Todos</option>
+              </select>
+            </label>
+            <label class="ad-filtro">
+              Orden
+              <select id="ad-orden" class="ad-select">
+                <option value="recientes">Más recientes</option>
+                <option value="antiguos">Más antiguos</option>
+                <option value="nombre">Nombre (A-Z)</option>
+              </select>
+            </label>
+            <button id="ad-limpiar-filtros" type="button" class="ad-limpiar-filtros">Limpiar filtros</button>
+          </div>
           <p id="ad-total" class="ad-total"></p>
         </div>
+
         <div id="ad-lista" class="ad-lista"></div>
-        <p id="ad-sin-resultados" class="ad-sin-resultados" hidden>No hay pines que coincidan con la búsqueda.</p>
+        <p id="ad-sin-resultados" class="ad-sin-resultados" hidden>No hay pines que coincidan con los filtros.</p>
       </div>
     </div>
   </main>
 </Layout>
 
-<style>
-  .ad-main { min-height: 100svh; background: var(--color-pergamino); padding: 3rem 1.25rem; }
-  .ad-wrap { max-width: 860px; margin: 0 auto; }
-  .ad-title { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; color: var(--color-carbon); margin-bottom: 1.5rem; }
+<style is:global>
+  /* is:global a propósito: la lista de pines, las estadísticas y las filas
+     de edición se generan por JS (innerHTML), y esos elementos nunca llevan
+     el atributo data-astro-cid-* que usa el scoping normal de Astro — con
+     estilos «scoped» de verdad, todo ese contenido dinámico se quedaría sin
+     estilar. Los nombres de clase van todos prefijados con `ad-` para no
+     chocar con nada de otras páginas. */
+  .ad-main { min-height: 100svh; background: var(--color-pergamino); padding: 2.5rem 1.25rem 4rem; }
+  .ad-wrap { max-width: 1100px; margin: 0 auto; }
+
+  .ad-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(156,133,103,0.2);
+  }
+  .ad-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ocre);
+    margin-bottom: 0.3rem;
+  }
+  .ad-title { font-family: var(--font-serif); font-size: 1.7rem; font-weight: 700; color: var(--color-carbon); }
+  .ad-header-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+  .ad-link-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-piedra-media);
+    text-decoration: none;
+  }
+  .ad-link-volver:hover { color: var(--color-carbon); }
+  .ad-btn-salir {
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-carbon-suave);
+    background: white;
+    border: 1px solid rgba(156,133,103,0.3);
+    cursor: pointer;
+  }
+  .ad-btn-salir:hover { background: rgba(196,87,61,0.08); color: #A5432B; border-color: rgba(196,87,61,0.3); }
 
   .ad-login { display: flex; flex-direction: column; gap: 1rem; max-width: 320px; }
   .ad-label { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--color-carbon); }
   .ad-input { padding: 0.6rem 0.8rem; border-radius: 0.6rem; border: 1px solid rgba(156,133,103,0.4); font-size: 0.95rem; }
   .ad-error { color: #A5432B; font-size: 0.85rem; font-weight: 600; }
 
-  .ad-panel { margin-top: 2rem; }
+  /* ══════ Estadísticas ══════ */
+  .ad-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  .ad-stat {
+    background: white;
+    border: 1px solid rgba(156,133,103,0.18);
+    border-radius: 1rem;
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(46,42,36,0.04);
+  }
+  .ad-stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+  .ad-stat-icono {
+    width: 30px; height: 30px;
+    border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-pergamino);
+    color: var(--color-piedra-oscura);
+  }
+  .ad-stat.ad-stat-dorado .ad-stat-icono { background: rgba(232,169,106,0.18); color: #9C6B1F; }
+  .ad-stat.ad-stat-verde .ad-stat-icono { background: rgba(62,92,58,0.1); color: var(--color-verde-pino); }
+  .ad-stat.ad-stat-azul .ad-stat-icono { background: rgba(91,127,166,0.12); color: var(--color-azul-pirineo); }
+  .ad-stat-valor { font-family: var(--font-serif); font-size: 1.9rem; font-weight: 700; color: var(--color-carbon); line-height: 1; }
+  .ad-stat-label { font-size: 0.74rem; font-weight: 600; color: var(--color-piedra-media); margin-top: 0.3rem; }
+
+  /* ══════ Barra de filtros ══════ */
+  .ad-panel { margin-top: 0; }
   .ad-toolbar {
+    background: white;
+    border: 1px solid rgba(156,133,103,0.18);
+    border-radius: 1rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .ad-toolbar-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+  .ad-buscar-wrap { position: relative; flex: 1 1 260px; max-width: 420px; }
+  .ad-buscar-icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--color-piedra-media); pointer-events: none; }
+  .ad-buscar { width: 100%; padding-left: 2.1rem; }
+  .ad-btn-refrescar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-carbon-suave);
+    background: var(--color-pergamino);
+    border: 1px solid rgba(156,133,103,0.25);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .ad-btn-refrescar:hover { background: rgba(156,133,103,0.16); }
+  .ad-btn-refrescar :global(svg) { transform: rotate(90deg); }
+
+  .ad-filtros {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    gap: 1rem;
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(156,133,103,0.15);
   }
-  .ad-buscar { flex: 1 1 260px; max-width: 400px; }
-  .ad-total { font-size: 0.85rem; font-weight: 600; color: var(--color-piedra-media); white-space: nowrap; }
+  .ad-filtros-icono { color: var(--color-piedra-media); flex-shrink: 0; }
+  .ad-filtro {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-piedra-media);
+  }
+  .ad-select {
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(156,133,103,0.35);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-carbon);
+    background: white;
+  }
+  .ad-limpiar-filtros {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-azul-pirineo);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .ad-total { font-size: 0.8rem; font-weight: 600; color: var(--color-piedra-media); margin-top: 0.75rem; }
   .ad-sin-resultados { margin-top: 1rem; font-size: 0.9rem; color: var(--color-piedra-media); text-align: center; }
+
+  /* ══════ Lista de pines ══════ */
   .ad-lista { display: flex; flex-direction: column; gap: 0.75rem; }
   .ad-row {
     display: flex;
@@ -66,23 +254,44 @@ import Layout from '../../layouts/Layout.astro';
     background: white;
     border: 1px solid rgba(156,133,103,0.2);
   }
+  .ad-row.ad-row-dorado { border-color: rgba(196,119,61,0.35); background: rgba(232,169,106,0.05); }
   .ad-row-info p { margin: 0; }
-  .ad-row-nombre { font-weight: 700; color: var(--color-carbon); }
+  .ad-row-nombre { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--color-carbon); }
   .ad-row-meta { font-size: 0.78rem; color: var(--color-piedra-media); margin-top: 0.2rem !important; }
   .ad-row-comentario { font-size: 0.85rem; color: var(--color-carbon-suave); margin-top: 0.35rem !important; }
-  .ad-row-borrar {
-    flex-shrink: 0;
-    padding: 0.4rem 0.9rem;
+  .ad-row-acciones { display: flex; gap: 0.5rem; flex-shrink: 0; }
+  .ad-row-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 9999px;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 700;
-    color: #A5432B;
-    background: rgba(196,87,61,0.1);
-    border: 1px solid rgba(196,87,61,0.3);
     cursor: pointer;
+    border: 1px solid transparent;
   }
+  .ad-row-editar { color: var(--color-azul-pirineo); background: rgba(91,127,166,0.1); border-color: rgba(91,127,166,0.25); }
+  .ad-row-editar:hover { background: rgba(91,127,166,0.18); }
+  .ad-row-borrar { color: #A5432B; background: rgba(196,87,61,0.1); border-color: rgba(196,87,61,0.25); }
   .ad-row-borrar:hover { background: rgba(196,87,61,0.18); }
-  .ad-tag-dorado { color: #9C6B1F; font-weight: 700; }
+  .ad-tag-dorado { display: inline-flex; align-items: center; gap: 0.2rem; color: #9C6B1F; font-weight: 700; font-size: 0.76rem; }
+
+  /* ══════ Edición inline ══════ */
+  .ad-edit { width: 100%; display: flex; flex-direction: column; gap: 0.6rem; }
+  .ad-edit-fila { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .ad-edit-campo { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; color: var(--color-piedra-media); flex: 1 1 160px; }
+  .ad-edit-campo textarea { resize: vertical; min-height: 3.5rem; font-family: inherit; }
+  .ad-edit-acciones { display: flex; gap: 0.5rem; justify-content: flex-end; }
+  .ad-edit-guardar { color: white; background: var(--color-verde-pino); border: none; }
+  .ad-edit-guardar:hover { filter: brightness(1.08); }
+  .ad-edit-cancelar { color: var(--color-carbon-suave); background: var(--color-pergamino); border: 1px solid rgba(156,133,103,0.3); }
+  .ad-edit-error { color: #A5432B; font-size: 0.78rem; font-weight: 600; }
+
+  @media (max-width: 640px) {
+    .ad-row { flex-direction: column; }
+    .ad-row-acciones { align-self: flex-end; }
+  }
 </style>
 
 <script>
@@ -102,56 +311,248 @@ import Layout from '../../layouts/Layout.astro';
   const passwordInput = document.getElementById('ad-password') as HTMLInputElement;
   const loginError = document.getElementById('ad-login-error')!;
   const panel = document.getElementById('ad-panel')!;
+  const salirBtn = document.getElementById('ad-salir') as HTMLButtonElement;
+  const statsEl = document.getElementById('ad-stats')!;
   const total = document.getElementById('ad-total')!;
   const lista = document.getElementById('ad-lista')!;
   const buscarInput = document.getElementById('ad-buscar') as HTMLInputElement;
+  const filtroTipo = document.getElementById('ad-filtro-tipo') as HTMLSelectElement;
+  const filtroPais = document.getElementById('ad-filtro-pais') as HTMLSelectElement;
+  const ordenSelect = document.getElementById('ad-orden') as HTMLSelectElement;
+  const limpiarFiltrosBtn = document.getElementById('ad-limpiar-filtros')!;
+  const refrescarBtn = document.getElementById('ad-refrescar')!;
   const sinResultados = document.getElementById('ad-sin-resultados')!;
 
   let password = '';
   let todosPines: PinAdmin[] = [];
+  let editandoId: number | null = null;
 
   function normaliza(texto: string) {
     return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   }
 
+  function escapa(texto: string) {
+    return texto.replace(/</g, '&lt;');
+  }
+
+  // ── Estadísticas ──
+  function renderStats() {
+    const ahora = Date.now();
+    const DIA = 24 * 60 * 60 * 1000;
+    const dorados = todosPines.filter((p) => p.tipo === 'dorado').length;
+    const paises = new Set(todosPines.map((p) => p.pais).filter(Boolean)).size;
+    const ultimos7 = todosPines.filter((p) => ahora - p.created_at < 7 * DIA).length;
+    const ultimos30 = todosPines.filter((p) => ahora - p.created_at < 30 * DIA).length;
+
+    const stats = [
+      { valor: todosPines.length, label: 'Huellas totales', icon: 'users', clase: '' },
+      { valor: dorados, label: 'Huellas doradas', icon: 'star', clase: 'ad-stat-dorado' },
+      { valor: paises, label: 'Países distintos', icon: 'globe', clase: 'ad-stat-azul' },
+      { valor: ultimos7, label: 'Nuevas · 7 días', icon: 'trending-up', clase: 'ad-stat-verde' },
+      { valor: ultimos30, label: 'Nuevas · 30 días', icon: 'calendar', clase: '' },
+    ];
+
+    statsEl.innerHTML = stats.map((s) => `
+      <div class="ad-stat ${s.clase}">
+        <div class="ad-stat-top">
+          <span class="ad-stat-icono" data-icon="${s.icon}"></span>
+        </div>
+        <p class="ad-stat-valor">${s.valor}</p>
+        <p class="ad-stat-label">${s.label}</p>
+      </div>
+    `).join('');
+
+    // Los iconos se pintan a mano (SVGs mínimos) para no depender de Astro
+    // en tiempo de ejecución: este bloque es JS de cliente puro.
+    const iconos: Record<string, string> = {
+      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      star: '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>',
+      globe: '<circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+      'trending-up': '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+      calendar: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
+    };
+    statsEl.querySelectorAll<HTMLElement>('[data-icon]').forEach((el) => {
+      const nombre = el.dataset.icon!;
+      el.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${iconos[nombre] ?? ''}</svg>`;
+    });
+  }
+
+  // ── Opciones del filtro de país ──
+  function actualizarOpcionesPais() {
+    const actual = filtroPais.value;
+    const paises = [...new Set(todosPines.map((p) => p.pais).filter((p): p is string => Boolean(p)))].sort();
+    filtroPais.innerHTML = '<option value="">Todos</option>' +
+      paises.map((p) => `<option value="${escapa(p)}">${escapa(p)}</option>`).join('');
+    if (paises.includes(actual)) filtroPais.value = actual;
+  }
+
+  // ── Filtro + orden ──
   function pinesFiltrados(): PinAdmin[] {
     const q = normaliza(buscarInput.value.trim());
-    if (!q) return todosPines;
-    return todosPines.filter((p) =>
-      normaliza(`${p.nombre} ${p.comentario ?? ''} ${p.pais ?? ''} ${p.id}`).includes(q)
-    );
+    const tipo = filtroTipo.value;
+    const pais = filtroPais.value;
+
+    let resultado = todosPines.filter((p) => {
+      if (tipo && p.tipo !== tipo) return false;
+      if (pais && p.pais !== pais) return false;
+      if (q && !normaliza(`${p.nombre} ${p.comentario ?? ''} ${p.pais ?? ''} ${p.id}`).includes(q)) return false;
+      return true;
+    });
+
+    const orden = ordenSelect.value;
+    resultado = [...resultado].sort((a, b) => {
+      if (orden === 'antiguos') return a.created_at - b.created_at;
+      if (orden === 'nombre') return a.nombre.localeCompare(b.nombre, 'es');
+      return b.created_at - a.created_at; // recientes (por defecto)
+    });
+
+    return resultado;
+  }
+
+  function hayFiltrosActivos() {
+    return Boolean(buscarInput.value.trim() || filtroTipo.value || filtroPais.value || ordenSelect.value !== 'recientes');
+  }
+
+  // ── Edición inline de una fila ──
+  function filaEdicion(p: PinAdmin): string {
+    return `
+      <div class="ad-edit">
+        <div class="ad-edit-fila">
+          <label class="ad-edit-campo">
+            Nombre
+            <input type="text" class="ad-input ad-edit-nombre" value="${escapa(p.nombre)}" maxlength="30" />
+          </label>
+          <label class="ad-edit-campo">
+            Tipo
+            <select class="ad-select ad-edit-tipo">
+              <option value="normal" ${p.tipo === 'normal' ? 'selected' : ''}>Normal</option>
+              <option value="dorado" ${p.tipo === 'dorado' ? 'selected' : ''}>Dorado ★</option>
+            </select>
+          </label>
+        </div>
+        <label class="ad-edit-campo">
+          Comentario
+          <textarea class="ad-input ad-edit-comentario" maxlength="150">${escapa(p.comentario ?? '')}</textarea>
+        </label>
+        <p class="ad-edit-error" hidden></p>
+        <div class="ad-edit-acciones">
+          <button type="button" class="ad-row-btn ad-edit-cancelar" data-cancelar="${p.id}">Cancelar</button>
+          <button type="button" class="ad-row-btn ad-edit-guardar" data-guardar="${p.id}">Guardar</button>
+        </div>
+      </div>
+    `;
   }
 
   function renderPines() {
+    actualizarOpcionesPais();
     const pines = pinesFiltrados();
-    total.textContent = buscarInput.value.trim()
-      ? `${pines.length} de ${todosPines.length} pines`
-      : `${todosPines.length} pines`;
+    total.textContent = hayFiltrosActivos()
+      ? `${pines.length} de ${todosPines.length} huellas`
+      : `${todosPines.length} huellas`;
     sinResultados.hidden = pines.length > 0;
     lista.innerHTML = '';
+
     pines.forEach((p) => {
       const row = document.createElement('div');
-      row.className = 'ad-row';
-      row.innerHTML = `
-        <div class="ad-row-info">
-          <p class="ad-row-nombre">${p.nombre.replace(/</g, '&lt;')} ${p.tipo === 'dorado' ? '<span class="ad-tag-dorado">★ dorado</span>' : ''}</p>
-          <p class="ad-row-meta">#${p.id} · ${p.pais ?? 'país desconocido'} · ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)} · ip ${p.ip_prefix}… · ${new Date(p.created_at).toLocaleString('es-ES')}</p>
-          ${p.comentario ? `<p class="ad-row-comentario">"${p.comentario.replace(/</g, '&lt;')}"</p>` : ''}
-        </div>
-        <button class="ad-row-borrar" data-id="${p.id}" type="button">Borrar</button>
-      `;
+      row.className = `ad-row ${p.tipo === 'dorado' ? 'ad-row-dorado' : ''}`;
+
+      if (editandoId === p.id) {
+        row.innerHTML = filaEdicion(p);
+      } else {
+        row.innerHTML = `
+          <div class="ad-row-info">
+            <p class="ad-row-nombre">
+              ${escapa(p.nombre)}
+              ${p.tipo === 'dorado' ? '<span class="ad-tag-dorado">★ dorado</span>' : ''}
+            </p>
+            <p class="ad-row-meta">#${p.id} · ${p.pais ? escapa(p.pais) : 'país desconocido'} · ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)} · ip ${p.ip_prefix}… · ${new Date(p.created_at).toLocaleString('es-ES')}</p>
+            ${p.comentario ? `<p class="ad-row-comentario">"${escapa(p.comentario)}"</p>` : ''}
+          </div>
+          <div class="ad-row-acciones">
+            <button class="ad-row-btn ad-row-editar" data-editar="${p.id}" type="button">
+              <span class="ad-icon-pencil"></span> Editar
+            </button>
+            <button class="ad-row-btn ad-row-borrar" data-id="${p.id}" type="button">Borrar</button>
+          </div>
+        `;
+      }
       lista.appendChild(row);
+    });
+
+    // Icono lápiz pintado a mano, igual que en las estadísticas.
+    lista.querySelectorAll('.ad-icon-pencil').forEach((el) => {
+      el.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>';
     });
 
     lista.querySelectorAll<HTMLButtonElement>('.ad-row-borrar').forEach((btn) => {
       btn.addEventListener('click', async () => {
-        if (!confirm('¿Borrar este pin?')) return;
+        if (!confirm('¿Borrar esta huella? No se puede deshacer.')) return;
         const id = btn.dataset.id;
         const res = await fetch(`/api/admin/pins?id=${id}`, {
           method: 'DELETE',
           headers: { 'x-admin-password': password },
         });
-        if (res.ok) cargarPines();
+        if (res.ok) {
+          todosPines = todosPines.filter((p) => String(p.id) !== id);
+          renderStats();
+          renderPines();
+        }
+      });
+    });
+
+    lista.querySelectorAll<HTMLButtonElement>('[data-editar]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        editandoId = Number(btn.dataset.editar);
+        renderPines();
+      });
+    });
+
+    lista.querySelectorAll<HTMLButtonElement>('[data-cancelar]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        editandoId = null;
+        renderPines();
+      });
+    });
+
+    lista.querySelectorAll<HTMLButtonElement>('[data-guardar]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = Number(btn.dataset.guardar);
+        const fila = btn.closest('.ad-row')!;
+        const nombre = (fila.querySelector('.ad-edit-nombre') as HTMLInputElement).value.trim();
+        const comentario = (fila.querySelector('.ad-edit-comentario') as HTMLTextAreaElement).value.trim();
+        const tipo = (fila.querySelector('.ad-edit-tipo') as HTMLSelectElement).value;
+        const errorEl = fila.querySelector('.ad-edit-error') as HTMLElement;
+        errorEl.hidden = true;
+
+        if (!nombre) {
+          errorEl.textContent = 'El nombre no puede estar vacío.';
+          errorEl.hidden = false;
+          return;
+        }
+
+        btn.disabled = true;
+        try {
+          const res = await fetch(`/api/admin/pins?id=${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+            body: JSON.stringify({ nombre, comentario, tipo }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            errorEl.textContent = data.error ?? 'No se ha podido guardar.';
+            errorEl.hidden = false;
+            btn.disabled = false;
+            return;
+          }
+          todosPines = todosPines.map((p) => (p.id === id ? data : p));
+          editandoId = null;
+          renderStats();
+          renderPines();
+        } catch {
+          errorEl.textContent = 'No se ha podido conectar. Inténtalo de nuevo.';
+          errorEl.hidden = false;
+          btn.disabled = false;
+        }
       });
     });
   }
@@ -167,6 +568,8 @@ import Layout from '../../layouts/Layout.astro';
     todosPines = await res.json();
     loginForm.hidden = true;
     panel.hidden = false;
+    salirBtn.hidden = false;
+    renderStats();
     renderPines();
   }
 
@@ -177,5 +580,27 @@ import Layout from '../../layouts/Layout.astro';
     cargarPines();
   });
 
+  salirBtn.addEventListener('click', () => {
+    password = '';
+    todosPines = [];
+    editandoId = null;
+    passwordInput.value = '';
+    panel.hidden = true;
+    salirBtn.hidden = true;
+    loginForm.hidden = false;
+  });
+
+  refrescarBtn.addEventListener('click', () => cargarPines());
+
   buscarInput.addEventListener('input', () => renderPines());
+  filtroTipo.addEventListener('change', () => renderPines());
+  filtroPais.addEventListener('change', () => renderPines());
+  ordenSelect.addEventListener('change', () => renderPines());
+  limpiarFiltrosBtn.addEventListener('click', () => {
+    buscarInput.value = '';
+    filtroTipo.value = '';
+    filtroPais.value = '';
+    ordenSelect.value = 'recientes';
+    renderPines();
+  });
 </script>

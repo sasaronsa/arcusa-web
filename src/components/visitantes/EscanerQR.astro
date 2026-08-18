@@ -111,6 +111,13 @@ import Icon from '../Icon.astro';
 
   const abrirBtn = document.getElementById('qr-abrir-btn') as HTMLButtonElement;
   const modal = document.getElementById('qr-modal')!;
+  // Se traslada a document.body: este componente se invoca dentro de la
+  // tarjeta de ProgresoTrivial, que lleva `.reveal` (transform) en su raíz
+  // — eso le crearía un contenedor de referencia a este modal y le rompería
+  // el `position: fixed` (mismo problema que MapaVisitantes documenta junto
+  // a su propio modal; aquí se resuelve reubicando el nodo por JS ya que
+  // este componente no controla dónde lo invoca su padre).
+  document.body.appendChild(modal);
   const cerrarBtn = document.getElementById('qr-cerrar')!;
   const video = document.getElementById('qr-video') as HTMLVideoElement;
   const estado = document.getElementById('qr-estado')!;

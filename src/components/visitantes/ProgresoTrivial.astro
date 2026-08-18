@@ -5,7 +5,11 @@ import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
 const total = LOCALIZACIONES_TRIVIAL.length;
 ---
 
-<div id="pt-root" class="pt-card">
+<!-- `id`/`reveal` van en esta misma raíz (no envueltos desde fuera): un
+     `.reveal` externo le pondría un `transform` a un ancestro y rompería el
+     `position: fixed` de #pt-celebracion más abajo — mismo motivo por el que
+     MapaVisitantes aplica `.reveal` a su propia raíz en vez de heredarlo. -->
+<div id="trivial" class="pt-card reveal" style="scroll-margin-top: 6rem;">
   <div class="pt-header">
     <Icon name="sparkles" size={20} style="color: var(--color-ocre);" />
     <div>

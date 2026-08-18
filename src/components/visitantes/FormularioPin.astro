@@ -4,15 +4,56 @@ import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
 const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
 ---
 
-<div id="fp-root" class="fp-card">
+<!-- `reveal` va en esta misma raíz (no envuelto desde fuera): un `.reveal`
+     externo le pondría un `transform` a un ancestro y rompería el
+     `position: fixed` del modal de mapa a pantalla completa de más abajo —
+     mismo motivo por el que MapaVisitantes aplica `.reveal` a su propia raíz
+     en vez de heredarlo de un `<div>` envolvente. -->
+<div id="fp-root" class="fp-card reveal">
   <h3 class="fp-title">Deja tu huella en el mapa</h3>
   <p class="fp-subtitle">Toca el mapa para marcar de dónde vienes, escribe tu nombre y, si quieres, un comentario.</p>
 
-  <div id="fp-picker" class="fp-picker"></div>
+  <!-- El botón va en su propia fila, no superpuesto al mapa: Leaflet pinta
+       sus panos en una capa acelerada por GPU que en algunos navegadores
+       (Chromium incluido) puede quedar por encima de un hermano superpuesto
+       aunque el DOM, el z-index y hasta elementsFromPoint digan lo
+       contrario — es un desajuste entre el compositor y el hit-test, no
+       algo que se pueda arreglar subiendo el z-index. Fuera de la zona del
+       mapa, el problema no existe. -->
+  <div class="fp-picker-toolbar">
+    <button type="button" id="fp-picker-ampliar" class="fp-picker-ampliar">
+      <Icon name="maximize" size={14} />
+      Ampliar mapa
+    </button>
+  </div>
+  <div class="fp-picker-wrap">
+    <div id="fp-picker" class="fp-picker"></div>
+  </div>
   <p id="fp-picker-hint" class="fp-picker-hint">
     <Icon name="map-pin" size={13} />
     Toca el mapa para elegir tu ubicación
   </p>
+
+  <!-- Mapa a pantalla completa: el <div> del mapa (#fp-picker) se traslada
+       aquí dentro mientras el modal está abierto y vuelve a su sitio al
+       cerrarlo. Es el mismo mapa Leaflet, no una copia — así la selección
+       ya hecha (o la que se haga aquí) es siempre una sola fuente de verdad. -->
+  <div id="fp-picker-modal" class="fp-picker-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Elegir ubicación en el mapa">
+    <div class="fp-picker-modal-backdrop" data-cerrar-picker-modal></div>
+    <div class="fp-picker-modal-card">
+      <div class="fp-picker-modal-header">
+        <p><Icon name="map-pin" size={14} /> Toca el mapa para marcar tu ubicación</p>
+        <button type="button" class="fp-picker-modal-cerrar" data-cerrar-picker-modal aria-label="Cerrar mapa">
+          <Icon name="x" size={18} />
+        </button>
+      </div>
+      <div id="fp-picker-modal-slot" class="fp-picker-modal-slot"></div>
+      <button type="button" id="fp-picker-modal-confirmar" class="btn-primary fp-picker-modal-confirmar">
+        <Icon name="check" size={15} />
+        Confirmar ubicación
+      </button>
+    </div>
+  </div>
 
   <form id="fp-form" class="fp-form">
     <label class="fp-label">
@@ -54,6 +95,7 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   .fp-title { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700; color: var(--color-carbon); margin-bottom: 0.35rem; }
   .fp-subtitle { font-size: 0.9rem; color: var(--color-piedra-media); margin-bottom: 1rem; }
 
+  .fp-picker-wrap { position: relative; }
   .fp-picker {
     width: 100%;
     height: 220px;
@@ -62,6 +104,25 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
     border: 1px solid rgba(156,133,103,0.3);
     cursor: crosshair;
   }
+  /* El botón vive en su propia fila, no superpuesto al mapa — ver el
+     comentario junto a su marcado en la plantilla: Leaflet pinta sus panos
+     en una capa acelerada por GPU que en Chromium puede quedar por encima
+     de un hermano superpuesto pase lo que pase con el z-index. */
+  .fp-picker-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+  .fp-picker-ampliar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-carbon-suave);
+    background: var(--color-pergamino);
+    border: 1px solid rgba(156,133,103,0.3);
+    cursor: pointer;
+  }
+  .fp-picker-ampliar:hover { background: rgba(156,133,103,0.16); color: var(--color-carbon); }
   .fp-picker-hint {
     display: flex;
     align-items: center;
@@ -69,6 +130,69 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
     margin: 0.5rem 0 1.25rem;
     font-size: 0.78rem;
     color: var(--color-piedra-media);
+  }
+
+  /* ══════ Mapa a pantalla completa ══════ */
+  .fp-picker-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 220;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .fp-picker-modal.open { opacity: 1; visibility: visible; }
+  .fp-picker-modal-backdrop { position: fixed; inset: 0; background: rgba(20,18,15,0.82); }
+  .fp-picker-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    height: min(88vh, 720px);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-pergamino);
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+  }
+  .fp-picker-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(156,133,103,0.2);
+  }
+  .fp-picker-modal-header p {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-carbon);
+    margin: 0;
+  }
+  .fp-picker-modal-cerrar {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(156,133,103,0.14);
+    color: var(--color-carbon);
+    border: none;
+    cursor: pointer;
+  }
+  .fp-picker-modal-cerrar:hover { background: rgba(156,133,103,0.24); }
+  .fp-picker-modal-slot { flex: 1; min-height: 0; cursor: crosshair; }
+  .fp-picker-modal-slot :global(.fp-picker) { height: 100%; border-radius: 0; border: none; }
+  .fp-picker-modal-confirmar { margin: 0.9rem 1rem 1rem; justify-content: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fp-picker-modal { transition: none; }
   }
 
   .fp-form { display: flex; flex-direction: column; gap: 1.1rem; }
@@ -147,6 +271,18 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   import { leerEstadoTrivial, tokenParaEncontrados, EVENTO_SECRETO_ENCONTRADO, ALL_SLUGS } from '../../data/trivial';
 
   const pickerEl = document.getElementById('fp-picker')!;
+  const pickerWrap = document.querySelector('.fp-picker-wrap')!;
+  const ampliarBtn = document.getElementById('fp-picker-ampliar') as HTMLButtonElement;
+  const pickerModal = document.getElementById('fp-picker-modal')!;
+  const pickerModalSlot = document.getElementById('fp-picker-modal-slot')!;
+  // Se traslada a document.body: tal como queda escrito en la plantilla,
+  // el modal cuelga de #fp-root, y ese nodo lleva `.reveal` (transform),
+  // que le crearía un contenedor de referencia y le rompería el
+  // `position: fixed` (ver aviso junto a <MapaVisitantes /> en
+  // visitantes/index.astro — mismo problema, aquí resuelto reubicando el
+  // nodo por JS en vez de reordenando la plantilla).
+  document.body.appendChild(pickerModal);
+  const pickerModalConfirmar = document.getElementById('fp-picker-modal-confirmar')!;
   const hint = document.getElementById('fp-picker-hint')!;
   const form = document.getElementById('fp-form') as HTMLFormElement;
   const nombreInput = document.getElementById('fp-nombre') as HTMLInputElement;
@@ -206,6 +342,35 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   // Si ya hay un pin puesto, marcar/desmarcar la casilla lo repinta al vuelo.
   doradoCheck.addEventListener('change', () => {
     marker?.setIcon(iconoActual());
+  });
+
+  // ── Mapa a pantalla completa ──
+  // El <div> del mapa (#fp-picker) se traslada al modal y vuelve a su sitio
+  // al cerrar: es la misma instancia de Leaflet, no una copia, así que la
+  // selección siempre vive en un solo lugar. `invalidateSize()` es
+  // obligatorio tras cambiar el tamaño real del contenedor o Leaflet sigue
+  // calculando con las medidas antiguas.
+  function abrirPickerModal() {
+    pickerModalSlot.appendChild(pickerEl);
+    pickerModal.classList.add('open');
+    pickerModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => picker.invalidateSize());
+  }
+  function cerrarPickerModal() {
+    pickerWrap.insertBefore(pickerEl, pickerWrap.firstChild);
+    pickerModal.classList.remove('open');
+    pickerModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    requestAnimationFrame(() => picker.invalidateSize());
+  }
+  ampliarBtn.addEventListener('click', abrirPickerModal);
+  pickerModalConfirmar.addEventListener('click', cerrarPickerModal);
+  pickerModal.querySelectorAll('[data-cerrar-picker-modal]').forEach((el) => {
+    el.addEventListener('click', cerrarPickerModal);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && pickerModal.classList.contains('open')) cerrarPickerModal();
   });
 
   nombreInput.addEventListener('input', () => {
