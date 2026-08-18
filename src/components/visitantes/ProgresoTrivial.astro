@@ -27,12 +27,22 @@ const total = LOCALIZACIONES_TRIVIAL.length;
 
   <div class="pt-grid">
     {LOCALIZACIONES_TRIVIAL.map((loc) => (
-      <div class="pt-slot" data-slug={loc.slug} data-nombre={loc.nombre} data-foto={loc.foto ?? ''}>
-        <div class="pt-slot-media">
-          <Icon name={loc.icon} size={18} />
+      <div class="pt-slot" data-slug={loc.slug} data-foto={loc.foto ?? ''}>
+        <!-- Cara oculta: se ve mientras el secreto no se ha encontrado. -->
+        <div class="pt-slot-cara pt-slot-frente">
+          <div class="pt-slot-media">
+            <Icon name={loc.icon} size={18} />
+          </div>
+          <p class="pt-slot-nombre">?</p>
+          <p class="pt-slot-pista">{loc.pista}</p>
         </div>
-        <p class="pt-slot-nombre">?</p>
-        <p class="pt-slot-pista">{loc.pista}</p>
+        <!-- Cara revelada: el cromo, boca arriba tras escanear su QR. -->
+        <div class="pt-slot-cara pt-slot-dorso">
+          <div class="pt-slot-media">
+            <Icon name={loc.icon} size={18} />
+          </div>
+          <p class="pt-slot-nombre">{loc.nombre}</p>
+        </div>
       </div>
     ))}
   </div>
@@ -85,20 +95,67 @@ const total = LOCALIZACIONES_TRIVIAL.length;
     font-weight: 600;
   }
 
+  /* 2x2 fijo: con `auto-fit, minmax(140px,1fr)` (pensado para 6 tarjetas)
+     el ancho real de esta columna solo dejaba sitio para 3, así que la
+     cuarta se caía sola a una fila aparte en vez de aprovechar el espacio.
+     Con 4 secretos, 2x2 siempre llena el ancho disponible. */
   .pt-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
+
+  /* Cada cromo es una tarjeta con dos caras que se voltean con un giro 3D
+     al encontrar su secreto. Mismo truco que el carrusel del Museo: cada
+     cara rota por su cuenta con perspective() y se conmuta por opacidad a
+     mitad del giro, en vez de preserve-3d + backface-visibility (Chrome
+     puede descartar ese combo al hacer scroll). */
   .pt-slot {
-    padding: 0.85rem;
+    position: relative;
+    min-height: 172px;
     border-radius: 0.9rem;
+  }
+  .pt-slot-cara {
+    position: absolute;
+    inset: 0;
+    padding: 0.85rem;
+    border-radius: inherit;
+    text-align: center;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition:
+      transform 0.7s cubic-bezier(0.65, 0, 0.35, 1),
+      opacity 0s linear 0.35s;
+  }
+  .pt-slot.sin-animar .pt-slot-cara { transition: none; }
+
+  .pt-slot-frente {
     background: rgba(244,239,230,0.6);
     border: 1px dashed rgba(156,133,103,0.4);
-    text-align: center;
-    transition: background 0.2s ease, border-color 0.2s ease;
-    overflow: hidden;
+    transform: perspective(1000px) rotateY(0deg);
+    opacity: 1;
   }
+  .pt-slot-dorso {
+    justify-content: center;
+    background: rgba(62,92,58,0.09);
+    border: 1px solid rgba(62,92,58,0.3);
+    transform: perspective(1000px) rotateY(180deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pt-slot.encontrado .pt-slot-frente {
+    transform: perspective(1000px) rotateY(-180deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pt-slot.encontrado .pt-slot-dorso {
+    transform: perspective(1000px) rotateY(0deg);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .pt-slot-media {
     width: 34px; height: 34px;
     margin: 0 auto 0.5rem;
@@ -106,32 +163,39 @@ const total = LOCALIZACIONES_TRIVIAL.length;
     display: flex; align-items: center; justify-content: center;
     background: rgba(156,133,103,0.18);
     color: var(--color-piedra-oscura);
+    flex-shrink: 0;
   }
+  .pt-slot-dorso .pt-slot-media { background: var(--color-verde-pino); color: white; }
   .pt-slot-nombre { font-weight: 700; font-size: 0.85rem; color: var(--color-piedra-media); margin-bottom: 0.2rem; }
+  .pt-slot-dorso .pt-slot-nombre { color: var(--color-verde-pino); }
   .pt-slot-pista { font-size: 0.74rem; color: var(--color-piedra-media); line-height: 1.4; }
 
-  .pt-slot.encontrado {
-    background: rgba(62,92,58,0.09);
-    border: 1px solid rgba(62,92,58,0.3);
-  }
-  .pt-slot.encontrado .pt-slot-media { background: var(--color-verde-pino); color: white; }
-  .pt-slot.encontrado .pt-slot-nombre { color: var(--color-verde-pino); }
-  .pt-slot.encontrado .pt-slot-pista { display: none; }
-
-  .pt-slot.encontrado.con-foto {
+  /* Con foto: el dorso se convierte en una postal a sangre, con el nombre
+     de subtítulo sobre un velo oscuro en la base. */
+  .pt-slot.con-foto .pt-slot-dorso {
     padding: 0;
     border-style: solid;
   }
-  .pt-slot.encontrado.con-foto .pt-slot-media {
+  .pt-slot.con-foto .pt-slot-dorso .pt-slot-media {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 90px;
+    height: 100%;
     margin: 0;
     border-radius: 0;
     background-size: cover;
     background-position: center;
   }
-  .pt-slot.encontrado.con-foto .pt-slot-media :global(svg) { display: none; }
-  .pt-slot.encontrado.con-foto .pt-slot-nombre { padding: 0.5rem 0.6rem 0.7rem; margin: 0; }
+  .pt-slot.con-foto .pt-slot-dorso .pt-slot-media :global(svg) { display: none; }
+  .pt-slot.con-foto .pt-slot-dorso .pt-slot-nombre {
+    position: relative;
+    z-index: 1;
+    margin: auto 0 0;
+    padding: 1.6rem 0.6rem 0.6rem;
+    width: 100%;
+    color: white;
+    background: linear-gradient(to top, rgba(20,18,15,0.78), transparent);
+  }
 
   .pt-completo {
     display: flex;
@@ -223,7 +287,7 @@ const total = LOCALIZACIONES_TRIVIAL.length;
 </style>
 
 <script>
-  import { leerEstadoTrivial, EVENTO_SECRETO_ENCONTRADO, type EstadoTrivial } from '../../data/trivial';
+  import { leerEstadoTrivial, EVENTO_SECRETO_ENCONTRADO, ALL_SLUGS, type EstadoTrivial } from '../../data/trivial';
 
   const contador = document.getElementById('pt-contador')!;
   const completo = document.getElementById('pt-completo')!;
@@ -232,26 +296,38 @@ const total = LOCALIZACIONES_TRIVIAL.length;
   const celebracionCerrar = document.getElementById('pt-celebracion-cerrar')!;
   let toastTimeout = 0;
 
-  function pintar(estado: EstadoTrivial) {
+  // `animar: false` se usa solo en la pintura inicial (al cargar la página
+  // con secretos ya encontrados en sesiones anteriores): así el volteo 3D
+  // solo se ve cuando un secreto se encuentra "en directo", no en cada
+  // recarga de la página.
+  function pintar(estado: EstadoTrivial, { animar = true }: { animar?: boolean } = {}) {
     contador.textContent = String(estado.encontrados.length);
-    completo.hidden = estado.encontrados.length < 6;
+    completo.hidden = estado.encontrados.length < ALL_SLUGS.length;
+
+    const slotsNuevos: HTMLElement[] = [];
 
     document.querySelectorAll<HTMLElement>('.pt-slot').forEach((slot) => {
       const slug = slot.dataset.slug!;
-      if (!estado.encontrados.includes(slug)) return;
+      if (slot.classList.contains('encontrado') || !estado.encontrados.includes(slug)) return;
+      if (!animar) slot.classList.add('sin-animar');
       slot.classList.add('encontrado');
-      const nombreEl = slot.querySelector<HTMLElement>('.pt-slot-nombre');
-      if (nombreEl) nombreEl.textContent = slot.dataset.nombre ?? '✓';
       const foto = slot.dataset.foto;
       if (foto) {
         slot.classList.add('con-foto');
-        const media = slot.querySelector<HTMLElement>('.pt-slot-media');
+        const media = slot.querySelector<HTMLElement>('.pt-slot-dorso .pt-slot-media');
         if (media) media.style.backgroundImage = `url("${foto}")`;
       }
+      if (!animar) slotsNuevos.push(slot);
     });
+
+    if (slotsNuevos.length) {
+      requestAnimationFrame(() => {
+        slotsNuevos.forEach((slot) => slot.classList.remove('sin-animar'));
+      });
+    }
   }
 
-  pintar(leerEstadoTrivial());
+  pintar(leerEstadoTrivial(), { animar: false });
 
   function mostrarCelebracion() {
     celebracion.classList.add('open');

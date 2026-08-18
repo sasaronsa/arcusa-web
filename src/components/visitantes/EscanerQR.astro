@@ -102,7 +102,12 @@ import Icon from '../Icon.astro';
 
 <script>
   import jsQR from 'jsqr';
-  import { extraerSlugDeQR, marcarEncontrado, EVENTO_SECRETO_ENCONTRADO } from '../../data/trivial';
+  import {
+    extraerSlugDeQR,
+    marcarEncontrado,
+    EVENTO_SECRETO_ENCONTRADO,
+    type ResultadoHallazgo,
+  } from '../../data/trivial';
 
   const abrirBtn = document.getElementById('qr-abrir-btn') as HTMLButtonElement;
   const modal = document.getElementById('qr-modal')!;
@@ -116,6 +121,15 @@ import Icon from '../Icon.astro';
   let stream: MediaStream | null = null;
   let rafId = 0;
   let cerrandoTimeout = 0;
+
+  // El volteo de la tarjeta vive en /visitantes, detrás de este modal. Si el
+  // evento se disparara nada más leer el QR, la animación (0.7s) transcurriría
+  // entera oculta tras la cámara y solo se vería el resultado ya volteado.
+  // El hallazgo se guarda en `localStorage` al instante (no se pierde si se
+  // cierra la pestaña), pero el evento que dispara el giro espera aquí hasta
+  // que el modal se cierra de verdad — sea por el auto-cierre o porque el
+  // usuario lo cierra a mano antes de que este termine.
+  let hallazgoPendiente: (ResultadoHallazgo & { slug: string }) | null = null;
 
   if (!navigator.mediaDevices?.getUserMedia) {
     abrirBtn.hidden = true;
@@ -138,6 +152,11 @@ import Icon from '../Icon.astro';
     detenerCamara();
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
+    if (hallazgoPendiente) {
+      const detalle = hallazgoPendiente;
+      hallazgoPendiente = null;
+      window.dispatchEvent(new CustomEvent(EVENTO_SECRETO_ENCONTRADO, { detail: detalle }));
+    }
   }
 
   function tick() {
@@ -155,14 +174,12 @@ import Icon from '../Icon.astro';
     if (resultado) {
       const slug = extraerSlugDeQR(resultado.data);
       if (slug) {
-        const { estado: estadoTrivial, yaEstaba, completadoAhora } = marcarEncontrado(slug);
+        const hallazgo = marcarEncontrado(slug);
         fijarEstado(
-          yaEstaba ? 'Ya tenías este secreto guardado.' : '¡Secreto encontrado!',
+          hallazgo.yaEstaba ? 'Ya tenías este secreto guardado.' : '¡Secreto encontrado!',
           'ok'
         );
-        window.dispatchEvent(
-          new CustomEvent(EVENTO_SECRETO_ENCONTRADO, { detail: { slug, yaEstaba, completadoAhora, estado: estadoTrivial } })
-        );
+        hallazgoPendiente = { slug, ...hallazgo };
         cerrandoTimeout = window.setTimeout(cerrar, 1100);
         return;
       }

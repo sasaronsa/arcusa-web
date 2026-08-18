@@ -24,7 +24,7 @@ Todo empezó con las pinturas de **Luis Moreno**, que convirtieron las fachadas 
 
 ## Qué vas a encontrar
 
-- **Murales** — más de treinta pinturas repartidas por las fachadas del pueblo.
+- **Murales** — más de cincuenta pinturas repartidas por las fachadas del pueblo.
 - **Esculturas de madera** — troncos trabajados que asoman en rincones y jardines.
 - **Piedra tallada** — relieves y detalles labrados a mano.
 - **Obra de los vecinos** — piezas pequeñas que cada casa ha ido sumando por su cuenta.

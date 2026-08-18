@@ -116,7 +116,13 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
     color: var(--color-carbon-suave);
     cursor: pointer;
   }
-  .fp-dorado input { margin-top: 0.2rem; flex-shrink: 0; }
+  .fp-dorado input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-ocre);
+  }
 
   #fp-submit { justify-content: center; }
   #fp-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
@@ -138,7 +144,7 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
 <script>
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
-  import { leerEstadoTrivial, tokenParaEncontrados, EVENTO_SECRETO_ENCONTRADO } from '../../data/trivial';
+  import { leerEstadoTrivial, tokenParaEncontrados, EVENTO_SECRETO_ENCONTRADO, ALL_SLUGS } from '../../data/trivial';
 
   const pickerEl = document.getElementById('fp-picker')!;
   const hint = document.getElementById('fp-picker-hint')!;
@@ -155,12 +161,28 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   let seleccion: { lat: number; lng: number } | null = null;
   let marker: L.Marker | null = null;
 
-  const iconoSeleccion = L.icon({
+  const iconoSeleccionNormal = L.icon({
     className: 'fp-pin',
     iconUrl: '/images/icons/chicheta-roja.png',
     iconSize: [30, 30],
     iconAnchor: [15, 15],
   });
+  const iconoSeleccionDorado = L.icon({
+    className: 'fp-pin',
+    iconUrl: '/images/icons/chincheta-dorada.png',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  });
+
+  // El pin de vista previa es dorado solo si la casilla está marcada Y de
+  // verdad hay derecho a ello (los 4 secretos encontrados) — igual que la
+  // condición real que decide el `tipo` al enviar el formulario.
+  function quiereDoradoAhora() {
+    return doradoCheck.checked && estadoTrivial.encontrados.length >= ALL_SLUGS.length;
+  }
+  function iconoActual() {
+    return quiereDoradoAhora() ? iconoSeleccionDorado : iconoSeleccionNormal;
+  }
 
   const picker = L.map(pickerEl, { worldCopyJump: true }).setView([30, 10], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -175,10 +197,15 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   picker.on('click', (e: L.LeafletMouseEvent) => {
     seleccion = { lat: e.latlng.lat, lng: e.latlng.lng };
     if (marker) marker.setLatLng(e.latlng);
-    else marker = L.marker(e.latlng, { icon: iconoSeleccion }).addTo(picker);
+    else marker = L.marker(e.latlng, { icon: iconoActual() }).addTo(picker);
     hint.textContent = '';
     hint.style.display = 'none';
     actualizarSubmit();
+  });
+
+  // Si ya hay un pin puesto, marcar/desmarcar la casilla lo repinta al vuelo.
+  doradoCheck.addEventListener('change', () => {
+    marker?.setIcon(iconoActual());
   });
 
   nombreInput.addEventListener('input', () => {
@@ -190,13 +217,13 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   });
 
   let estadoTrivial = leerEstadoTrivial();
-  if (estadoTrivial.encontrados.length >= 6) {
+  if (estadoTrivial.encontrados.length >= ALL_SLUGS.length) {
     doradoWrap.hidden = false;
   }
 
   window.addEventListener(EVENTO_SECRETO_ENCONTRADO, ((e: CustomEvent) => {
     estadoTrivial = e.detail.estado;
-    if (estadoTrivial.encontrados.length >= 6) doradoWrap.hidden = false;
+    if (estadoTrivial.encontrados.length >= ALL_SLUGS.length) doradoWrap.hidden = false;
   }) as EventListener);
 
   function mostrarMensaje(texto: string, tipo: 'ok' | 'error') {
@@ -211,7 +238,7 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
     submitBtn.disabled = true;
     mensaje.hidden = true;
 
-    const quiereDorado = doradoCheck.checked && estadoTrivial.encontrados.length >= 6;
+    const quiereDorado = doradoCheck.checked && estadoTrivial.encontrados.length >= ALL_SLUGS.length;
     const token = quiereDorado ? await tokenParaEncontrados(estadoTrivial.encontrados) : undefined;
 
     try {
@@ -243,7 +270,7 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
       comentarioCount.textContent = '0';
       if (marker) { picker.removeLayer(marker); marker = null; }
       seleccion = null;
-      doradoWrap.hidden = estadoTrivial.encontrados.length < 6;
+      doradoWrap.hidden = estadoTrivial.encontrados.length < ALL_SLUGS.length;
       hint.style.display = 'flex';
       actualizarSubmit();
     } catch {

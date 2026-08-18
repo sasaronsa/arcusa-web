@@ -480,9 +480,10 @@ const multiple = cuadros.length > 1;
         baseW = Math.min(cw * 0.44, 560);
         baseH = baseW / 1.5;
       }
-      const spacing = baseW * (mobile ? 0.82 : 0.8);
+      const spacing = baseW * (mobile ? 0.66 : 0.62);
       const sideScale = mobile ? 0.72 : 0.76;
       const sideOpacity = mobile ? 0.42 : 0.5;
+      const farOpacity = mobile ? 0.18 : 0.22;
 
       stage.style.height = `${Math.round(baseH + (mobile ? 56 : 84))}px`;
 
@@ -502,12 +503,12 @@ const multiple = cuadros.length > 1;
           const sign = o < 0 ? -1 : 1;
           const x = sign * spacing * ao;
           const scale = Math.pow(sideScale, ao);
-          // Solo se ven la central y sus dos vecinas inmediatas. El resto queda
-          // a opacidad 0, así el salto de wrap (360°) ocurre sin verse cruzar nada.
-          const visible = ao === 1;
+          // Se ven la central y sus dos vecinas a cada lado (5 en total). El resto
+          // queda a opacidad 0, así el salto de wrap (360°) ocurre sin verse cruzar nada.
+          const visible = ao <= 2;
           card.style.transform =
             `translate(-50%, -50%) translateX(${Math.round(x)}px) scale(${scale.toFixed(3)})`;
-          card.style.opacity = visible ? String(sideOpacity) : '0';
+          card.style.opacity = visible ? String(ao === 1 ? sideOpacity : farOpacity) : '0';
           card.style.zIndex = String(20 - ao);
           card.style.pointerEvents = visible ? 'auto' : 'none';
           card.classList.remove('is-flipped');

@@ -4,7 +4,7 @@ tipo: cuadro
 x: 44
 y: 56
 resumen: Ficha en preparación, a la espera de la fotografía del mural.
-imagenes: []
+imagenes: ["/images/puntos/Museo/arco.webp"]
 autor: Luis Moreno
 anio: "2020–2024"
 enMapa: false

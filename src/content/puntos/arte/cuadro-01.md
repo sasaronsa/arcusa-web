@@ -1,10 +1,10 @@
 ---
-nombre: "Museo al aire libre: el origen"
+nombre: "Mural pendiente · 01"
 tipo: cuadro
 x: 48
 y: 52
 resumen: Aquí comenzó una idea que ha transformado la forma de descubrir Arcusa.
-imagenes: []
+imagenes: ["/images/puntos/Museo/test1.webp"]
 autor: Luis Moreno
 anio: "2020"
 enMapa: false

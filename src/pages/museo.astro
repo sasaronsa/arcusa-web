@@ -444,7 +444,10 @@ const stats = [
   .obra-modal.open { opacity: 1; visibility: visible; pointer-events: auto; }
 
   .obra-backdrop {
-    position: absolute;
+    /* `fixed`, no `absolute`: `.obra-modal` es el propio contenedor con scroll
+       (overflow-y: auto), así que un fondo `absolute` se desplazaría junto con
+       el contenido largo de la ficha, dejando ver la sala de detrás al bajar. */
+    position: fixed;
     inset: 0;
     background: rgba(18, 14, 11, 0.72);
     backdrop-filter: blur(4px);
@@ -455,7 +458,9 @@ const stats = [
     width: 100%;
     max-width: 720px;
     margin: auto;
-    background: #f7f1e7;
+    background:
+      radial-gradient(ellipse 65% 40% at 100% 0%, rgba(196, 119, 61, 0.08) 0%, transparent 55%),
+      #f7f1e7;
     border-radius: 1.25rem;
     overflow: hidden;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
@@ -539,17 +544,100 @@ const stats = [
   /* El cuerpo markdown ya trae su propio <h1>; aquí sobra porque el título
      va en la cabecera del modal. */
   .obra-prosa :global(h1) { display: none; }
+
+  /* Se anula el capitular de .prose-arcusa: el glifo suelto con caja de
+     fondo quedaba descuadrado según la letra (ascendentes/descendentes no
+     centran igual dentro de una línea con line-height < 1). En su lugar,
+     una marca de apertura fija —sin depender de la forma de ningún
+     carácter— que además hace pareja con el ❖ de cierre más abajo. El `>`
+     va FUERA del :global() (si se mete dentro, Astro descarta la regla
+     entera sin avisar). */
+  .obra-prosa > :global(p:first-of-type::first-letter) {
+    float: none;
+    font: inherit;
+    color: inherit;
+    background: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+  }
+  .obra-prosa::before {
+    content: '';
+    display: block;
+    width: 2.75rem;
+    height: 3px;
+    border-radius: 9999px;
+    margin: 0 0 1.1rem;
+    background: linear-gradient(90deg, var(--color-ocre), var(--color-ocre-suave));
+  }
+
+  /* Negrita con un leve subrayado de rotulador en vez de solo más peso. */
+  .obra-prosa :global(strong) {
+    color: var(--color-carbon);
+    font-weight: 700;
+    background-image: linear-gradient(rgba(196, 119, 61, 0.24), rgba(196, 119, 61, 0.24));
+    background-repeat: no-repeat;
+    background-size: 100% 0.32em;
+    background-position: 0 88%;
+  }
+
   .obra-prosa :global(h2) {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--color-carbon);
-    margin: 1.8rem 0 0.7rem;
+    margin: 2rem 0 0.9rem;
   }
+  .obra-prosa :global(h2)::before {
+    content: '';
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, var(--color-ocre), var(--color-ocre-suave));
+  }
+
   .obra-prosa :global(img) {
     width: 100%;
     border-radius: 0.85rem;
     margin: 1.4rem 0;
+    box-shadow: 0 14px 30px -14px rgba(46, 42, 36, 0.35);
+  }
+
+  /* Cita/curiosidad: más presencia que un recuadro con borde plano. */
+  .obra-prosa :global(blockquote) {
+    position: relative;
+    background:
+      radial-gradient(ellipse 80% 100% at 100% 0%, rgba(196, 119, 61, 0.12) 0%, transparent 60%),
+      #fbf6ec;
+    box-shadow: 0 16px 32px -20px rgba(46, 42, 36, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+  }
+  .obra-prosa :global(blockquote)::before {
+    content: '\201C';
+    position: absolute;
+    top: -0.5rem;
+    right: 0.7rem;
+    font-family: var(--font-serif);
+    font-size: 4.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba(196, 119, 61, 0.16);
+    pointer-events: none;
+  }
+
+  /* Cierre decorativo: marca el final del relato en vez de cortar en seco. */
+  .obra-prosa::after {
+    content: '❖';
+    display: block;
+    margin: 1.8rem 0 0.2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--color-ocre-suave);
   }
 
   .obra-galeria {

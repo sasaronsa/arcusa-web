@@ -15,9 +15,10 @@ export interface LocalizacionTrivial {
 export const LOCALIZACIONES_TRIVIAL: LocalizacionTrivial[] = [
   {
     slug: 'autobus',
-    nombre: 'El autobús de antes',
+    nombre: 'El medio de transporte de antes',
     pista: 'Antes de que casi todos tuvieran coche, esto traía y llevaba al pueblo entero.',
     icon: 'bus',
+    foto: '/images/puntos/Museo/test1.webp',
   },
   {
     slug: 'herrero',
@@ -27,14 +28,14 @@ export const LOCALIZACIONES_TRIVIAL: LocalizacionTrivial[] = [
   },
   {
     slug: 'campana',
-    nombre: 'La campana restaurada',
-    pista: 'Después de años en silencio, hoy vuelve a marcar las horas del pueblo.',
+    nombre: 'El homenaje a la campana',
+    pista: 'Hoy es un homenaje a quien marcaba las horas en el pueblo.',
     icon: 'bell',
   },
   {
     slug: 'bicicleta',
-    nombre: 'La bicicleta de siempre',
-    pista: 'Jóvenes y no tan jóvenes: casi todo el pueblo se ha movido alguna vez sobre dos ruedas.',
+    nombre: 'Homenaje a las bicis que todos hemos usado',
+    pista: 'Jóvenes y no tan jóvenes: casi todo el pueblo se ha movido alguna vez sobre este vehiculo.',
     icon: 'bike',
   },
 ];
