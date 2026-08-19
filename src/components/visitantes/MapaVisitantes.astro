@@ -87,6 +87,13 @@ import Icon from '../Icon.astro';
     color: var(--color-piedra-media);
   }
 
+  /* Leaflet pone fondo blanco y borde a los divIcon por defecto (pensados
+     para iconos cuadrados con imagen de fondo); la chincheta es SVG con
+     su propio dibujo, así que se anulan aquí. */
+  :global(.chincheta-icon.leaflet-div-icon) {
+    background: transparent;
+    border: none;
+  }
   :global(.mv-pin) {
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
   }
@@ -323,6 +330,7 @@ import Icon from '../Icon.astro';
 <script>
   import L from 'leaflet';
   import { LOCALIZACIONES_TRIVIAL } from '../../data/trivial';
+  import { chinchetaIcon } from '../../utils/mapPin';
   import 'leaflet/dist/leaflet.css';
 
   interface Pin {
@@ -350,20 +358,8 @@ import Icon from '../Icon.astro';
     maxZoom: 18,
   }).addTo(map);
 
-  const iconoNormal = L.icon({
-    className: 'mv-pin',
-    iconUrl: '/images/icons/chicheta-roja.png',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -15],
-  });
-  const iconoDorado = L.icon({
-    className: 'mv-pin',
-    iconUrl: '/images/icons/chincheta-dorada.png',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -15],
-  });
+  const iconoNormal = chinchetaIcon('#D6362B', 'mv-pin');
+  const iconoDorado = chinchetaIcon('var(--color-ocre)', 'mv-pin');
 
   function icono(tipo: 'normal' | 'dorado') {
     return tipo === 'dorado' ? iconoDorado : iconoNormal;

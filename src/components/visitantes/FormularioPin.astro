@@ -260,6 +260,13 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   .fp-mensaje.ok { background: rgba(62,92,58,0.1); color: var(--color-verde-pino); }
   .fp-mensaje.error { background: rgba(196,87,61,0.1); color: #A5432B; }
 
+  /* Leaflet pone fondo blanco y borde a los divIcon por defecto (pensados
+     para iconos cuadrados con imagen de fondo); la chincheta es SVG con su
+     propio dibujo, así que se anulan aquí. */
+  :global(.chincheta-icon.leaflet-div-icon) {
+    background: transparent;
+    border: none;
+  }
   :global(.fp-pin) {
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
   }
@@ -269,6 +276,7 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   import L from 'leaflet';
   import 'leaflet/dist/leaflet.css';
   import { leerEstadoTrivial, tokenParaEncontrados, EVENTO_SECRETO_ENCONTRADO, ALL_SLUGS } from '../../data/trivial';
+  import { chinchetaIcon } from '../../utils/mapPin';
 
   const pickerEl = document.getElementById('fp-picker')!;
   const pickerWrap = document.querySelector('.fp-picker-wrap')!;
@@ -297,18 +305,8 @@ const totalSecretos = LOCALIZACIONES_TRIVIAL.length;
   let seleccion: { lat: number; lng: number } | null = null;
   let marker: L.Marker | null = null;
 
-  const iconoSeleccionNormal = L.icon({
-    className: 'fp-pin',
-    iconUrl: '/images/icons/chicheta-roja.png',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-  });
-  const iconoSeleccionDorado = L.icon({
-    className: 'fp-pin',
-    iconUrl: '/images/icons/chincheta-dorada.png',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-  });
+  const iconoSeleccionNormal = chinchetaIcon('#D6362B', 'fp-pin');
+  const iconoSeleccionDorado = chinchetaIcon('var(--color-ocre)', 'fp-pin');
 
   // El pin de vista previa es dorado solo si la casilla está marcada Y de
   // verdad hay derecho a ello (los 4 secretos encontrados) — igual que la

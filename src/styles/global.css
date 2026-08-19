@@ -389,8 +389,11 @@ h1, h2, h3, h4 { font-family: var(--font-serif); }
 }
 .prose-arcusa blockquote p { margin: 0; }
 .prose-arcusa blockquote p + p { margin-top: 0.75em; }
-/* La primera línea en negrita actúa como rótulo del recuadro */
-.prose-arcusa blockquote strong {
+/* La primera línea en negrita actúa como rótulo del recuadro.
+   Solo el <strong> del primer párrafo (el rótulo); el resto de negritas
+   dentro de la cita se quedan en línea con el texto, como en cualquier
+   otro párrafo. */
+.prose-arcusa blockquote > p:first-child > strong {
   display: block;
   font-family: var(--font-serif);
   font-size: 1.075rem;
