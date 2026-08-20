@@ -3,7 +3,7 @@ titulo: Celebración de Verano en Arcusa
 fecha: "2026-08-22"
 hora: "18:00"
 lugar: Plaza y calles de Arcusa
-descripcion: "Una tarde-noche de verano para juntar al pueblo: juegos para los niños, cena de aportación entre vecinos y música para cerrar la jornada bajo las estrellas."
+descripcion: "Una dia de verano para juntar al pueblo: teatro para los niños, cena de aportación entre vecinos y música para cerrar la jornada bajo las estrellas."
 categoria: fiesta
 ---
 
@@ -13,7 +13,7 @@ El **sábado 22 de agosto** celebramos el verano como siempre se ha hecho aquí:
 
 ## Cómo será el día
 
-- **18:00** · Juegos y actividades para los más pequeños
+- **12:00** · Teatro para los más pequeños
 - **21:00** · **Cena de aportación**: cada casa trae algo para compartir y se monta una sola mesa para todos
 - **23:00** · Música para cerrar la noche
 
