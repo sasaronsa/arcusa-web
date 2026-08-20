@@ -44,6 +44,19 @@ import Icon from '../Icon.astro';
   </div>
 </div>
 
+<!-- Visor de foto a pantalla completa: se reutiliza tanto desde el popup del
+     mapa como desde las miniaturas del listado de visitantes. -->
+<div id="mv-lightbox" class="mv-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Foto ampliada">
+  <div class="mv-lightbox-backdrop" data-cerrar-lightbox></div>
+  <button type="button" class="mv-lightbox-cerrar" data-cerrar-lightbox aria-label="Cerrar foto">
+    <Icon name="x" size={20} />
+  </button>
+  <div class="mv-lightbox-frame arcusa-media">
+    <img id="mv-lightbox-img" class="mv-lightbox-img" alt="" />
+    <span class="arcusa-marca arcusa-marca-grande">✦ Arcusa</span>
+  </div>
+</div>
+
 <style>
   .mv-stats {
     display: flex;
@@ -98,13 +111,114 @@ import Icon from '../Icon.astro';
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
   }
 
+  /* ── Popup "tipo post" ──
+     Se quita todo el relleno por defecto de Leaflet para poder poner la
+     foto a sangre (borde a borde) como cabecera de tarjeta, con el propio
+     `overflow: hidden` del wrapper recortando sus esquinas — igual que una
+     publicación de Instagram: usuario arriba, foto grande, luego lugar/
+     fecha y el comentario a modo de descripción. */
   :global(.leaflet-popup-content-wrapper) {
-    border-radius: 0.9rem;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 1.1rem;
     font-family: var(--font-sans);
+    box-shadow: 0 16px 40px rgba(46,42,36,0.22);
   }
-  :global(.mv-popup-nombre) { font-family: var(--font-serif); font-weight: 700; margin: 0 0 0.15rem; }
-  :global(.mv-popup-meta) { font-size: 0.72rem; color: var(--color-piedra-media); margin: 0 0 0.35rem; }
-  :global(.mv-popup-comentario) { font-size: 0.85rem; color: var(--color-carbon-suave); margin: 0; }
+  :global(.leaflet-popup-content) { margin: 0; }
+  :global(.leaflet-popup-tip-container) { margin-top: -1px; }
+
+  :global(.mv-post) { display: flex; flex-direction: column; background: #fff; }
+  :global(.mv-post-header) {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 0.85rem 0.55rem;
+  }
+  :global(.mv-post-avatar) {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #fff;
+    background: linear-gradient(135deg, #D6362B, #A5432B);
+  }
+  :global(.mv-post-dorado .mv-post-avatar) {
+    background: linear-gradient(135deg, #F0C088, #C4773D);
+    color: #4A2F10;
+  }
+  :global(.mv-post-nombre) {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-carbon);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :global(.mv-post-media) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: var(--color-pergamino);
+  }
+  :global(.mv-post-img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: zoom-in;
+  }
+  :global(.mv-post-body) { padding: 0.6rem 0.85rem 0.8rem; }
+  :global(.mv-post-meta) {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-piedra-media);
+    margin: 0 0 0.35rem;
+  }
+  :global(.mv-post-caption) {
+    font-size: 0.85rem;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--color-carbon-suave);
+    margin: 0;
+  }
+
+  /* ── Marca de agua + degradado, compartidos por el popup, el listado y el visor ── */
+  :global(.arcusa-media) { position: relative; overflow: hidden; }
+  :global(.arcusa-media)::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 42%;
+    background: linear-gradient(to top, rgba(20,18,15,0.45), transparent);
+    pointer-events: none;
+  }
+  :global(.arcusa-marca) {
+    position: absolute;
+    z-index: 1;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    font-family: var(--font-serif);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: rgba(20,18,15,0.4);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  :global(.arcusa-marca-grande) { right: 0.9rem; bottom: 0.9rem; padding: 0.3rem 0.75rem; font-size: 0.78rem; }
 
   /* ── Modal de detalle de estadísticas ── */
   .mv-modal {
@@ -322,8 +436,71 @@ import Icon from '../Icon.astro';
     color: var(--color-piedra-media);
   }
 
+  :global(.mv-fila-media) {
+    display: block;
+    width: 100%;
+    max-height: 130px;
+    border-radius: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  :global(.mv-fila-foto) {
+    display: block;
+    width: 100%;
+    max-height: 130px;
+    object-fit: cover;
+    cursor: zoom-in;
+  }
+
+  /* ── Visor de foto a pantalla completa ── */
+  .mv-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .mv-lightbox.open { opacity: 1; visibility: visible; pointer-events: auto; }
+  .mv-lightbox-backdrop { position: absolute; inset: 0; background: rgba(20,18,15,0.9); }
+  /* `arcusa-media` (compartida con el popup y el listado) se encarga del
+     `position: relative` y del recorte; aquí solo el tamaño y la sombra
+     propios del visor grande. */
+  .mv-lightbox-frame {
+    max-width: min(90vw, 800px);
+    max-height: 85vh;
+    border-radius: 0.75rem;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    line-height: 0;
+  }
+  .mv-lightbox-img {
+    display: block;
+    max-width: min(90vw, 800px);
+    max-height: 85vh;
+  }
+  .mv-lightbox-cerrar {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.92);
+    color: var(--color-carbon);
+    border: none;
+    cursor: pointer;
+  }
+  .mv-lightbox-cerrar:hover { background: #fff; }
+
   @media (prefers-reduced-motion: reduce) {
-    .mv-modal, .mv-modal-card { transition: none; }
+    .mv-modal, .mv-modal-card, .mv-lightbox { transition: none; }
   }
 </style>
 
@@ -341,6 +518,7 @@ import Icon from '../Icon.astro';
     lng: number;
     tipo: 'normal' | 'dorado';
     pais: string | null;
+    foto_url: string | null;
     created_at: number;
   }
 
@@ -365,6 +543,37 @@ import Icon from '../Icon.astro';
     return tipo === 'dorado' ? iconoDorado : iconoNormal;
   }
 
+  // ── Visor de foto a pantalla completa ──
+  // Un único lightbox reutilizado tanto por los popups del mapa (creados por
+  // Leaflet vía innerHTML) como por las miniaturas del listado de
+  // visitantes (creadas por JS más abajo): delegar el click por atributo
+  // `data-foto-lightbox` evita enganchar un listener por cada imagen.
+  const lightbox = document.getElementById('mv-lightbox');
+  const lightboxImg = document.getElementById('mv-lightbox-img') as HTMLImageElement;
+
+  function abrirLightbox(url: string) {
+    if (!lightbox || !lightboxImg) return;
+    lightboxImg.src = url;
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+  }
+  function cerrarLightbox() {
+    if (!lightbox) return;
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightboxImg.src = '';
+  }
+  lightbox?.querySelectorAll<HTMLElement>('[data-cerrar-lightbox]').forEach((el) => {
+    el.addEventListener('click', cerrarLightbox);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox?.classList.contains('open')) cerrarLightbox();
+  });
+  document.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement)?.closest<HTMLElement>('[data-foto-lightbox]');
+    if (target) abrirLightbox(target.dataset.fotoLightbox!);
+  });
+
   function formatoFecha(ts: number) {
     return new Date(ts).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   }
@@ -381,16 +590,42 @@ import Icon from '../Icon.astro';
     if (dor) dor.textContent = String(dorados);
   }
 
+  // Popup a modo de "post": cabecera con el nombre, foto a sangre (si hay),
+  // y debajo lugar/fecha + comentario a modo de descripción — mismo orden
+  // que pediría cualquier red de fotos.
   function pintarPin(p: Pin) {
     const marker = L.marker([p.lat, p.lng], { icon: icono(p.tipo) }).addTo(map);
-    const comentario = p.comentario
-      ? `<p class="mv-popup-comentario">"${p.comentario.replace(/</g, '&lt;')}"</p>`
+    const nombreEsc = p.nombre.replace(/</g, '&lt;');
+    const esDorado = p.tipo === 'dorado';
+
+    const media = p.foto_url
+      ? `
+        <div class="mv-post-media arcusa-media">
+          <img class="mv-post-img" src="${p.foto_url}" loading="lazy" alt="Foto de ${nombreEsc}" data-foto-lightbox="${p.foto_url}" />
+          <span class="arcusa-marca">✦ Arcusa</span>
+        </div>
+      `
       : '';
-    marker.bindPopup(`
-      <p class="mv-popup-nombre">${p.nombre.replace(/</g, '&lt;')}${p.tipo === 'dorado' ? ' ⭐' : ''}</p>
-      <p class="mv-popup-meta">${p.pais ?? 'Origen desconocido'} · ${formatoFecha(p.created_at)}</p>
-      ${comentario}
-    `);
+    const caption = p.comentario
+      ? `<p class="mv-post-caption">"${p.comentario.replace(/</g, '&lt;')}"</p>`
+      : '';
+
+    marker.bindPopup(
+      `
+      <div class="mv-post${esDorado ? ' mv-post-dorado' : ''}">
+        <div class="mv-post-header">
+          <span class="mv-post-avatar">${nombreEsc.charAt(0).toUpperCase()}</span>
+          <span class="mv-post-nombre">${nombreEsc}${esDorado ? ' ⭐' : ''}</span>
+        </div>
+        ${media}
+        <div class="mv-post-body">
+          <p class="mv-post-meta">${p.pais ?? 'Origen desconocido'} · ${formatoFecha(p.created_at)}</p>
+          ${caption}
+        </div>
+      </div>
+    `,
+      { minWidth: 230, maxWidth: 260 }
+    );
   }
 
   // ── Modal de estadísticas (visitantes / países / dorados) ──
@@ -435,6 +670,26 @@ import Icon from '../Icon.astro';
     pais.className = 'mv-fila-pais';
     pais.textContent = p.pais ?? 'Origen desconocido';
     fila.append(pais);
+
+    if (p.foto_url) {
+      const media = document.createElement('div');
+      media.className = 'mv-fila-media arcusa-media';
+
+      const foto = document.createElement('img');
+      foto.className = 'mv-fila-foto';
+      foto.src = p.foto_url;
+      foto.loading = 'lazy';
+      foto.alt = `Foto de ${p.nombre}`;
+      foto.dataset.fotoLightbox = p.foto_url;
+      media.append(foto);
+
+      const marca = document.createElement('span');
+      marca.className = 'arcusa-marca';
+      marca.textContent = '✦ Arcusa';
+      media.append(marca);
+
+      fila.append(media);
+    }
 
     if (p.comentario) {
       const comentario = document.createElement('p');

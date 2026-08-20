@@ -2,6 +2,7 @@ import { hashIp } from './lib/hash.js';
 import { contieneLenguajeProhibido } from './lib/moderation.js';
 import { esTokenDoradoValido } from './lib/trivial.js';
 import { paisDesdeCoordenadas } from './lib/geocode.js';
+import { validarFoto } from './lib/imagenes.js';
 
 const MAX_NOMBRE = 30;
 const MAX_COMENTARIO = 150;
@@ -11,18 +12,52 @@ function json(data, init) {
   return Response.json(data, init);
 }
 
+// El resto del código solo conoce `foto_key` (la clave en R2); esta función
+// es el único sitio que la traduce a la URL pública que sirve `getFoto`.
+function conFotoUrl({ foto_key, ...resto }) {
+  return { ...resto, foto_url: foto_key ? `/api/fotos/${foto_key}` : null };
+}
+
 async function getPins(env) {
   const { results } = await env.DB.prepare(
-    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code, created_at
+    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code, foto_key, created_at
      FROM pins ORDER BY created_at DESC`
   ).all();
-  return json(results ?? []);
+  return json((results ?? []).map(conFotoUrl));
+}
+
+async function getFoto(pathname, env) {
+  const clave = decodeURIComponent(pathname.slice('/api/fotos/'.length));
+  // Solo se sirven objetos con el prefijo que usamos al subirlos — evita que
+  // esta ruta se use como acceso genérico a cualquier objeto del bucket.
+  if (!clave.startsWith('pins/')) return json({ error: 'No encontrado.' }, { status: 404 });
+
+  const objeto = await env.FOTOS.get(clave);
+  if (!objeto) return json({ error: 'No encontrado.' }, { status: 404 });
+
+  return new Response(objeto.body, {
+    headers: {
+      'content-type': objeto.httpMetadata?.contentType ?? 'application/octet-stream',
+      // La clave incluye un UUID único por foto: nunca se sobrescribe, así que el caché puede ser eterno.
+      'cache-control': 'public, max-age=31536000, immutable',
+    },
+  });
 }
 
 async function postPin(request, env) {
+  const esMultipart = (request.headers.get('content-type') ?? '').includes('multipart/form-data');
+
   let body;
+  let archivoFoto = null;
   try {
-    body = await request.json();
+    if (esMultipart) {
+      const form = await request.formData();
+      body = Object.fromEntries(form.entries());
+      const foto = form.get('foto');
+      if (foto instanceof File && foto.size > 0) archivoFoto = foto;
+    } else {
+      body = await request.json();
+    }
   } catch {
     return json({ error: 'Cuerpo de la petición inválido.' }, { status: 400 });
   }
@@ -58,9 +93,15 @@ async function postPin(request, env) {
   const ip = request.headers.get('CF-Connecting-IP') ?? 'sin-ip';
   const ipHash = await hashIp(ip, env.IP_SALT ?? '');
 
-  const ultimo = await env.DB.prepare(
-    `SELECT created_at FROM pins WHERE ip_hash = ? ORDER BY created_at DESC LIMIT 1`
-  ).bind(ipHash).first();
+  // Solo se define en `.dev.vars` (gitignorado, nunca se despliega): permite
+  // probar el formulario en local sin esperar los 3 días entre huellas.
+  const limiteActivo = env.DESACTIVAR_LIMITE_FRECUENCIA !== 'true';
+
+  const ultimo = limiteActivo
+    ? await env.DB.prepare(
+        `SELECT created_at FROM pins WHERE ip_hash = ? ORDER BY created_at DESC LIMIT 1`
+      ).bind(ipHash).first()
+    : null;
 
   if (ultimo && Date.now() - ultimo.created_at < LIMITE_FRECUENCIA_MS) {
     return json(
@@ -74,16 +115,28 @@ async function postPin(request, env) {
     tipo = 'dorado';
   }
 
+  let fotoKey = null;
+  if (archivoFoto) {
+    const resultado = await validarFoto(archivoFoto);
+    if (resultado.error) {
+      return json({ error: resultado.error }, { status: 400 });
+    }
+    await env.FOTOS.put(resultado.clave, resultado.buffer, {
+      httpMetadata: { contentType: resultado.tipo },
+    });
+    fotoKey = resultado.clave;
+  }
+
   const { pais, paisCode } = await paisDesdeCoordenadas(lat, lng);
   const createdAt = Date.now();
 
   const inserted = await env.DB.prepare(
-    `INSERT INTO pins (nombre, comentario, lat, lng, tipo, pais, pais_code, ip_hash, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-     RETURNING id, nombre, comentario, lat, lng, tipo, pais, pais_code, created_at`
-  ).bind(nombre, comentario || null, lat, lng, tipo, pais, paisCode, ipHash, createdAt).first();
+    `INSERT INTO pins (nombre, comentario, lat, lng, tipo, pais, pais_code, foto_key, ip_hash, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     RETURNING id, nombre, comentario, lat, lng, tipo, pais, pais_code, foto_key, created_at`
+  ).bind(nombre, comentario || null, lat, lng, tipo, pais, paisCode, fotoKey, ipHash, createdAt).first();
 
-  return json(inserted, { status: 201 });
+  return json(conFotoUrl(inserted), { status: 201 });
 }
 
 function autorizadoAdmin(request, env) {
@@ -96,11 +149,11 @@ async function adminListarPines(request, env) {
     return json({ error: 'No autorizado.' }, { status: 401 });
   }
   const { results } = await env.DB.prepare(
-    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code,
+    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code, foto_key,
             substr(ip_hash, 1, 8) AS ip_prefix, created_at
      FROM pins ORDER BY created_at DESC`
   ).all();
-  return json(results ?? []);
+  return json((results ?? []).map(conFotoUrl));
 }
 
 async function adminActualizarPin(request, env) {
@@ -150,14 +203,25 @@ async function adminActualizarPin(request, env) {
     return json({ error: 'Revisa el texto: contiene palabras no permitidas.' }, { status: 400 });
   }
 
+  // Moderación de la foto: solo se permite quitarla (no reemplazarla) desde
+  // el panel de admin. Hay que borrar el objeto de R2 antes de nulificar la
+  // columna, para lo cual hace falta conocer su clave actual.
+  let fotoKeyABorrar = null;
+  if (body.quitar_foto === true) {
+    const actual = await env.DB.prepare(`SELECT foto_key FROM pins WHERE id = ?`).bind(id).first();
+    if (actual?.foto_key) fotoKeyABorrar = actual.foto_key;
+    campos.push('foto_key = NULL');
+  }
+
   if (campos.length === 0) {
     return json({ error: 'No hay nada que actualizar.' }, { status: 400 });
   }
 
   await env.DB.prepare(`UPDATE pins SET ${campos.join(', ')} WHERE id = ?`).bind(...valores, id).run();
+  if (fotoKeyABorrar) await env.FOTOS.delete(fotoKeyABorrar);
 
   const actualizado = await env.DB.prepare(
-    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code,
+    `SELECT id, nombre, comentario, lat, lng, tipo, pais, pais_code, foto_key,
             substr(ip_hash, 1, 8) AS ip_prefix, created_at
      FROM pins WHERE id = ?`
   ).bind(id).first();
@@ -165,7 +229,7 @@ async function adminActualizarPin(request, env) {
   if (!actualizado) {
     return json({ error: 'No se ha encontrado ese pin.' }, { status: 404 });
   }
-  return json(actualizado);
+  return json(conFotoUrl(actualizado));
 }
 
 async function adminBorrarPin(request, env) {
@@ -176,7 +240,9 @@ async function adminBorrarPin(request, env) {
   if (!Number.isInteger(id) || id <= 0) {
     return json({ error: 'Id inválido.' }, { status: 400 });
   }
+  const existente = await env.DB.prepare(`SELECT foto_key FROM pins WHERE id = ?`).bind(id).first();
   await env.DB.prepare(`DELETE FROM pins WHERE id = ?`).bind(id).run();
+  if (existente?.foto_key) await env.FOTOS.delete(existente.foto_key);
   return json({ ok: true });
 }
 
@@ -195,6 +261,10 @@ export default {
       if (method === 'GET') return adminListarPines(request, env);
       if (method === 'PATCH') return adminActualizarPin(request, env);
       if (method === 'DELETE') return adminBorrarPin(request, env);
+    }
+
+    if (pathname.startsWith('/api/fotos/')) {
+      if (method === 'GET') return getFoto(pathname, env);
     }
 
     if (pathname.startsWith('/api/')) {

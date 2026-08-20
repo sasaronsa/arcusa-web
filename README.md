@@ -24,6 +24,35 @@ npm run preview
 
 ---
 
+## Probar `/visitantes` en local (pines, fotos, panel de admin)
+
+El formulario de "Deja tu huella" llama a `/api/pins`, que **no lo sirve Astro** — lo sirve el Worker de Cloudflare (`worker/index.js`, con D1 y R2). Para que funcione con `npm run dev` hacen falta dos servidores a la vez:
+
+```bash
+# Terminal 1: el Worker (API + D1 + R2, todo emulado en local, no toca Cloudflare)
+npx wrangler dev --port 8787
+
+# Terminal 2: Astro con recarga en caliente (ya reenvía /api/* al puerto 8787)
+npm run dev
+```
+
+Abre `http://localhost:4321/visitantes` — el proxy de `/api` está configurado en `astro.config.mjs`.
+
+La primera vez, si la base de datos local no tiene todavía las columnas nuevas, aplícalas con:
+
+```bash
+npx wrangler d1 execute arcusa-visitantes --local --command "ALTER TABLE pins ADD COLUMN foto_key TEXT;"
+```
+
+Para entrar en `/visitantes/admin` en local, crea un archivo `.dev.vars` (ya está en `.gitignore`, no se sube nunca) con:
+
+```env
+ADMIN_PASSWORD=lo-que-quieras
+IP_SALT=cualquier-cosa
+```
+
+---
+
 ## Cómo añadir contenido (para vecinos no técnicos)
 
 Todo el contenido está en archivos de texto en la carpeta `src/content/`. No hace falta tocar ningún componente.

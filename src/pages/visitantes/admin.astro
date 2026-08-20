@@ -259,7 +259,8 @@ import Icon from '../../components/Icon.astro';
   .ad-row-nombre { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--color-carbon); }
   .ad-row-meta { font-size: 0.78rem; color: var(--color-piedra-media); margin-top: 0.2rem !important; }
   .ad-row-comentario { font-size: 0.85rem; color: var(--color-carbon-suave); margin-top: 0.35rem !important; }
-  .ad-row-acciones { display: flex; gap: 0.5rem; flex-shrink: 0; }
+  .ad-row-foto { display: block; max-width: 220px; max-height: 140px; object-fit: cover; border-radius: 0.6rem; margin-top: 0.5rem; }
+  .ad-row-acciones { display: flex; gap: 0.5rem; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .ad-row-btn {
     display: inline-flex;
     align-items: center;
@@ -273,6 +274,8 @@ import Icon from '../../components/Icon.astro';
   }
   .ad-row-editar { color: var(--color-azul-pirineo); background: rgba(91,127,166,0.1); border-color: rgba(91,127,166,0.25); }
   .ad-row-editar:hover { background: rgba(91,127,166,0.18); }
+  .ad-row-quitar-foto { color: #9C6B1F; background: rgba(232,169,106,0.14); border-color: rgba(196,119,61,0.3); }
+  .ad-row-quitar-foto:hover { background: rgba(232,169,106,0.24); }
   .ad-row-borrar { color: #A5432B; background: rgba(196,87,61,0.1); border-color: rgba(196,87,61,0.25); }
   .ad-row-borrar:hover { background: rgba(196,87,61,0.18); }
   .ad-tag-dorado { display: inline-flex; align-items: center; gap: 0.2rem; color: #9C6B1F; font-weight: 700; font-size: 0.76rem; }
@@ -303,6 +306,7 @@ import Icon from '../../components/Icon.astro';
     lng: number;
     tipo: 'normal' | 'dorado';
     pais: string | null;
+    foto_url: string | null;
     ip_prefix: string;
     created_at: number;
   }
@@ -467,11 +471,13 @@ import Icon from '../../components/Icon.astro';
             </p>
             <p class="ad-row-meta">#${p.id} · ${p.pais ? escapa(p.pais) : 'país desconocido'} · ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)} · ip ${p.ip_prefix}… · ${new Date(p.created_at).toLocaleString('es-ES')}</p>
             ${p.comentario ? `<p class="ad-row-comentario">"${escapa(p.comentario)}"</p>` : ''}
+            ${p.foto_url ? `<img class="ad-row-foto" src="${p.foto_url}" alt="Foto de ${escapa(p.nombre)}" loading="lazy" />` : ''}
           </div>
           <div class="ad-row-acciones">
             <button class="ad-row-btn ad-row-editar" data-editar="${p.id}" type="button">
               <span class="ad-icon-pencil"></span> Editar
             </button>
+            ${p.foto_url ? `<button class="ad-row-btn ad-row-quitar-foto" data-quitar-foto="${p.id}" type="button">Quitar foto</button>` : ''}
             <button class="ad-row-btn ad-row-borrar" data-id="${p.id}" type="button">Borrar</button>
           </div>
         `;
@@ -496,6 +502,26 @@ import Icon from '../../components/Icon.astro';
           todosPines = todosPines.filter((p) => String(p.id) !== id);
           renderStats();
           renderPines();
+        }
+      });
+    });
+
+    lista.querySelectorAll<HTMLButtonElement>('.ad-row-quitar-foto').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('¿Quitar la foto de esta huella? No se puede deshacer.')) return;
+        const id = btn.dataset.quitarFoto;
+        btn.disabled = true;
+        const res = await fetch(`/api/admin/pins?id=${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+          body: JSON.stringify({ quitar_foto: true }),
+        });
+        if (res.ok) {
+          const actualizado = await res.json();
+          todosPines = todosPines.map((p) => (p.id === Number(id) ? actualizado : p));
+          renderPines();
+        } else {
+          btn.disabled = false;
         }
       });
     });

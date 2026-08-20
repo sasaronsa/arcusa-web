@@ -14,5 +14,11 @@
       "database_name": "arcusa-visitantes",
       "database_id": "069873c6-e152-48c6-946c-2460cc38c71e"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FOTOS",
+      "bucket_name": "arcusa-visitantes-fotos"
+    }
   ]
 }
