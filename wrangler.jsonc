@@ -20,5 +20,10 @@
       "binding": "FOTOS",
       "bucket_name": "arcusa-visitantes-fotos"
     }
-  ]
+  ],
+  // Copia de seguridad diaria de los pines a las 3:00 UTC (madrugada, poco
+  // tráfico). Ver worker/lib/backup.js y el handler `scheduled` en worker/index.js.
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  }
 }

@@ -33,6 +33,22 @@ import Icon from '../../components/Icon.astro';
         <!-- ══════ Estadísticas ══════ -->
         <div class="ad-stats" id="ad-stats"></div>
 
+        <!-- ══════ Copias de seguridad ══════ -->
+        <div class="ad-backups">
+          <div class="ad-backups-header">
+            <div>
+              <p class="ad-backups-titulo">Copias de seguridad</p>
+              <p class="ad-backups-sub">Cada noche se guarda una copia de todas las huellas. Por si algún día hay que restaurar algo.</p>
+            </div>
+            <button id="ad-backup-crear" type="button" class="ad-btn-refrescar">
+              <Icon name="shield" size={14} />
+              Hacer copia ahora
+            </button>
+          </div>
+          <div id="ad-backups-lista" class="ad-backups-lista"></div>
+          <p id="ad-backups-vacio" class="ad-sin-resultados" hidden>Todavía no hay ninguna copia guardada.</p>
+        </div>
+
         <!-- ══════ Barra de filtros ══════ -->
         <div class="ad-toolbar">
           <div class="ad-toolbar-fila">
@@ -169,6 +185,53 @@ import Icon from '../../components/Icon.astro';
   .ad-stat.ad-stat-azul .ad-stat-icono { background: rgba(91,127,166,0.12); color: var(--color-azul-pirineo); }
   .ad-stat-valor { font-family: var(--font-serif); font-size: 1.9rem; font-weight: 700; color: var(--color-carbon); line-height: 1; }
   .ad-stat-label { font-size: 0.74rem; font-weight: 600; color: var(--color-piedra-media); margin-top: 0.3rem; }
+
+  /* ══════ Copias de seguridad ══════ */
+  .ad-backups {
+    background: white;
+    border: 1px solid rgba(156,133,103,0.18);
+    border-radius: 1rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .ad-backups-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .ad-backups-titulo { font-family: var(--font-serif); font-weight: 700; font-size: 1rem; color: var(--color-carbon); }
+  .ad-backups-sub { font-size: 0.78rem; color: var(--color-piedra-media); margin-top: 0.15rem; }
+  .ad-backups-lista { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .ad-backups-lista:empty { margin-top: 0; }
+  .ad-backup-fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.7rem;
+    background: var(--color-pergamino);
+    font-size: 0.82rem;
+  }
+  .ad-backup-fecha { font-weight: 700; color: var(--color-carbon); }
+  .ad-backup-meta { font-size: 0.74rem; color: var(--color-piedra-media); margin-top: 0.1rem; }
+  .ad-backup-descargar {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-azul-pirineo);
+    background: rgba(91,127,166,0.1);
+    border: 1px solid rgba(91,127,166,0.25);
+    cursor: pointer;
+  }
+  .ad-backup-descargar:hover { background: rgba(91,127,166,0.18); }
 
   /* ══════ Barra de filtros ══════ */
   .ad-panel { margin-top: 0; }
@@ -326,6 +389,9 @@ import Icon from '../../components/Icon.astro';
   const limpiarFiltrosBtn = document.getElementById('ad-limpiar-filtros')!;
   const refrescarBtn = document.getElementById('ad-refrescar')!;
   const sinResultados = document.getElementById('ad-sin-resultados')!;
+  const backupCrearBtn = document.getElementById('ad-backup-crear') as HTMLButtonElement;
+  const backupsLista = document.getElementById('ad-backups-lista')!;
+  const backupsVacio = document.getElementById('ad-backups-vacio')!;
 
   let password = '';
   let todosPines: PinAdmin[] = [];
@@ -380,6 +446,73 @@ import Icon from '../../components/Icon.astro';
       el.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${iconos[nombre] ?? ''}</svg>`;
     });
   }
+
+  // ── Copias de seguridad ──
+  interface Backup {
+    archivo: string; // p. ej. "pines-2026-08-20.json"
+    tamano: number;
+    subido_en: string;
+  }
+
+  function formatoFechaBackup(archivo: string): string {
+    const fecha = archivo.replace(/^pines-/, '').replace(/\.json$/, '');
+    const d = new Date(`${fecha}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return archivo;
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function renderBackups(backups: Backup[]) {
+    backupsVacio.hidden = backups.length > 0;
+    backupsLista.innerHTML = backups.map((b) => `
+      <div class="ad-backup-fila">
+        <div>
+          <p class="ad-backup-fecha">${escapa(formatoFechaBackup(b.archivo))}</p>
+          <p class="ad-backup-meta">${(b.tamano / 1024).toFixed(1)} KB · ${escapa(b.archivo)}</p>
+        </div>
+        <button type="button" class="ad-backup-descargar" data-descargar="${escapa(b.archivo)}">Descargar</button>
+      </div>
+    `).join('');
+
+    backupsLista.querySelectorAll<HTMLButtonElement>('[data-descargar]').forEach((btn) => {
+      btn.addEventListener('click', () => descargarBackup(btn.dataset.descargar!));
+    });
+  }
+
+  async function cargarBackups() {
+    const res = await fetch('/api/admin/backups', { headers: { 'x-admin-password': password } });
+    if (!res.ok) return;
+    renderBackups(await res.json());
+  }
+
+  async function descargarBackup(archivo: string) {
+    const res = await fetch(`/api/admin/backups/${encodeURIComponent(archivo)}`, {
+      headers: { 'x-admin-password': password },
+    });
+    if (!res.ok) return;
+    // No es un enlace normal porque hace falta mandar la contraseña en la
+    // cabecera: se descarga el contenido y se simula el clic en un enlace
+    // temporal apuntando a un blob local.
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = archivo;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  backupCrearBtn.addEventListener('click', async () => {
+    backupCrearBtn.disabled = true;
+    try {
+      const res = await fetch('/api/admin/backups', {
+        method: 'POST',
+        headers: { 'x-admin-password': password },
+      });
+      if (res.ok) await cargarBackups();
+    } finally {
+      backupCrearBtn.disabled = false;
+    }
+  });
 
   // ── Opciones del filtro de país ──
   function actualizarOpcionesPais() {
@@ -597,6 +730,7 @@ import Icon from '../../components/Icon.astro';
     salirBtn.hidden = false;
     renderStats();
     renderPines();
+    cargarBackups();
   }
 
   loginForm.addEventListener('submit', (e) => {

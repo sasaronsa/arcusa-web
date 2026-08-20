@@ -3,6 +3,7 @@ import { contieneLenguajeProhibido } from './lib/moderation.js';
 import { esTokenDoradoValido } from './lib/trivial.js';
 import { paisDesdeCoordenadas } from './lib/geocode.js';
 import { validarFoto } from './lib/imagenes.js';
+import { respaldarPines, listarBackups } from './lib/backup.js';
 
 const MAX_NOMBRE = 30;
 const MAX_COMENTARIO = 150;
@@ -246,6 +247,41 @@ async function adminBorrarPin(request, env) {
   return json({ ok: true });
 }
 
+async function adminListarBackups(request, env) {
+  if (!autorizadoAdmin(request, env)) {
+    return json({ error: 'No autorizado.' }, { status: 401 });
+  }
+  return json(await listarBackups(env));
+}
+
+async function adminCrearBackup(request, env) {
+  if (!autorizadoAdmin(request, env)) {
+    return json({ error: 'No autorizado.' }, { status: 401 });
+  }
+  const archivo = (await respaldarPines(env)).slice('backups/'.length);
+  return json({ ok: true, archivo });
+}
+
+async function adminDescargarBackup(request, pathname, env) {
+  if (!autorizadoAdmin(request, env)) {
+    return json({ error: 'No autorizado.' }, { status: 401 });
+  }
+  const archivo = decodeURIComponent(pathname.slice('/api/admin/backups/'.length));
+  // El nombre no puede contener "/": evita que se use para leer cualquier
+  // otra cosa del bucket (p. ej. subiendo "../pins/algo").
+  if (!archivo || archivo.includes('/')) {
+    return json({ error: 'Nombre de archivo inválido.' }, { status: 400 });
+  }
+  const objeto = await env.FOTOS.get(`backups/${archivo}`);
+  if (!objeto) return json({ error: 'No encontrado.' }, { status: 404 });
+  return new Response(objeto.body, {
+    headers: {
+      'content-type': 'application/json',
+      'content-disposition': `attachment; filename="${archivo}"`,
+    },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -263,6 +299,15 @@ export default {
       if (method === 'DELETE') return adminBorrarPin(request, env);
     }
 
+    if (pathname === '/api/admin/backups') {
+      if (method === 'GET') return adminListarBackups(request, env);
+      if (method === 'POST') return adminCrearBackup(request, env);
+    }
+
+    if (pathname.startsWith('/api/admin/backups/')) {
+      if (method === 'GET') return adminDescargarBackup(request, pathname, env);
+    }
+
     if (pathname.startsWith('/api/fotos/')) {
       if (method === 'GET') return getFoto(pathname, env);
     }
@@ -272,5 +317,11 @@ export default {
     }
 
     return env.ASSETS.fetch(request);
+  },
+
+  // Cron Trigger (ver "triggers.crons" en wrangler.jsonc): copia diaria de
+  // seguridad de la tabla de pines, automática y sin intervención humana.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(respaldarPines(env));
   },
 };
