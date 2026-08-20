@@ -12,12 +12,31 @@ interface Props {
 const {
   title = 'Arcusa – Pueblo del Sobrarbe, Huesca',
   description = 'Arcusa, el Pueblo Museo del Biello Sobrarbe (Aínsa-Sobrarbe, Huesca): torre pentagonal del siglo XI, casas señoriales, museo de pintura al aire libre y, en su entorno, patrimonio megalítico y la puerta a la Sierra de Guara.',
-  image = '/images/og-arcusa.jpg',
+  image = '/images/og-arcusa.png',
   type = 'website',
   noindex = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const touristAttractionSchema = noindex ? null : JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "TouristAttraction",
+  "name": "Arcusa",
+  "description": description,
+  "url": Astro.site,
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Arcusa",
+    "addressRegion": "Huesca",
+    "addressCountry": "ES"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 42.256,
+    "longitude": 0.158
+  }
+});
 ---
 
 <!doctype html>
@@ -36,6 +55,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Torre en ruinas de Arcusa" />
     <meta property="og:locale" content="es_ES" />
     <meta property="og:site_name" content="Arcusa, Sobrarbe" />
 
@@ -45,30 +67,19 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
 
-    <link rel="icon" type="image/svg+xml" href="favicon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#F4EFE6" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <script type="application/ld+json">
-      {JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "TouristAttraction",
-        "name": "Arcusa",
-        "description": description,
-        "url": Astro.site,
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Arcusa",
-          "addressRegion": "Huesca",
-          "addressCountry": "ES"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 42.256,
-          "longitude": 0.158
-        }
-      })}
-    </script>
+    {touristAttractionSchema && (
+      <script type="application/ld+json" set:html={touristAttractionSchema} />
+    )}
   </head>
   <body class="min-h-screen">
     <slot />

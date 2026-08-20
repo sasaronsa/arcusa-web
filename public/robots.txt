@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /visitantes/admin
+
+Sitemap: https://arcusa.es/sitemap-index.xml

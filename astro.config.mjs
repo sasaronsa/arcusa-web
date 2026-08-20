@@ -19,7 +19,7 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/visitantes/admin'),
+      filter: (page) => !page.includes('/visitantes/admin') && !page.includes('/visitantes/caza/'),
     }),
   ],
 });

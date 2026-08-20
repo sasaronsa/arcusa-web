@@ -24,12 +24,48 @@ const categoriaLabel: Record<string, string> = {
   actividad: '🥾 Actividad',
   museo: '🖼 Museo',
 };
+
+// Datos para el Event schema.org: la hora se añade a la fecha solo si existe,
+// para no inventar un horario que la ficha del evento no da.
+const startDateISO = entry.data.hora
+  ? `${entry.data.fecha}T${entry.data.hora}`
+  : entry.data.fecha;
+const eventURL = new URL(Astro.url.pathname, Astro.site);
+const eventImage = entry.data.imagen
+  ? new URL(entry.data.imagen, Astro.site).toString()
+  : new URL('/images/hero/Header1.webp', Astro.site).toString();
 ---
 
 <Layout
   title={`${entry.data.titulo} – Eventos en Arcusa`}
   description={entry.data.descripcion}
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: entry.data.titulo,
+    startDate: startDateISO,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    description: entry.data.descripcion,
+    image: [eventImage],
+    url: eventURL,
+    location: {
+      '@type': 'Place',
+      name: entry.data.lugar,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Arcusa',
+        addressRegion: 'Huesca',
+        addressCountry: 'ES',
+      },
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: 'Arcusa, Sobrarbe',
+      url: Astro.site,
+    },
+  })} />
   <Navigation light />
 
   <div class="bg-page-header-warm pt-28 pb-10 px-4 sm:px-6 lg:px-8">
