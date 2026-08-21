@@ -3,9 +3,14 @@ nombre: Iglesia de San Esteban
 tipo: edificio
 x: 48
 y: 47
-resumen: Templo del siglo XVI en piedra, con cuatro capillas laterales asimétricas y una pila bautismal traída del despoblado de Morcat.
+resumen: Templo del siglo XVI en piedra, con cuatro capillas laterales asimétricas y una pila bautismal traída del despoblado de Morcat cuya base, mucho más antigua, podría ser de origen visigodo o mozárabe.
 imagenes: []
 anio: "s. XVI"
+en30s: "La Iglesia de San Esteban es un templo del siglo XVI que ha marcado el ritmo de la vida de Arcusa durante generaciones. Conserva una pila bautismal traída del despoblado de Morcat: su copa es del siglo XVI, pero la base, tallada con motivos geométricos, podría ser mucho más antigua, de origen visigodo o mozárabe."
+bloques:
+  - tipo: fijate
+    titulo: "Fíjate en la base de la pila"
+    texto: "Tres de sus caras conservan motivos geométricos tallados que apenas dejan un hueco libre: ese \"horror vacui\", tan cargado de decoración, es propio del arte visigodo."
 ---
 
 # El corazón de Arcusa
@@ -16,7 +21,9 @@ Construida durante el **siglo XVI**, la **Iglesia de San Esteban** ha acompañad
 
 Su arquitectura refleja la sobriedad característica de las **iglesias rurales del Sobrarbe**. Piedra, proporciones sencillas y una construcción pensada para perdurar durante siglos.
 
-En su interior se conserva una de las piezas más valiosas de Arcusa: la **pila bautismal** procedente del antiguo pueblo de **Morcat**, un pequeño testimonio de cómo el patrimonio de los pueblos vecinos continúa vivo aquí.
+En su interior se conserva una de las piezas más singulares de Arcusa: la **pila bautismal**, recuperada —copa y base— del despoblado vecino de **Morcat**. La copa, decorada con caras toscas, bezantes y sogueados, es del **siglo XVI** y tiene una prima casi idéntica en Coscojuela de Fantova.
+
+Pero lo realmente extraordinario es su **base**: una pieza prismática con tres caras talladas con motivos geométricos que podrían ser muchísimo más antiguos que la propia pila. Algunos investigadores creen que proceden de una construcción **visigoda o mozárabe** anterior, donde habrían servido como pie de altar, aunque tampoco puede descartarse que sea obra de un tallista medieval de los siglos **IX o X** que imitó ese estilo mucho más tarde. Lo que no ofrece dudas es su decoración: satura casi toda la superficie sin apenas dejar espacios vacíos, un rasgo —el llamado *horror vacui*— muy característico del arte visigótico. Nadie puede asegurar con certeza de cuándo es en realidad, y ese misterio forma parte de su encanto.
 
 > **Un detalle que suele pasar desapercibido**
 >
