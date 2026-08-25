@@ -253,15 +253,17 @@ const virtualSkyUrl = `https://slowe.github.io/VirtualSky/embed?${virtualSkyPara
             de la noche.
           </p>
         </div>
-        <!-- Sin foto real → patrón "Sin fotografía aún" -->
         <div
-          class="reveal rounded-3xl overflow-hidden flex flex-col items-center justify-center gap-3"
-          style="aspect-ratio: 16/10; background: linear-gradient(135deg, #1A2335 0%, #0E1320 100%); border: 1px solid rgba(255,255,255,0.08);"
+          class="reveal rounded-3xl overflow-hidden"
+          style="aspect-ratio: 16/10; border: 1px solid rgba(255,255,255,0.08);"
         >
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: rgba(232,169,106,0.14); color:#E8A96A;">
-            <Icon name="sunset" size={26} />
-          </div>
-          <span class="text-sm" style="color: rgba(234,239,247,0.55);">Sin fotografía aún</span>
+          <img
+            src="/images/puntos/de-noche.webp"
+            alt="Atardecer sobre las calles de piedra de Arcusa"
+            class="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </div>
     </section>
